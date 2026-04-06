@@ -1,0 +1,612 @@
+import express from "express";
+import * as landController from "../controller/landController.js";
+import verifyToken from "../middleware/authMiddleware.js";
+
+const router = express.Router();
+
+/* =====================================================
+   CREATE LAND (PROTECTED)
+===================================================== */
+
+/**
+ * @swagger
+ * /api/land:
+ *   post:
+ *     summary: Create land (JWT required)
+ *     tags: [Land]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               state:
+ *                 type: string
+ *                 example: "Telangana"
+ *               district:
+ *                 type: string
+ *                 example: "Hyderabad"
+ *               mandal:
+ *                 type: string
+ *                 example: "Shamshabad"
+ *               village:
+ *                 type: string
+ *                 example: "Kothur"
+ *
+ *               location_latitude:
+ *                 type: string
+ *                 example: "17.2403"
+ *               location_longitude:
+ *                 type: string
+ *                 example: "78.4294"
+ *
+ *               land_status:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   enum: [AVAILABLE FOR MORTGAGE, MORTGAGED, AVAILABLE FOR SALE, TOKEN, AGREEMENT, SOLD]
+ *                 example: ["AVAILABLE FOR MORTGAGE"]
+ *
+ *               urgency_listing:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   enum: ["urgent sale", "premium listing"]
+ *                 example: ["urgent sale"]
+ *
+ *               verification_package:
+ *                 type: boolean
+ *                 example: true
+ * 
+ *               form_status:
+ *                 type: string
+ *                 enum: [draft, complete, review]
+ * 
+ *               farmerDetails:
+ *                 type: object
+ *                 properties:
+ *                   name:
+ *                     type: string
+ *                     example: "Ramesh"
+ *                   phone:
+ *                     type: string
+ *                     example: "9876543210"
+ *                   whatsapp:
+ *                     type: string
+ *                     example: "9876543210"
+ *                   ownership_type:
+ *                     type: string
+ *                     enum: [Ancestral, Purchased]
+ *                   locality:
+ *                     type: string
+ *                     enum: [Local, Non-local]
+ *                   ownership_status:
+ *                     type: string
+ *                     enum: [Own, Joint]
+ *                   age:
+ *                     type: string
+ *                     enum: [Upto 30, 30-50, 50+]
+ *                   literacy:
+ *                     type: string
+ *                     enum: [Illiterate, Literate, High School, Graduate]
+ *                   nature:
+ *                     type: string
+ *                     enum: [Calm, Polite, Normal, Rude]
+ *
+ *               landDetails:
+ *                 type: object
+ *                 properties:
+ *                   total_acres:
+ *                     type: number
+ *                     example: 5
+ *                   guntas:
+ *                     type: number
+ *                     example: 20
+ *                   price_per_acres:
+ *                     type: number
+ *                     example: 1000000
+ *                   total_value:
+ *                     type: number
+ *                     example: 5000000
+ *                   nearest_road_type:
+ *                     type: string
+ *                     enum: [Highway, Double Road, Single Road, Gravel Road]
+ *                   land_attached_to_road:
+ *                     type: string
+ *                     enum: [yes, no]
+ *                   path_ownership:
+ *                     type: string
+ *                     enum: [Naksha path, No Naksha, Purchased]
+ *                   land_entry_latitude:
+ *                      type: string
+ *                      example: "17.2403"
+ *                   land_entry_longitude:
+ *                      type: string
+ *                      example: "78.4294"
+ *                   land_boundary_latitude:
+ *                      type: string
+ *                      example: "17.2403"
+ *                   land_boundary_longitude:
+ *                      type: string
+ *                      example: "78.4294"
+ *                   soil_type:
+ *                     type: string
+ *                     enum: [red, black, sandy, aluvial]
+ *                   fencing_status:
+ *                     type: string
+ *                     enum: [all sides with gate, all sides, partially, no]
+ *
+ *                   electricity:
+ *                     type: array
+ *                     items:
+ *                       type: string
+ *                       enum: ["single phase", "three phase"]
+ *
+ *                   residence:
+ *                     type: array
+ *                     items:
+ *                       type: string
+ *                       enum: ["developed farm", "rcc house", "asbestos shelter", "hut"]
+ * 
+ *                   poultry_shed_number:
+ *                      type: number
+ *                      example: 10
+ * 
+ *                   cow_shed_number:
+ *                      type: number
+ *                      example: 10
+ *
+ *                   water_source:
+ *                     type: array
+ *                     items:
+ *                       type: string
+ *                       enum: ["borewell", "cheruvu", "canal", "not available"]
+ *
+ *                   number_of_bores:
+ *                     type: integer
+ *                     example: 10
+ *                   farm_pond:
+ *                     type: boolean
+ *                   mango_trees_number:
+ *                      type: string
+ *                      example: mango-10
+ *                   coconut_trees_number:
+ *                      type: string
+ *                      example: coconut-10
+ *                   neem_trees_number:
+ *                      type: string
+ *                      example: neem-10
+ *                   baniyan_trees_number:
+ *                      type: string
+ *                      example: baniyan-10
+ *                   tamarind_trees_number:
+ *                      type: string
+ *                      example: tamarind-10
+ *                   sapoto_trees_number:
+ *                      type: string
+ *                      example: sapoto-10
+ *                   guava_trees_number:
+ *                      type: string
+ *                      example: guava-10
+ *                   teak_trees_number:
+ *                      type: string
+ *                      example: teak-10
+ *                   other_trees_number:
+ *                      type: string
+ *                      example: banana-10
+ *                   complaints:
+ *                      type: object
+ *                      example:
+ *                        - "Siblings Issue (own Brother or Sister)"
+ *                        - "Cousins Issue (of uncles family)"
+ *                        - "Boundary"
+ *                        - "Rocks In Land"
+ *                        - "Electric Poles"
+ *                        - "Sealing"
+ *                        - "path issue"
+ *                        - "No Path at all"
+ *               gps:
+ *                 type: object
+ *                 properties:
+ *                   latitude:
+ *                     type: string
+ *                     example: "17.2403"
+ *                   longitude:
+ *                     type: string
+ *                     example: "78.4294"
+ *
+ *               media:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     category:
+ *                       type: string
+ *                       enum:
+ *                         [farmer_photo, land_soil, fencing, farm_pond, residence, shed, water_source, trees, rocks, electric_poles, others, video]
+ *                     type:
+ *                       type: string
+ *                       enum: [image, video]
+ *                     url:
+ *                       type: string
+ *                       example: "https://example.com/image.jpg"
+ *
+ *               documents:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     doc_type:
+ *                       type: string
+ *                       enum: [PASSBOOK, AADHAR, TITLE_DEED]
+ *                     file_url:
+ *                       type: string
+ *                       example: "https://example.com/doc.pdf"
+ *
+ *     responses:
+ *       201:
+ *         description: Land created successfully
+ *       400:
+ *         description: Bad request
+ */
+router.post("/land", verifyToken, landController.createLand);
+
+/* =====================================================
+   FILTER LANDS
+===================================================== */
+
+/**
+ * @swagger
+ * /api/land/filter/all:
+ *   get:
+ *     summary: Filter lands
+ *     tags: [Land]
+ *     parameters:
+ *       - in: query
+ *         name: state
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: district
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: mandal
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: village
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Filtered lands
+ */
+router.get("/land/filter/all", landController.filterLands);
+
+/* =====================================================
+   GET ALL LANDS
+===================================================== */
+
+/**
+ * @swagger
+ * /api/land:
+ *   get:
+ *     summary: Get all lands
+ *     tags: [Land]
+ *     responses:
+ *       200:
+ *         description: List of lands
+ */
+router.get("/land", landController.getAllLands);
+
+/* =====================================================
+   GET LAND BY ID
+===================================================== */
+
+/**
+ * @swagger
+ * /api/land/{id}:
+ *   get:
+ *     summary: Get land by ID
+ *     tags: [Land]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Land details
+ *       404:
+ *         description: Land not found
+ */
+router.get("/land/:id", landController.getLandById);
+
+/* =====================================================
+   UPDATE LAND (PROTECTED)
+===================================================== */
+
+/**
+ * @swagger
+ * /api/land/{id}:
+ *   put:
+ *     summary: Update land (JWT required)
+ *     tags: [Land]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+*     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               state:
+ *                 type: string
+ *                 example: "Telangana"
+ *               district:
+ *                 type: string
+ *                 example: "Hyderabad"
+ *               mandal:
+ *                 type: string
+ *                 example: "Shamshabad"
+ *               village:
+ *                 type: string
+ *                 example: "Kothur"
+ *
+ *               location_latitude:
+ *                 type: string
+ *                 example: "17.2403"
+ *               location_longitude:
+ *                 type: string
+ *                 example: "78.4294"
+ *
+ *               land_status:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   enum: [AVAILABLE FOR MORTGAGE, MORTGAGED, AVAILABLE FOR SALE, TOKEN, AGREEMENT, SOLD]
+ *                 example: ["AVAILABLE FOR MORTGAGE"]
+ *
+ *               urgency_listing:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   enum: ["urgent sale", "premium listing"]
+ *                 example: ["urgent sale"]
+ *
+ *               verification_package:
+ *                 type: boolean
+ *                 example: true
+ * 
+ *               form_status:
+ *                 type: string
+ *                 enum: [draft, complete, review]
+ *
+ *               farmerDetails:
+ *                 type: object
+ *                 properties:
+ *                   name:
+ *                     type: string
+ *                     example: "Ramesh"
+ *                   phone:
+ *                     type: string
+ *                     example: "9876543210"
+ *                   whatsapp:
+ *                     type: string
+ *                     example: "9876543210"
+ *                   ownership_type:
+ *                     type: string
+ *                     enum: [Ancestral, Purchased]
+ *                   locality:
+ *                     type: string
+ *                     enum: [Local, Non-local]
+ *                   ownership_status:
+ *                     type: string
+ *                     enum: [Own, Joint]
+ *                   age:
+ *                     type: string
+ *                     enum: [Upto 30, 30-50, 50+]
+ *                   literacy:
+ *                     type: string
+ *                     enum: [Illiterate, Literate, High School, Graduate]
+ *                   nature:
+ *                     type: string
+ *                     enum: [Calm, Polite, Normal, Rude]
+ *
+ *               landDetails:
+ *                 type: object
+ *                 properties:
+ *                   total_acres:
+ *                     type: number
+ *                     example: 5
+ *                   guntas:
+ *                     type: number
+ *                     example: 20
+ *                   price_per_acres:
+ *                     type: number
+ *                     example: 1000000
+ *                   total_value:
+ *                     type: number
+ *                     example: 5000000
+ *                   nearest_road_type:
+ *                     type: string
+ *                     enum: [Highway, Double Road, Single Road, Gravel Road]
+ *                   land_attached_to_road:
+ *                     type: string
+ *                     enum: [yes, no]
+ *                   path_ownership:
+ *                     type: string
+ *                     enum: [Naksha path, No Naksha, Purchased]
+ *                   land_entry_latitude:
+ *                      type: string
+ *                      example: "17.2403"
+ *                   land_entry_longitude:
+ *                      type: string
+ *                      example: "78.4294"
+ *                   land_boundary_latitude:
+ *                      type: string
+ *                      example: "17.2403"
+ *                   land_boundary_longitude:
+ *                      type: string
+ *                      example: "78.4294"
+ *                   soil_type:
+ *                     type: string
+ *                     enum: [red, black, sandy, aluvial]
+ *                   fencing_status:
+ *                     type: string
+ *                     enum: [all sides with gate, all sides, partially, no]
+ *
+ *                   electricity:
+ *                     type: array
+ *                     items:
+ *                       type: string
+ *                       enum: ["single phase", "three phase"]
+ *
+ *                   residence:
+ *                     type: array
+ *                     items:
+ *                       type: string
+ *                       enum: ["developed farm", "rcc house", "asbestos shelter", "hut"]
+ * 
+ *                   poultry_shed_number:
+ *                      type: number
+ *                      example: 10
+ * 
+ *                   cow_shed_number:
+ *                      type: number
+ *                      example: 10
+ *
+ *                   water_source:
+ *                     type: array
+ *                     items:
+ *                       type: string
+ *                       enum: ["borewell", "cheruvu", "canal", "not available"]
+ *
+ *                   number_of_bores:
+ *                     type: integer
+ *                     example: 10
+ *                   farm_pond:
+ *                     type: boolean
+ *                   mango_trees_number:
+ *                      type: string
+ *                      example: mango-10
+ *                   coconut_trees_number:
+ *                      type: string
+ *                      example: coconut-10
+ *                   neem_trees_number:
+ *                      type: string
+ *                      example: neem-10
+ *                   baniyan_trees_number:
+ *                      type: string
+ *                      example: baniyan-10
+ *                   tamarind_trees_number:
+ *                      type: string
+ *                      example: tamarind-10
+ *                   sapoto_trees_number:
+ *                      type: string
+ *                      example: sapoto-10
+ *                   guava_trees_number:
+ *                      type: string
+ *                      example: guava-10
+ *                   teak_trees_number:
+ *                      type: string
+ *                      example: teak-10
+ *                   other_trees_number:
+ *                      type: string
+ *                      example: banana-10
+ *                   complaints:
+ *                      type: object
+ *                      example:
+ *                        - "Siblings Issue (own Brother or Sister)"
+ *                        - "Cousins Issue (of uncles family)"
+ *                        - "Boundary"
+ *                        - "Rocks In Land"
+ *                        - "Electric Poles"
+ *                        - "Sealing"
+ *                        - "path issue"
+ *                        - "No Path at all"
+ *               gps:
+ *                 type: object
+ *                 properties:
+ *                   latitude:
+ *                     type: string
+ *                     example: "17.2403"
+ *                   longitude:
+ *                     type: string
+ *                     example: "78.4294"
+ *
+ *               media:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     category:
+ *                       type: string
+ *                       enum:
+ *                         [farmer_photo, land_soil, fencing, farm_pond, residence, shed, water_source, trees, rocks, electric_poles, others, video]
+ *                     type:
+ *                       type: string
+ *                       enum: [image, video]
+ *                     url:
+ *                       type: string
+ *                       example: "https://example.com/image.jpg"
+ *
+ *               documents:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     doc_type:
+ *                       type: string
+ *                       enum: [PASSBOOK, AADHAR, TITLE_DEED]
+ *                     file_url:
+ *                       type: string
+ *                       example: "https://example.com/doc.pdf"
+ *
+ *     responses:
+ *       200:
+ *         description: Land updated successfully
+ *       400:
+ *         description: Bad request
+ */
+router.put("/land/:id", verifyToken, landController.updateLand);
+
+/* =====================================================
+   DELETE LAND (PROTECTED)
+===================================================== */
+
+/**
+ * @swagger
+ * /api/land/{id}:
+ *   delete:
+ *     summary: Delete land (JWT required)
+ *     tags: [Land]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Land deleted successfully
+ *       404:
+ *         description: Land not found
+ */
+router.delete("/land/:id", verifyToken, landController.deleteLand);
+
+export default router;
