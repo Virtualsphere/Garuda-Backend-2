@@ -20,53 +20,37 @@ const LandDetails = sequelize.define("LandDetails", {
     type: DataTypes.DOUBLE
   },
   nearest_road_type: {
-    type: DataTypes.ENUM('Highway', 'Double Road', 'Single Road', 'Gravel Road')
+    type: DataTypes.STRING
   },
   land_attached_to_road: {
     type: DataTypes.ENUM('yes', 'no')
   },
   path_ownership: {
-    type: DataTypes.ENUM('Naksha path', 'No Naksha', 'Purchased')
+    type: DataTypes.STRING
   },
   land_entry_latitude: {
-    type: DataTypes.STRING
+    type: DataTypes.TEXT
   },
   land_entry_longitude: {
-    type: DataTypes.STRING
+    type: DataTypes.TEXT
   },
   land_boundary_latitude: {
-    type: DataTypes.STRING
+    type: DataTypes.TEXT
   },
   land_boundary_longitude: {
-    type: DataTypes.STRING
+    type: DataTypes.TEXT
   },
   soil_type: {
-    type: DataTypes.ENUM('red', 'black', 'sandy', 'aluvial'),
-    defaultValue: 'red'
+    type: DataTypes.STRING,
   },
   fencing_status: {
-    type: DataTypes.ENUM('all sides with gate', 'all sides', 'partially', 'no'),
-    defaultValue: 'all sides with gate'
+    type: DataTypes.STRING
   },
   electricity: {
-    type: DataTypes.ARRAY(
-      DataTypes.ENUM(
-        "single phase",
-        "three phase"
-      )
-    ),
-    allowNull: false,
+    type: DataTypes.JSONB
   },
   residence: {
-    type: DataTypes.ARRAY(
-      DataTypes.ENUM(
-        "developed farm",
-        "rcc house",
-        "asbestos shelter",
-        "hut"
-      )
-    ),
-    allowNull: false,
+    type: DataTypes.JSONB
   },
   poultry_shed_number: {
     type: DataTypes.INTEGER
@@ -75,15 +59,7 @@ const LandDetails = sequelize.define("LandDetails", {
     type: DataTypes.INTEGER
   },
   water_source: {
-    type: DataTypes.ARRAY(
-      DataTypes.ENUM(
-        "borewell",
-        "cheruvu",
-        "canal",
-        "not available"
-      )
-    ),
-    allowNull: false,
+    type: DataTypes.JSONB
   },
   number_of_bores: {
     type: DataTypes.INTEGER

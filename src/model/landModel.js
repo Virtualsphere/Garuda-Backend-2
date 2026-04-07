@@ -26,26 +26,10 @@ const Land = sequelize.define("Land", {
     type: DataTypes.STRING
   },
   land_status: {
-    type: DataTypes.ARRAY(
-      DataTypes.ENUM(
-        "AVAILABLE FOR MORTGAGE",
-        "MORTGAGED",
-        "AVAILABLE FOR SALE",
-        "TOKEN",
-        "AGREEMENT",
-        "SOLD"
-      )
-    ),
-    allowNull: false,
+    type: DataTypes.JSONB
   },
   urgency_listing: {
-    type: DataTypes.ARRAY(
-      DataTypes.ENUM(
-        "urgent sale",
-        "premium listing"
-      )
-    ),
-    allowNull: false,
+    type: DataTypes.JSONB
   },
   verification_package: {
     type: DataTypes.BOOLEAN

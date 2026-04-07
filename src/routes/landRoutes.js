@@ -44,18 +44,20 @@ const router = express.Router();
  *                 example: "78.4294"
  *
  *               land_status:
- *                 type: array
- *                 items:
- *                   type: string
- *                   enum: [AVAILABLE FOR MORTGAGE, MORTGAGED, AVAILABLE FOR SALE, TOKEN, AGREEMENT, SOLD]
- *                 example: ["AVAILABLE FOR MORTGAGE"]
+ *                 type: object
+ *                 example:
+ *                   - "AVAILABLE FOR MORTGAGE"
+ *                   - "MORTGAGED"
+ *                   - "AVAILABLE FOR SALE"
+ *                   - "TOKEN"
+ *                   - "AGREEMENT"
+ *                   - "SOLD"
  *
  *               urgency_listing:
- *                 type: array
- *                 items:
- *                   type: string
- *                   enum: ["urgent sale", "premium listing"]
- *                 example: ["urgent sale"]
+ *                 type: object
+ *                 example:
+ *                   - "urgent sale"
+ *                   - "premium listing"
  *
  *               verification_package:
  *                 type: boolean
@@ -113,13 +115,13 @@ const router = express.Router();
  *                     example: 5000000
  *                   nearest_road_type:
  *                     type: string
- *                     enum: [Highway, Double Road, Single Road, Gravel Road]
+ *                     example: "Highway"
  *                   land_attached_to_road:
  *                     type: string
  *                     enum: [yes, no]
  *                   path_ownership:
  *                     type: string
- *                     enum: [Naksha path, No Naksha, Purchased]
+ *                     example: "Naksha path"
  *                   land_entry_latitude:
  *                      type: string
  *                      example: "17.2403"
@@ -134,22 +136,24 @@ const router = express.Router();
  *                      example: "78.4294"
  *                   soil_type:
  *                     type: string
- *                     enum: [red, black, sandy, aluvial]
+ *                     example: "red"
  *                   fencing_status:
  *                     type: string
- *                     enum: [all sides with gate, all sides, partially, no]
+ *                     example: "all sides with gate"
  *
  *                   electricity:
- *                     type: array
- *                     items:
- *                       type: string
- *                       enum: ["single phase", "three phase"]
+ *                     type: object
+ *                     example:
+ *                       - "single phase"
+ *                       - "three phase"
  *
  *                   residence:
- *                     type: array
- *                     items:
- *                       type: string
- *                       enum: ["developed farm", "rcc house", "asbestos shelter", "hut"]
+ *                     type: object
+ *                     example:
+ *                       - "developed farm"
+ *                       - "rcc house"
+ *                       - "asbestos shelter"
+ *                       - "hut"
  * 
  *                   poultry_shed_number:
  *                      type: number
@@ -160,10 +164,12 @@ const router = express.Router();
  *                      example: 10
  *
  *                   water_source:
- *                     type: array
- *                     items:
- *                       type: string
- *                       enum: ["borewell", "cheruvu", "canal", "not available"]
+ *                     type: object
+ *                     example:
+ *                       - "borewell"
+ *                       - "cheruvu"
+ *                       - "canal"
+ *                       - "not available"
  *
  *                   number_of_bores:
  *                     type: integer
@@ -345,7 +351,7 @@ router.get("/land/:id", landController.getLandById);
  *         required: true
  *         schema:
  *           type: integer
-*     requestBody:
+ *     requestBody:
  *       required: true
  *       content:
  *         application/json:
@@ -373,18 +379,20 @@ router.get("/land/:id", landController.getLandById);
  *                 example: "78.4294"
  *
  *               land_status:
- *                 type: array
- *                 items:
- *                   type: string
- *                   enum: [AVAILABLE FOR MORTGAGE, MORTGAGED, AVAILABLE FOR SALE, TOKEN, AGREEMENT, SOLD]
- *                 example: ["AVAILABLE FOR MORTGAGE"]
+ *                 type: object
+ *                 example:
+ *                   - "AVAILABLE FOR MORTGAGE"
+ *                   - "MORTGAGED"
+ *                   - "AVAILABLE FOR SALE"
+ *                   - "TOKEN"
+ *                   - "AGREEMENT"
+ *                   - "SOLD"
  *
  *               urgency_listing:
- *                 type: array
- *                 items:
- *                   type: string
- *                   enum: ["urgent sale", "premium listing"]
- *                 example: ["urgent sale"]
+ *                 type: object
+ *                 example:
+ *                   - "urgent sale"
+ *                   - "premium listing"
  *
  *               verification_package:
  *                 type: boolean
@@ -393,7 +401,7 @@ router.get("/land/:id", landController.getLandById);
  *               form_status:
  *                 type: string
  *                 enum: [draft, complete, review]
- *
+ * 
  *               farmerDetails:
  *                 type: object
  *                 properties:
@@ -442,13 +450,13 @@ router.get("/land/:id", landController.getLandById);
  *                     example: 5000000
  *                   nearest_road_type:
  *                     type: string
- *                     enum: [Highway, Double Road, Single Road, Gravel Road]
+ *                     example: "Highway"
  *                   land_attached_to_road:
  *                     type: string
  *                     enum: [yes, no]
  *                   path_ownership:
  *                     type: string
- *                     enum: [Naksha path, No Naksha, Purchased]
+ *                     example: "Naksha path"
  *                   land_entry_latitude:
  *                      type: string
  *                      example: "17.2403"
@@ -463,22 +471,24 @@ router.get("/land/:id", landController.getLandById);
  *                      example: "78.4294"
  *                   soil_type:
  *                     type: string
- *                     enum: [red, black, sandy, aluvial]
+ *                     example: "red"
  *                   fencing_status:
  *                     type: string
- *                     enum: [all sides with gate, all sides, partially, no]
+ *                     example: "all sides with gate"
  *
  *                   electricity:
- *                     type: array
- *                     items:
- *                       type: string
- *                       enum: ["single phase", "three phase"]
+ *                     type: object
+ *                     example:
+ *                       - "single phase"
+ *                       - "three phase"
  *
  *                   residence:
- *                     type: array
- *                     items:
- *                       type: string
- *                       enum: ["developed farm", "rcc house", "asbestos shelter", "hut"]
+ *                     type: object
+ *                     example:
+ *                       - "developed farm"
+ *                       - "rcc house"
+ *                       - "asbestos shelter"
+ *                       - "hut"
  * 
  *                   poultry_shed_number:
  *                      type: number
@@ -489,10 +499,12 @@ router.get("/land/:id", landController.getLandById);
  *                      example: 10
  *
  *                   water_source:
- *                     type: array
- *                     items:
- *                       type: string
- *                       enum: ["borewell", "cheruvu", "canal", "not available"]
+ *                     type: object
+ *                     example:
+ *                       - "borewell"
+ *                       - "cheruvu"
+ *                       - "canal"
+ *                       - "not available"
  *
  *                   number_of_bores:
  *                     type: integer
