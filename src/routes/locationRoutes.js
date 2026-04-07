@@ -5,7 +5,7 @@ const router = express.Router();
 
 /* =====================================================
    CREATE
-===================================================== */
+===================================================== */ 
 
 /**
  * @swagger
@@ -27,6 +27,8 @@ const router = express.Router();
  *     responses:
  *       201:
  *         description: State created successfully
+ *       400:
+ *         description: Bad request
  */
 router.post("/location/state", locationController.createState);
 
@@ -53,6 +55,8 @@ router.post("/location/state", locationController.createState);
  *     responses:
  *       201:
  *         description: District created successfully
+ *       400:
+ *         description: Bad request
  */
 router.post("/location/district", locationController.createDistrict);
 
@@ -79,6 +83,8 @@ router.post("/location/district", locationController.createDistrict);
  *     responses:
  *       201:
  *         description: Mandal created successfully
+ *       400:
+ *         description: Bad request
  */
 router.post("/location/mandal", locationController.createMandal);
 
@@ -105,6 +111,8 @@ router.post("/location/mandal", locationController.createMandal);
  *     responses:
  *       201:
  *         description: Village created successfully
+ *       400:
+ *         description: Bad request
  */
 router.post("/location/village", locationController.createVillage);
 
@@ -121,6 +129,8 @@ router.post("/location/village", locationController.createVillage);
  *     responses:
  *       200:
  *         description: Full location data
+ *       500:
+ *         description: Server Error
  */
 router.get("/location", locationController.getAllLocations);
 
@@ -140,6 +150,8 @@ router.get("/location", locationController.getAllLocations);
  *     responses:
  *       200:
  *         description: State data
+ *       404:
+ *         description: Not found
  */
 router.get("/location/state/:id", locationController.getStateById);
 
@@ -163,6 +175,8 @@ router.get("/location/state/:id", locationController.getStateById);
  *     responses:
  *       200:
  *         description: List of districts
+ *       500:
+ *         description: Server Error
  */
 router.get("/location/districts/:state_id", locationController.getDistrictsByState);
 
@@ -182,6 +196,8 @@ router.get("/location/districts/:state_id", locationController.getDistrictsBySta
  *     responses:
  *       200:
  *         description: List of mandals
+ *       500:
+ *         description: Server Error
  */
 router.get("/location/mandals/:district_id", locationController.getMandalsByDistrict);
 
@@ -201,6 +217,8 @@ router.get("/location/mandals/:district_id", locationController.getMandalsByDist
  *     responses:
  *       200:
  *         description: List of villages
+ *       500:
+ *         description: Server Error
  */
 router.get("/location/villages/:mandal_id", locationController.getVillagesByMandal);
 
@@ -227,6 +245,11 @@ router.get("/location/villages/:mandal_id", locationController.getVillagesByMand
  *               name:
  *                 type: string
  *                 example: "Andhra Pradesh"
+ *     responses:
+ *       200:
+ *         description: List of villages
+ *       404:
+ *         description: Not found
  */
 router.put("/location/state/:id", locationController.updateState);
 
@@ -249,6 +272,11 @@ router.put("/location/state/:id", locationController.updateState);
  *               name:
  *                 type: string
  *                 example: "Hyderabad"
+ *     responses:
+ *       200:
+ *         description: List of villages
+*       404:
+ *         description: Not found
  */
 router.put("/location/district/:id", locationController.updateDistrict);
 
@@ -271,6 +299,11 @@ router.put("/location/district/:id", locationController.updateDistrict);
  *               name:
  *                 type: string
  *                 example: "Gachibowli"
+ *     responses:
+ *       200:
+ *         description: List of villages
+ *       404:
+ *         description: Not found
  */
 router.put("/location/mandal/:id", locationController.updateMandal);
 
@@ -293,6 +326,11 @@ router.put("/location/mandal/:id", locationController.updateMandal);
  *               name:
  *                 type: string
  *                 example: "Kondapur"
+ *     responses:
+ *       200:
+ *         description: List of villages
+ *       404:
+ *         description: Not found
  */
 router.put("/location/village/:id", locationController.updateVillage);
 
@@ -310,6 +348,11 @@ router.put("/location/village/:id", locationController.updateVillage);
  *       - in: path
  *         name: id
  *         required: true
+ *     responses:
+ *       200:
+ *         description: List of villages
+ *       404:
+ *         description: Not found
  */
 router.delete("/location/state/:id", locationController.deleteState);
 
@@ -323,6 +366,11 @@ router.delete("/location/state/:id", locationController.deleteState);
  *       - in: path
  *         name: id
  *         required: true
+ *     responses:
+ *       200:
+ *         description: List of villages
+ *       404:
+ *         description: Not found
  */
 router.delete("/location/district/:id", locationController.deleteDistrict);
 
@@ -336,6 +384,11 @@ router.delete("/location/district/:id", locationController.deleteDistrict);
  *       - in: path
  *         name: id
  *         required: true
+ *     responses:
+ *       200:
+ *         description: List of villages
+ *       404:
+ *         description: Not found
  */
 router.delete("/location/mandal/:id", locationController.deleteMandal);
 
@@ -349,6 +402,11 @@ router.delete("/location/mandal/:id", locationController.deleteMandal);
  *       - in: path
  *         name: id
  *         required: true
+ *     responses:
+ *       200:
+ *         description: List of villages
+ *       404:
+ *         description: Not found
  */
 router.delete("/location/village/:id", locationController.deleteVillage);
 

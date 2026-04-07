@@ -257,6 +257,8 @@ const router = express.Router();
  *         description: Land created successfully
  *       400:
  *         description: Bad request
+ *       401:
+ *         description: Unauthorized
  */
 router.post("/land", verifyToken, landController.createLand);
 
@@ -290,6 +292,8 @@ router.post("/land", verifyToken, landController.createLand);
  *     responses:
  *       200:
  *         description: Filtered lands
+ *       500:
+ *         description: Server Error
  */
 router.get("/land/filter/all", landController.filterLands);
 
@@ -306,6 +310,8 @@ router.get("/land/filter/all", landController.filterLands);
  *     responses:
  *       200:
  *         description: List of lands
+ *       500:
+ *         description: Server Error
  */
 router.get("/land", landController.getAllLands);
 

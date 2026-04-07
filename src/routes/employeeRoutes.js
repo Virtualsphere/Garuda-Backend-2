@@ -134,6 +134,8 @@ const router = express.Router();
  *     responses:
  *       201:
  *         description: Employee created successfully
+ *       400:
+ *         description: Bad request
  */
 router.post("/employee/signup", employeeController.signup);
 
@@ -167,6 +169,8 @@ router.post("/employee/signup", employeeController.signup);
  *     responses:
  *       200:
  *         description: Login successful
+ *       401:
+ *         description: Unautorized
  */
 router.post("/employee/login", employeeController.login);
 
@@ -196,6 +200,10 @@ router.post("/employee/login", employeeController.login);
  *     responses:
  *       200:
  *         description: New access token generated
+ *       400:
+ *         description: Bad request
+ *       401:
+ *         description: Unauthorized
  */
 router.post("/employee/refresh", employeeController.refreshToken);
 
@@ -321,6 +329,8 @@ router.post("/employee/refresh", employeeController.refreshToken);
  *     responses:
  *       200:
  *         description: Employee updated successfully
+ *       404:
+ *         description: Not found
  */
 router.put("/update", verifyToken, employeeController.updateEmployee);
 
@@ -339,6 +349,8 @@ router.put("/update", verifyToken, employeeController.updateEmployee);
  *     responses:
  *       200:
  *         description: Employee deleted successfully
+ *       404:
+ *         description: Not found
  */
 router.delete("/employee/delete", verifyToken, employeeController.deleteEmployee);
 
@@ -368,6 +380,8 @@ router.delete("/employee/delete", verifyToken, employeeController.deleteEmployee
  *     responses:
  *       200:
  *         description: Logged out successfully
+ *       500:
+ *         description: Server Error
  */
 router.post("/employee/logout", employeeController.logout);
 

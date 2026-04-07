@@ -48,6 +48,8 @@ const router = express.Router();
  *     responses:
  *       201:
  *         description: Signup successful
+ *       400:
+ *         description: Bad request
  */
 router.post("/buyer/signup", buyerController.signup);
 
@@ -81,6 +83,8 @@ router.post("/buyer/signup", buyerController.signup);
  *     responses:
  *       200:
  *         description: Login successful
+ *       401:
+ *         description: Unauthorized
  */
 router.post("/buyer/login", buyerController.login);
 
@@ -110,6 +114,10 @@ router.post("/buyer/login", buyerController.login);
  *     responses:
  *       200:
  *         description: New access token generated
+ *       400:
+ *         description: Bad request
+ *       401:
+ *         description: Unauthorized
  */
 router.post("/buyer/refresh", buyerController.refreshToken);
 
@@ -141,6 +149,8 @@ router.post("/buyer/refresh", buyerController.refreshToken);
  *     responses:
  *       200:
  *         description: Buyer updated successfully
+ *       404:
+ *         description: Not found
  */
 router.put("/buyer/update", verifyToken, buyerController.updateBuyer);
 
@@ -159,6 +169,8 @@ router.put("/buyer/update", verifyToken, buyerController.updateBuyer);
  *     responses:
  *       200:
  *         description: Buyer deleted successfully
+ *       404:
+ *         description: Not found
  */
 router.delete("/buyer/delete", verifyToken, buyerController.deleteBuyer);
 
@@ -188,6 +200,8 @@ router.delete("/buyer/delete", verifyToken, buyerController.deleteBuyer);
  *     responses:
  *       200:
  *         description: Logged out successfully
+ *       500:
+ *         description: Server Error
  */
 router.post("/buyer/logout", buyerController.logout);
 
@@ -200,6 +214,8 @@ router.post("/buyer/logout", buyerController.logout);
  *     responses:
  *       200:
  *         description: List of lands
+ *       500:
+ *         description: Server Error
  */
 router.get("/buyer/land", buyerController.getAllLandsForUser);
 
