@@ -108,6 +108,18 @@ export const getAllLands = async () => {
   });
 };
 
+export const getAllLandsForUser= async ()=>{
+  return await Land.findAll({
+    include: [
+      { model: LandDetails, as: "landDetails" },
+      { model: LandGPS, as: "gps" },
+      { model: LandMedia, as: "media" },
+      { model: LandDocuments, as: "documents" },
+    ],
+    order: [["created_at", "DESC"]],
+  });
+}
+
 /* =====================================================
    GET LAND BY ID
 ===================================================== */

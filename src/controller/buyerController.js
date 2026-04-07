@@ -1,4 +1,5 @@
 import * as buyerService from "../service/buyerService.js";
+import * as landService from "../service/landService.js";
 
 /* =========================
    SIGNUP
@@ -141,3 +142,19 @@ export const logout = async (req, res) => {
     });
   }
 };
+
+export const getAllLandsForUser= async (req, res)=>{
+  try {
+    const lands = await landService.getAllLandsForUser();
+  
+    res.status(200).json({
+      success: true,
+      data: lands,
+    });
+  } catch (error) {
+      res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+}

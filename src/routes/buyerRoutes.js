@@ -191,4 +191,16 @@ router.delete("/buyer/delete", verifyToken, buyerController.deleteBuyer);
  */
 router.post("/buyer/logout", buyerController.logout);
 
+/**
+ * @swagger
+ * /api/buyer/land:
+ *   get:
+ *     summary: Get all lands
+ *     tags: [Buyer]
+ *     responses:
+ *       200:
+ *         description: List of lands
+ */
+router.get("/buyer/land", buyerController.getAllLandsForUser);
+
 export default router;
