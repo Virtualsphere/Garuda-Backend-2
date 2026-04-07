@@ -65,7 +65,7 @@ export const refreshToken = async (req, res) => {
       accessToken: data.accessToken,
     });
   } catch (error) {
-    res.status(403).json({
+    res.status(401).json({
       success: false,
       message: error.message,
     });
