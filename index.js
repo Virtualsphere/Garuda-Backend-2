@@ -10,9 +10,10 @@ import buyerRoutes from './src/routes/buyerRoutes.js';
 import locationRoutes from './src/routes/locationRoutes.js';
 import landRoutes from './src/routes/landRoutes.js';
 import employeeRoutes from './src/routes/employeeRoutes.js';
+import documentRoutes from './src/routes/documentRoutes.js';
 
-// const __filename = fileURLToPath(import.meta.url);
-// const __dirname = path.dirname(__filename);
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 app.use(cors());
@@ -23,7 +24,7 @@ app.use(cors());
 //     next();
 // });
 app.use(express.json());
-// app.use("/public", express.static(path.join(__dirname, "./public")));
+app.use("/public", express.static(path.join(__dirname, "./src/public")));
 
 import swaggerUi from "swagger-ui-express";
 import swaggerSpec from "./src/config/swagger.js";
@@ -38,40 +39,14 @@ app.use('/api', employeeRoutes);
 app.use('/api', landRoutes);
 app.use('/api', locationRoutes);
 app.use('/api', buyerRoutes);
-// // Priority Routes
-// app.use('/api', adminRoutes)
-// app.use('/api', authRoutes);
-
-// app.use('/api', rideRoutes)
-// app.use('/api', documentsRoutes)
-// // app.use('/api', driverRoutes) // driverRoutes is below
-// app.use('/api', driverRoutes)
-// app.use('/api', locationRoutes)
-// app.use('/api', customerRoutes)
-// app.use('/api', vehicleTypeRoutes)
-// app.use('/api', offerRoutes)
-// app.use('/api', chatRoutes)
-// app.use('/api', walletRoutes)
-// app.use('/api', customerSupportRoutes)
+app.use('/api', documentRoutes);
 // app.use('/api', paymentRoutes)
-
-
-
-
-// import http from "http";
-// import initializeSocket from "./socket/socketServer.js";
-
-// const server = http.createServer(app);
-// const io = initializeSocket(server);
-
-// // Make io accessible globally if needed (or pass to controllers)
-// app.set("io", io);
 
 const PORT = process.env.PORT || 5000;
 
 const startServer = async () => {
   try {
-    await sequelize.sync({ force: true });
+    await sequelize.sync({ alter: true });
     // await ensureStaticQrPaymentSchema();
     console.log("All tables synced with database");
   } catch (err) {
