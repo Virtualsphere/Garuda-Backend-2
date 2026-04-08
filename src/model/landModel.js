@@ -20,10 +20,10 @@ const Land = sequelize.define("Land", {
     type: DataTypes.STRING
   },
   location_latitude: {
-    type: DataTypes.STRING
+    type: DataTypes.TEXT
   },
   location_longitude:{
-    type: DataTypes.STRING
+    type: DataTypes.TEXT
   },
   land_status: {
     type: DataTypes.JSONB
