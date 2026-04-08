@@ -19,7 +19,7 @@ const LandDocuments = sequelize.define("LandDocuments", {
   },
 
   file_url: {
-    type: DataTypes.STRING,
+    type: DataTypes.TEXT,
     allowNull: false
   }
 

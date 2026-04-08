@@ -33,7 +33,7 @@ const LandMedia = sequelize.define("LandMedia", {
   },
 
   url: {
-    type: DataTypes.STRING,
+    type: DataTypes.TEXT,
     allowNull: false
   }
 

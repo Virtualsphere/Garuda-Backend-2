@@ -9,8 +9,8 @@ const LandGPS = sequelize.define("LandGPS", {
     allowNull: false
   },
 
-  latitude: DataTypes.STRING,
-  longitude: DataTypes.STRING,
+  latitude: DataTypes.TEXT,
+  longitude: DataTypes.TEXT,
 
 }, {
   tableName: "land_gps",
