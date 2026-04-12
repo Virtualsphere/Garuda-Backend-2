@@ -11,11 +11,38 @@ import State from "./stateModel.js";
 import Village from "./villageModel.js";
 import District from "./districtModel.js";
 import Mandal from "./mandalModel.js";
-import Role from "./roleModel.js";
+import AssignedVillage from "./assignedVillage.js";
+import PrimaryVisit from "./primaryVisitModel.js";
+import Cart from "./cartModel.js";
+import Availibility from "./availbilityModel.js";
+import Shortlisting from "./shortlistingModel.js";
+import FinalList from "./finalListModel.js";
+import Payment from "./paymentModel.js";
+import WishList from "./wishlistModel.js";
 
 Employee.hasMany(Land, {
   foreignKey: "created_by",
   as: "createdLands",
+});
+
+Employee.hasMany(AssignedVillage, {
+  foreignKey: "assigned_employee_id",
+  as: "assignedVillage"
+});
+
+Land.hasMany(PrimaryVisit, {
+  foreignKey: "land_id",
+  as: "primaryLand"
+});
+
+Employee.hasMany(PrimaryVisit, {
+  foreignKey: "employee_id",
+  as: "primaryEmployee"
+});
+
+Buyer.hasMany(PrimaryVisit, {
+  foreignKey: "user_id",
+  as: "primaryBuyer"
 });
 
 State.hasMany(District, {
@@ -43,9 +70,149 @@ Mandal.hasMany(Village, {
   as: "villages",
 });
 
+Land.hasMany(Cart, {
+  foreignKey: "land_id",
+  as: "cartLand"
+})
+
+Buyer.hasMany(Cart, {
+  foreignKey: "user_id",
+  as: "cartBuyer"
+})
+
+Land.hasMany(Availibility, {
+  foreignKey: "land_id",
+  as: "availableLand"
+});
+
+Buyer.hasMany(Availibility, {
+  foreignKey: "user_id",
+  as: "availableBuyer"
+});
+
+Land.hasMany(Shortlisting, {
+  foreignKey: "land_id",
+  as: "shortlistingLand"
+});
+
+Buyer.hasMany(Shortlisting, {
+  foreignKey: "user_id",
+  as: "shortlistingBuyer"
+});
+
+Land.hasMany(FinalList, {
+  foreignKey: "land_id",
+  as: "finalLand"
+});
+
+Buyer.hasMany(FinalList, {
+  foreignKey: "user_id",
+  as: "finalBuyer"
+});
+
+Land.hasMany(Payment, {
+  foreignKey: "land_id",
+  as: "paymentLand"
+});
+
+Buyer.hasMany(Payment, {
+  foreignKey: "user_id",
+  as: "paymentBuyer"
+});
+
+Land.hasMany(WishList, {
+  foreignKey: "land_id",
+  as: "wishListLand"
+});
+
+Buyer.hasMany(WishList, {
+  foreignKey: "user_id",
+  as: "wishListBuyer"
+});
+
+Availibility.belongsTo(Land, {
+  foreignKey: "land_id",
+  as: "availibilityLand"
+})
+
+Availibility.belongsTo(Buyer, {
+  foreignKey: "user_id",
+  as: "availibilityBuyer"
+})
+
+PrimaryVisit.belongsTo(Land, {
+  foreignKey: "land_id",
+  as: "primaryVisitLand"
+});
+
+PrimaryVisit.belongsTo(Employee, {
+  foreignKey: "employee_id",
+  as: "primaryVisitEmployee"
+});
+
+PrimaryVisit.belongsTo(Buyer, {
+  foreignKey: "user_id",
+  as: "primaryVisitBuyer"
+});
+
+Shortlisting.belongsTo(Land, {
+  foreignKey: "land_id",
+  as: "shortlistLand"
+})
+
+Shortlisting.belongsTo(Buyer, {
+  foreignKey: "user_id",
+  as: "shortlistBuyer"
+})
+
+Cart.belongsTo(Land, {
+  foreignKey: "land_id",
+  as: "cartLand"
+})
+
+Cart.belongsTo(Buyer, {
+  foreignKey: "user_id",
+  as: "cartBuyer"
+})
+
+FinalList.belongsTo(Land, {
+  foreignKey: "land_id",
+  as: "finalizeLand"
+})
+
+FinalList.belongsTo(Buyer, {
+  foreignKey: "user_id",
+  as: "finalizeBuyer"
+})
+
+Payment.belongsTo(Land, {
+  foreignKey: "land_id",
+  as: "paymentLands"
+})
+
+Payment.belongsTo(Buyer, {
+  foreignKey: "user_id",
+  as: "paymentBuyers"
+})
+
+WishList.belongsTo(Land, {
+  foreignKey: "land_id",
+  as: "wishListLands"
+})
+
+WishList.belongsTo(Buyer, {
+  foreignKey: "user_id",
+  as: "wishListBuyers"
+})
+
 Village.belongsTo(Mandal, {
   foreignKey: "mandal_id",
   as: "mandal",
+});
+
+AssignedVillage.belongsTo(Employee, {
+  foreignKey: "assigned_employee_id",
+  as: "assigned"
 });
 
 Land.belongsTo(Employee, {
@@ -131,5 +298,13 @@ export {
   State,
   District,
   Village,
-  Mandal
+  Mandal,
+  AssignedVillage,
+  PrimaryVisit,
+  Availibility,
+  Shortlisting,
+  FinalList,
+  WishList,
+  Payment,
+  Cart
 };

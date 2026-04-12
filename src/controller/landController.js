@@ -1,8 +1,5 @@
 import * as landService from "../service/landService.js";
 
-/* =========================
-   CREATE LAND
-========================= */
 export const createLand = async (req, res) => {
   try {
     const employeeId = req.user?.id;
@@ -22,9 +19,6 @@ export const createLand = async (req, res) => {
   }
 };
 
-/* =========================
-   GET ALL LANDS
-========================= */
 export const getAllLands = async (req, res) => {
   try {
     const lands = await landService.getAllLands();
@@ -41,9 +35,6 @@ export const getAllLands = async (req, res) => {
   }
 };
 
-/* =========================
-   GET LAND BY ID
-========================= */
 export const getLandById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -62,9 +53,6 @@ export const getLandById = async (req, res) => {
   }
 };
 
-/* =========================
-   UPDATE LAND
-========================= */
 export const updateLand = async (req, res) => {
   try {
     const { id } = req.params;
@@ -89,9 +77,6 @@ export const updateLand = async (req, res) => {
   }
 };
 
-/* =========================
-   DELETE LAND
-========================= */
 export const deleteLand = async (req, res) => {
   try {
     const { id } = req.params;
@@ -110,9 +95,6 @@ export const deleteLand = async (req, res) => {
   }
 };
 
-/* =========================
-   FILTER LANDS
-========================= */
 export const filterLands = async (req, res) => {
   try {
     const filters = req.query;

@@ -35,6 +35,9 @@ const Employee= sequelize.define("Employee", {
     about: {
         type: DataTypes.TEXT
     },
+    photo: {
+        type: DataTypes.TEXT
+    },
     status: {
         type: DataTypes.ENUM('ACTIVE', 'DEACTIVE'),
         defaultValue: 'ACTIVE'

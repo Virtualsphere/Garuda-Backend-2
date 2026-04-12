@@ -4,12 +4,14 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import {
   Land,
-  FarmerDetails,
-  LandDetails,
-  LandGPS,
-  LandMedia,
-  LandDocuments,
+  WishList,
+  FinalList,
+  Shortlisting,
+  PrimaryVisit,
   Employee,
+  Payment,
+  Cart,
+  Availibility
 } from "../model/associationModel.js";
 
 const ACCESS_TOKEN_SECRET = process.env.JWT_SECRET;
@@ -17,9 +19,6 @@ const REFRESH_TOKEN_SECRET = process.env.REFRESH_SECRET;
 const ACCESS_TOKEN_EXPIRY = "60m";
 const REFRESH_TOKEN_EXPIRY_DAYS = 60;
 
-/* =========================
-   GENERATE TOKENS
-========================= */
 
 const generateAccessToken = (buyer) => {
   return jwt.sign(
@@ -48,9 +47,6 @@ const generateRefreshToken = async (buyer) => {
   return token;
 };
 
-/* =========================
-   SIGNUP
-========================= */
 
 export const signup = async (data) => {
   const { name, email, phone, password, photo } = data;
@@ -71,9 +67,6 @@ export const signup = async (data) => {
   return buyer;
 };
 
-/* =========================
-   LOGIN
-========================= */
 
 export const login = async ({ email, password }) => {
   const buyer = await Buyer.findOne({ where: { email } });
@@ -93,9 +86,9 @@ export const login = async ({ email, password }) => {
   };
 };
 
-/* =========================
-   REFRESH TOKEN
-========================= */
+export const getUserById= async (id)=>{
+  return await Buyer.findByPk(id);
+}
 
 export const refreshAccessToken = async (token) => {
   const storedToken = await RefreshToken.findOne({
@@ -118,10 +111,6 @@ export const refreshAccessToken = async (token) => {
   return { accessToken: newAccessToken };
 };
 
-/* =========================
-   UPDATE BUYER
-========================= */
-
 export const updateBuyer = async (id, data) => {
   const buyer = await Buyer.findByPk(id);
   if (!buyer) throw new Error("Buyer not found");
@@ -129,10 +118,6 @@ export const updateBuyer = async (id, data) => {
   await buyer.update(data);
   return buyer;
 };
-
-/* =========================
-   DELETE BUYER
-========================= */
 
 export const deleteBuyer = async (id) => {
   const buyer = await Buyer.findByPk(id);
@@ -142,10 +127,6 @@ export const deleteBuyer = async (id) => {
   return true;
 };
 
-/* =========================
-   LOGOUT (DELETE TOKEN)
-========================= */
-
 export const logout = async (refreshToken) => {
   await RefreshToken.destroy({
     where: { token: refreshToken },
@@ -154,3 +135,571 @@ export const logout = async (refreshToken) => {
   return true;
 };
 
+export const createWishList = async (userId, data) => {
+  let { land_id } = data;
+
+  if (!Array.isArray(land_id)) {
+    land_id = [land_id];
+  }
+
+  land_id = [...new Set(land_id)];
+
+  const existing = await WishList.findAll({
+    where: {
+      user_id: userId,
+      land_id,
+    },
+  });
+
+  const existingLandIds = existing.map((item) => item.land_id);
+
+  const newLandIds = land_id.filter(
+    (id) => !existingLandIds.includes(id)
+  );
+
+  const payload = newLandIds.map((id) => ({
+    user_id: userId,
+    land_id: id,
+  }));
+
+  const result = await WishList.bulkCreate(payload);
+
+  return result;
+};
+
+export const getWishListByUser = async (userId) => {
+  return await WishList.findAll({
+    where: { user_id: userId },
+    include: [
+      {
+        model: Land,
+        as: "wishListLands",
+      },
+    ],
+    order: [["created_at", "DESC"]],
+  });
+};
+
+export const deleteWishList = async (userId, landIds) => {
+  if (!Array.isArray(landIds)) {
+    landIds = [landIds];
+  }
+
+  await WishList.destroy({
+    where: {
+      user_id: userId,
+      land_id: landIds,
+    },
+  });
+
+  return true;
+};
+
+export const deleteWishListById = async (id) => {
+  await WishList.destroy({
+    where: {
+      id: id,
+    },
+  });
+
+  return true;
+};
+
+export const isWishListed = async (userId, landId) => {
+  const exists = await WishList.findOne({
+    where: {
+      user_id: userId,
+      land_id: landId,
+    },
+  });
+
+  return !!exists;
+};
+
+export const createAvailibility = async (userId, data) => {
+  let { land_id } = data;
+
+  if (!land_id) {
+    throw new Error("land_id is required");
+  }
+
+  if (!Array.isArray(land_id)) {
+    land_id = [land_id];
+  }
+
+  land_id = [...new Set(land_id)];
+
+  const existing = await Availibility.findAll({
+    where: {
+      user_id: userId,
+      land_id,
+    },
+  });
+
+  const existingLandIds = existing.map((item) => item.land_id);
+
+  const newLandIds = land_id.filter(
+    (id) => !existingLandIds.includes(id)
+  );
+
+  const payload = newLandIds.map((id) => ({
+    user_id: userId,
+    land_id: id,
+    status: "available",
+  }));
+
+  const result = await Availibility.bulkCreate(payload);
+
+  return result;
+};
+
+export const getAvailibilityByUser = async (userId) => {
+  return await Availibility.findAll({
+    where: { user_id: userId },
+    include: [
+      {
+        model: Land,
+        as: "availibilityLand",
+      },
+    ],
+    order: [["created_at", "DESC"]],
+  });
+};
+
+export const getAvailibilityByLand = async (userId, landId) => {
+  const result = await Availibility.findOne({
+    where: {
+      user_id: userId,
+      land_id: landId,
+    },
+  });
+
+  if (!result) {
+    throw new Error("Not found");
+  }
+
+  return result;
+};
+
+export const updateAvailibility = async (userId, landId, status) => {
+  const record = await Availibility.findOne({
+    where: {
+      user_id: userId,
+      land_id: landId,
+    },
+  });
+
+  if (!record) {
+    throw new Error("Availibility not found");
+  }
+
+  await record.update({ status });
+
+  return record;
+};
+
+export const deleteAvailibility = async (userId, landId) => {
+  const record = await Availibility.findOne({
+    where: {
+      user_id: userId,
+      land_id: landId,
+    },
+  });
+
+  if (!record) {
+    throw new Error("Availibility not found");
+  }
+
+  await record.destroy();
+
+  return true;
+};
+
+export const createCart = async (userId, data) => {
+  let { land_id } = data;
+
+  if (!Array.isArray(land_id)) {
+    land_id = [land_id];
+  }
+
+  land_id = [...new Set(land_id)];
+
+  const existing = await Cart.findAll({
+    where: {
+      user_id: userId,
+      land_id,
+    },
+  });
+
+  const existingLandIds = existing.map((item) => item.land_id);
+
+  const newLandIds = land_id.filter(
+    (id) => !existingLandIds.includes(id)
+  );
+
+  const payload = newLandIds.map((id) => ({
+    user_id: userId,
+    land_id: id,
+  }));
+
+  const result = await Cart.bulkCreate(payload);
+
+  return result;
+};
+
+export const getCartByUser = async (userId) => {
+  return await Cart.findAll({
+    where: { user_id: userId },
+    include: [
+      {
+        model: Land,
+        as: "cartLand",
+      },
+    ],
+    order: [["created_at", "DESC"]],
+  });
+};
+
+export const deleteCart = async (userId, landIds) => {
+  if (!Array.isArray(landIds)) {
+    landIds = [landIds];
+  }
+
+  await Cart.destroy({
+    where: {
+      user_id: userId,
+      land_id: landIds,
+    },
+  });
+
+  return true;
+};
+
+export const createPrimaryVisit = async (userId, data) => {
+  let { land_id, visit_date, time, meeting_status } = data;
+
+  if (!land_id) {
+    throw new Error("land_id is required");
+  }
+
+  if (!Array.isArray(land_id)) {
+    land_id = [land_id];
+  }
+
+  land_id = [...new Set(land_id)];
+
+  const existing = await PrimaryVisit.findAll({
+    where: {
+      user_id: userId,
+      land_id,
+    },
+  });
+
+  const existingLandIds = existing.map((item) => item.land_id);
+
+  const newLandIds = land_id.filter(
+    (id) => !existingLandIds.includes(id)
+  );
+
+  const payload = newLandIds.map((id) => ({
+    user_id: userId,
+    land_id: id,
+    visit_date,
+    time,
+    meeting_status,
+  }));
+
+  const result = await PrimaryVisit.bulkCreate(payload);
+
+  return result;
+};
+
+export const getPrimaryVisitsByUser = async (userId) => {
+  return await PrimaryVisit.findAll({
+    where: { user_id: userId },
+    include: [
+      { model: Land, as: "primaryVisitLand" },
+      { model: Employee, as: "primaryVisitEmployee" },
+    ],
+    order: [["created_at", "DESC"]],
+  });
+};
+
+export const getPrimaryVisitById = async (id) => {
+  const visit = await PrimaryVisit.findByPk(id, {
+    include: [
+      { model: Land, as: "primaryVisitLand" },
+      { model: Employee, as: "primaryVisitEmployee" },
+    ],
+  });
+
+  if (!visit) throw new Error("Primary visit not found");
+
+  return visit;
+};
+
+export const deletePrimaryVisit = async (visitId) => {
+  const visit = await PrimaryVisit.findByPk(visitId);
+
+  if (!visit) {
+    throw new Error("Primary visit not found");
+  }
+
+  await visit.destroy();
+
+  return true;
+};
+
+export const updatePrimaryVisitByLand = async (userId, landId, data) => {
+  const visit = await PrimaryVisit.findOne({
+    where: {
+      user_id: userId,
+      land_id: landId,
+    },
+  });
+
+  if (!visit) throw new Error("Primary visit not found");
+
+  const { employee_id, id, ...allowedData } = data;
+
+  await visit.update(allowedData);
+
+  return visit;
+};
+
+export const createShortlisting = async (userId, data) => {
+  const { land_id } = data;
+
+  if (!land_id) {
+    throw new Error("land_id is required");
+  }
+
+  const existing = await Shortlisting.findOne({
+    where: {
+      user_id: userId,
+      land_id,
+    },
+  });
+
+  if (existing) {
+    throw new Error("Already shortlisted");
+  }
+
+  return await Shortlisting.create({
+    user_id: userId,
+    land_id,
+  });
+};
+
+export const getShortlistingByUser = async (userId) => {
+  return await Shortlisting.findAll({
+    where: { user_id: userId },
+    include: [
+      {
+        model: Land,
+        as: "shortlistLand",
+      },
+    ],
+    order: [["created_at", "DESC"]],
+  });
+};
+
+export const deleteShortlisting = async (userId, landId) => {
+  const record = await Shortlisting.findOne({
+    where: {
+      user_id: userId,
+      land_id: landId,
+    },
+  });
+
+  if (!record) {
+    throw new Error("Shortlisting not found");
+  }
+
+  await record.destroy();
+
+  return true;
+};
+
+export const isShortlisted = async (userId, landId) => {
+  const exists = await Shortlisting.findOne({
+    where: {
+      user_id: userId,
+      land_id: landId,
+    },
+  });
+
+  return !!exists;
+};
+
+export const createFinalList = async (userId, data) => {
+  const { land_id } = data;
+
+  if (!land_id) {
+    throw new Error("land_id is required");
+  }
+
+  const existing = await FinalList.findOne({
+    where: {
+      user_id: userId,
+      land_id,
+    },
+  });
+
+  if (existing) {
+    throw new Error("Already in final list");
+  }
+
+  return await FinalList.create({
+    user_id: userId,
+    land_id,
+  });
+};
+
+export const getFinalListByUser = async (userId) => {
+  return await FinalList.findAll({
+    where: { user_id: userId },
+    include: [
+      {
+        model: Land,
+        as: "finalizeLand",
+      },
+    ],
+    order: [["created_at", "DESC"]],
+  });
+};
+
+export const deleteFinalList = async (userId, landId) => {
+  const record = await FinalList.findOne({
+    where: {
+      user_id: userId,
+      land_id: landId,
+    },
+  });
+
+  if (!record) {
+    throw new Error("Final list item not found");
+  }
+
+  await record.destroy();
+
+  return true;
+};
+
+
+export const isFinalListed = async (userId, landId) => {
+  const exists = await FinalList.findOne({
+    where: {
+      user_id: userId,
+      land_id: landId,
+    },
+  });
+
+  return !!exists;
+};
+
+export const createPayment = async (userId, data) => {
+  let { land_id, amount, payment_status } = data;
+
+  if (!land_id || !amount) {
+    throw new Error("land_id and amount are required");
+  }
+
+  if (!Array.isArray(land_id)) {
+    land_id = [land_id];
+  }
+
+  land_id = [...new Set(land_id)];
+
+  const existing = await Payment.findAll({
+    where: {
+      user_id: userId,
+      land_id,
+    },
+  });
+
+  const existingLandIds = existing.map((item) => item.land_id);
+
+  const newLandIds = land_id.filter(
+    (id) => !existingLandIds.includes(id)
+  );
+
+  const payload = newLandIds.map((id) => ({
+    user_id: userId,
+    land_id: id,
+    amount,
+    payment_status: payment_status || "pending",
+  }));
+
+  const result = await Payment.bulkCreate(payload);
+
+  return result;
+};
+
+export const getPaymentsByUser = async (userId) => {
+  return await Payment.findAll({
+    where: { user_id: userId },
+    include: [
+      {
+        model: Land,
+        as: "paymentLands",
+      },
+    ],
+    order: [["created_at", "DESC"]],
+  });
+};
+
+export const getPaymentByLand = async (userId, landId) => {
+  const payment = await Payment.findOne({
+    where: {
+      user_id: userId,
+      land_id: landId,
+    },
+    include: [
+      {
+        model: Land,
+        as: "paymentLands",
+      },
+    ],
+  });
+
+  if (!payment) {
+    throw new Error("Payment not found");
+  }
+
+  return payment;
+};
+
+export const updatePayment = async (userId, landId, data) => {
+  const payment = await Payment.findOne({
+    where: {
+      user_id: userId,
+      land_id: landId,
+    },
+  });
+
+  if (!payment) {
+    throw new Error("Payment not found");
+  }
+
+  const { user_id, land_id: lid, id, ...allowedData } = data;
+
+  await payment.update(allowedData);
+
+  return payment;
+};
+
+export const deletePayment = async (userId, landIds) => {
+  if (!Array.isArray(landIds)) {
+    landIds = [landIds];
+  }
+
+  await Payment.destroy({
+    where: {
+      user_id: userId,
+      land_id: landIds,
+    },
+  });
+
+  return true;
+};

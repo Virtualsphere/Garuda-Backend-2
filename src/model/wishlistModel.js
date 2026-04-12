@@ -1,7 +1,7 @@
 import { DataTypes } from "sequelize";
 import sequelize from "../db/db.js";
 
-const Land = sequelize.define("Land", {
+const WishList = sequelize.define("WishList", {
   id: {
     type: DataTypes.INTEGER,
     primaryKey: true,
@@ -14,10 +14,10 @@ const Land = sequelize.define("Land", {
     type: DataTypes.INTEGER
   }
 }, {
-  tableName: "land",
+  tableName: "wish_list",
   timestamps: true,
   createdAt: "created_at",
   updatedAt: "updated_at",
 });
 
-export default Land;
+export default WishList;

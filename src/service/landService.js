@@ -6,13 +6,10 @@ import {
   LandMedia,
   LandDocuments,
   Employee,
+  AssignedVillage
 } from "../model/associationModel.js";
 
 import sequelize from "../db/db.js";
-
-/* =====================================================
-   CREATE LAND (FULL DATA)
-===================================================== */
 
 export const createLand = async (data, employeeId) => {
   const t = await sequelize.transaction();
@@ -89,10 +86,6 @@ export const createLand = async (data, employeeId) => {
   }
 };
 
-/* =====================================================
-   GET ALL LANDS
-===================================================== */
-
 export const getAllLands = async () => {
   return await Land.findAll({
     include: [
@@ -120,10 +113,6 @@ export const getAllLandsForUser= async ()=>{
   });
 }
 
-/* =====================================================
-   GET LAND BY ID
-===================================================== */
-
 export const getLandById = async (id) => {
   const land = await Land.findByPk(id, {
     include: [
@@ -141,10 +130,6 @@ export const getLandById = async (id) => {
 
   return land;
 };
-
-/* =====================================================
-   UPDATE LAND (WITH CHILD TABLES)
-===================================================== */
 
 export const updateLand = async (id, data, employeeId) => {
   const t = await sequelize.transaction();
@@ -166,7 +151,7 @@ export const updateLand = async (id, data, employeeId) => {
     await land.update(
       {
         ...landData,
-        verified_by: employeeId, // optional use
+        verified_by: employeeId,
       },
       { transaction: t }
     );
@@ -246,10 +231,6 @@ export const updateLand = async (id, data, employeeId) => {
   }
 };
 
-/* =====================================================
-   DELETE LAND
-===================================================== */
-
 export const deleteLand = async (id) => {
   const land = await Land.findByPk(id);
   if (!land) throw new Error("Land not found");
@@ -258,10 +239,6 @@ export const deleteLand = async (id) => {
 
   return true;
 };
-
-/* =====================================================
-   FILTER (OPTIONAL ADVANCED)
-===================================================== */
 
 export const filterLands = async (filters) => {
   const where = {};
@@ -279,3 +256,120 @@ export const filterLands = async (filters) => {
     ],
   });
 };
+
+export const createAssignedVillage = async (target, assignedStatus, assignedEmployeeId, village, mandal, physicalVerified) => {
+  try {
+    const assignedVillage = await AssignedVillage.create({ target, assigned_status: assignedStatus, village, mandal, assigned_employee_id: assignedEmployeeId, physical_verified: physicalVerified });
+    return assignedVillage;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getAllAssignedVillages = async () => {
+  return await AssignedVillage.findAll({
+    include: [
+      {
+        model: Employee,
+        as: "assigned",
+      },
+    ],
+    order: [["created_at", "DESC"]],
+  });
+};
+
+export const getAssignedVillageById = async (id) => {
+  const assignedVillage = await AssignedVillage.findByPk(id, {
+    include: [
+      {
+        model: Employee,
+        as: "assigned",
+      },
+    ],
+  });
+
+  if (!assignedVillage) {
+    throw new Error("AssignedVillage not found");
+  }
+
+  return assignedVillage;
+};
+
+export const updateAssignedVillage = async (data) => {
+  const t = await sequelize.transaction();
+
+  try {
+    const assignedVillage = await AssignedVillage.findByPk(data.id);
+
+    if (!assignedVillage) {
+      throw new Error("AssignedVillage not found");
+    }
+
+    await assignedVillage.update(data, { transaction: t });
+
+    await t.commit();
+
+    return await getAssignedVillageById(id);
+  } catch (error) {
+    await t.rollback();
+    throw error;
+  }
+};
+
+export const deleteAssignedVillage = async (id) => {
+  const assignedVillage = await AssignedVillage.findByPk(id);
+
+  if (!assignedVillage) {
+    throw new Error("AssignedVillage not found");
+  }
+
+  await assignedVillage.destroy();
+
+  return true;
+};
+
+export const getAssignedVillagesByEmployee = async (employeeId) => {
+  const assignedVillage = await AssignedVillage.findAll({
+    where: { assigned_employee_id: employeeId, assigned_status: "ongoing" },
+    include: [
+      {
+        model: Employee,
+        as: "assigned",
+      },
+    ],
+    order: [["created_at", "DESC"]],
+  });
+
+  if (!assignedVillage) {
+    throw new Error("AssignedVillage not found or not ongoing");
+  }
+
+  const data = assignedVillage.toJSON();
+
+  const getCount = (field) => {
+    if (!field) return 0;
+
+    if (Array.isArray(field)) return field.length;
+
+    if (typeof field === "object") return Object.keys(field).length;
+
+    return 0;
+  };
+
+  return {
+    ...data,
+
+    land_created_ids: data.land_created || [],
+    land_created_count: getCount(data.land_created),
+
+    complete_details_ids: data.complete_details || [],
+    complete_details_count: getCount(data.complete_details),
+
+    verified_ids: data.verified || [],
+    verified_count: getCount(data.verified),
+
+    physical_verified_ids: data.physical_verified || [],
+    physical_verified_count: getCount(data.physical_verified),
+  };
+};
+

@@ -43,6 +43,10 @@ const Land = sequelize.define("Land", {
   form_status: {
     type: DataTypes.ENUM('draft', 'complete', 'review'),
     defaultValue: 'complete'
+  },
+  availablity: {
+    type: DataTypes.ENUM('sold', 'available'),
+    defaultValue: 'available'
   }
 }, {
   tableName: "land",
