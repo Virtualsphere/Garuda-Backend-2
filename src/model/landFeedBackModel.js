@@ -7,13 +7,16 @@ const LandFeedBack= sequelize.define("LandFeedBack", {
         primaryKey: true,
         autoIncrement: true
     },
-    land_id: {
-        type: DataTypes.INTEGER
-    },
     employee_id: {
         type: DataTypes.INTEGER
     },
-    feedback: {
+    user_id: {
+        type: DataTypes.INTEGER
+    },
+    buyer_aggrement: {
+        type: DataTypes.TEXT
+    },
+    land_feedback: {
         type: DataTypes.TEXT
     }
 },{
