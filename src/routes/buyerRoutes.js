@@ -233,6 +233,26 @@ router.get("/buyer/land", buyerController.getAllLandsForUser);
 
 /**
  * @swagger
+ * /api/buyer/land/{id}:
+ *   get:
+ *     summary: Get land by ID
+ *     tags: [Buyer]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Land details
+ *       404:
+ *         description: Land not found
+ */
+router.get("/buyer/land/:id", buyerController.getLandByIdForUser);
+
+/**
+ * @swagger
  * /api/buyer/wishlist:
  *   post:
  *     summary: Add land(s) to wishlist (JWT required)

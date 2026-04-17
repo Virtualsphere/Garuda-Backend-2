@@ -154,6 +154,23 @@ export const getAllLandsForUser= async (req, res)=>{
   }
 }
 
+export const getLandByIdForUser= async (req, res)=>{
+  try {
+    const { id } = req.params;
+    const lands = await landService.getLandByIdForUser(id);
+  
+    res.status(200).json({
+      success: true,
+      data: lands,
+    });
+  } catch (error) {
+      res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+}
+
 export const createWishList= async (req, res)=>{
   try {
     const userId= req.user?.id;

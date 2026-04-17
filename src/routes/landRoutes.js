@@ -627,4 +627,29 @@ router.put("/land/:id", verifyToken, landController.updateLand);
  */
 router.delete("/land/:id", verifyToken, landController.deleteLand);
 
+/**
+ * @swagger
+ * /api/land/status/{status}:
+ *   get:
+ *     summary: Get lands by form status (JWT required)
+ *     tags: [Land]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: status
+ *         required: true
+ *         schema:
+ *           type: string
+ *           enum: [draft, complete, review]
+ *     responses:
+ *       200:
+ *         description: Lands fetched by status
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: No lands found
+ */
+router.get("/land/status/:status", verifyToken, landController.getLandByStatus);
+
 export default router;

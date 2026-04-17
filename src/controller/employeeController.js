@@ -1,8 +1,5 @@
 import * as employeeService from "../service/employeeService.js";
 
-/* =========================
-   SIGNUP
-========================= */
 export const signup = async (req, res) => {
   try {
     const employee = await employeeService.signup(req.body);
@@ -20,9 +17,6 @@ export const signup = async (req, res) => {
   }
 };
 
-/* =========================
-   LOGIN
-========================= */
 export const login = async (req, res) => {
   try {
     const { employee, accessToken, refreshToken } =
@@ -43,9 +37,6 @@ export const login = async (req, res) => {
   }
 };
 
-/* =========================
-   REFRESH TOKEN
-========================= */
 export const refreshToken = async (req, res) => {
   try {
     const { refreshToken } = req.body;
@@ -71,15 +62,86 @@ export const refreshToken = async (req, res) => {
   }
 };
 
-/* =========================
-   UPDATE EMPLOYEE
-========================= */
+export const getEmployeeProfile = async (req, res) => {
+  try {
+    const id = req.user?.id;
+
+    if (!id) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized: Employee ID not found",
+      });
+    }
+
+    const profile = await employeeService.getEmployeeProfile(id);
+
+    res.status(200).json({
+      success: true,
+      message: "Employee profile fetched successfully",
+      data: profile,
+    });
+  } catch (error) {
+    res.status(404).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const getEmployeeById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const employee = await employeeService.getEmployeeById(id);
+
+    res.status(200).json({
+      success: true,
+      message: "Employee fetched successfully",
+      data: employee,
+    });
+  } catch (error) {
+    res.status(404).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const getAllEmployees = async (req, res) => {
+  try {
+    const employees = await employeeService.getAllEmployees();
+
+    res.status(200).json({
+      success: true,
+      message: "Employees fetched successfully",
+      count: employees.length,
+      data: employees,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 export const updateEmployee = async (req, res) => {
   try {
-    const { id } = req.user?.id;
+    const { id } = req.params;
+    const employeeId = req.user?.id;
+
+    // Allow users to update their own profile or admins to update any
+    const targetId = id || employeeId;
+
+    if (!targetId) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized: Employee ID not found",
+      });
+    }
 
     const updatedEmployee = await employeeService.updateEmployee(
-      id,
+      targetId,
       req.body
     );
 
@@ -96,14 +158,21 @@ export const updateEmployee = async (req, res) => {
   }
 };
 
-/* =========================
-   DELETE EMPLOYEE
-========================= */
 export const deleteEmployee = async (req, res) => {
   try {
-    const id = req.user?.id;
+    const { id } = req.params;
+    const employeeId = req.user?.id;
 
-    await employeeService.deleteEmployee(id); // (your service name)
+    const targetId = id || employeeId;
+
+    if (!targetId) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized: Employee ID not found",
+      });
+    }
+
+    await employeeService.deleteEmployee(targetId);
 
     res.status(200).json({
       success: true,
@@ -117,9 +186,6 @@ export const deleteEmployee = async (req, res) => {
   }
 };
 
-/* =========================
-   LOGOUT
-========================= */
 export const logout = async (req, res) => {
   try {
     const { refreshToken } = req.body;
@@ -139,6 +205,62 @@ export const logout = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const updateSalaryPackage = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { new_land_price, verification_price, buyer_visit_price, referal_price } = req.body;
+
+    const updatedEmployee = await employeeService.updateSalaryPackage(
+      id,
+      {
+        new_land_price,
+        verification_price,
+        buyer_visit_price,
+        referal_price
+      }
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Salary package updated successfully",
+      data: updatedEmployee,
+    });
+  } catch (error) {
+    res.status(404).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const updateWorkLocation = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { work_state, work_district, work_mandal, work_village } = req.body;
+
+    const updatedEmployee = await employeeService.updateWorkLocation(
+      id,
+      {
+        work_state,
+        work_district,
+        work_mandal,
+        work_village
+      }
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Work location updated successfully",
+      data: updatedEmployee,
+    });
+  } catch (error) {
+    res.status(404).json({
       success: false,
       message: error.message,
     });

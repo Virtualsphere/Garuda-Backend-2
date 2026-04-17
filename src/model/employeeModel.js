@@ -84,9 +84,18 @@ const Employee= sequelize.define("Employee", {
     work_village: {
         type: DataTypes.JSONB
     },
-    salary_package: {
-        type: DataTypes.STRING
-    }
+    new_land_price: {
+        type: DataTypes.DOUBLE
+    },
+    verification_price: {
+        type: DataTypes.DOUBLE
+    },
+    buyer_visit_price: {
+        type: DataTypes.DOUBLE
+    },
+    referal_price: {
+        type: DataTypes.DOUBLE
+    },
 },{
   tableName: "employees",
   timestamps: true,

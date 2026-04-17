@@ -56,9 +56,31 @@ export const getLandById = async (req, res) => {
 export const updateLand = async (req, res) => {
   try {
     const { id } = req.params;
-    const employeeId = req.user?.id; // verifier
 
     const updatedLand = await landService.updateLand(
+      id,
+      req.body
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Land updated successfully",
+      data: updatedLand,
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const updateLandForVerify = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const employeeId = req.user?.id;
+
+    const updatedLand = await landService.updateLandForVerify(
       id,
       req.body,
       employeeId
@@ -107,6 +129,26 @@ export const filterLands = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const getLandByStatus = async (req, res) => {
+  try {
+    const userId = req.user?.id;
+
+    const { status }= req.params;
+
+    const land = await landService.getLandById(userId, status);
+
+    res.status(200).json({
+      success: true,
+      data: land,
+    });
+  } catch (error) {
+    res.status(404).json({
       success: false,
       message: error.message,
     });

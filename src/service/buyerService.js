@@ -11,7 +11,8 @@ import {
   Employee,
   Payment,
   Cart,
-  Availibility
+  Availibility,
+  LandFeedBack
 } from "../model/associationModel.js";
 
 const ACCESS_TOKEN_SECRET = process.env.JWT_SECRET;
@@ -174,6 +175,10 @@ export const getWishListByUser = async (userId) => {
       {
         model: Land,
         as: "wishListLands",
+        include: [
+          { model: LandMedia, as: "media" },
+          { model: LandDetails, as: "landDetails" },
+        ],
       },
     ],
     order: [["created_at", "DESC"]],
@@ -260,6 +265,10 @@ export const getAvailibilityByUser = async (userId) => {
       {
         model: Land,
         as: "availibilityLand",
+        include: [
+          { model: LandMedia, as: "media" },
+          { model: LandDetails, as: "landDetails" },
+        ],
       },
     ],
     order: [["created_at", "DESC"]],
@@ -354,6 +363,10 @@ export const getCartByUser = async (userId) => {
       {
         model: Land,
         as: "cartLand",
+        include: [
+          { model: LandMedia, as: "media" },
+          { model: LandDetails, as: "landDetails" },
+        ],
       },
     ],
     order: [["created_at", "DESC"]],
@@ -418,8 +431,18 @@ export const getPrimaryVisitsByUser = async (userId) => {
   return await PrimaryVisit.findAll({
     where: { user_id: userId },
     include: [
-      { model: Land, as: "primaryVisitLand" },
-      { model: Employee, as: "primaryVisitEmployee" },
+      {
+        model: Land,
+        as: "primaryVisitLand",
+        include: [
+          { model: LandMedia, as: "media" },
+          { model: LandDetails, as: "landDetails" },
+        ],
+      },
+      {
+        model: Employee,
+        as: "primaryVisitEmployee",
+      },
     ],
     order: [["created_at", "DESC"]],
   });
@@ -450,7 +473,63 @@ export const deletePrimaryVisit = async (visitId) => {
   return true;
 };
 
-export const updatePrimaryVisitByLand = async (userId, landId, data) => {
+export const updatePrimaryVisitByEmployee = async (
+  landId,
+  employeeId,
+  data
+) => {
+  const {
+    user_id,
+    meeting_status,
+    land_visit_photos,
+    fee_receipt,
+    buyer_visit,
+    visit_date,
+    time,
+  } = data;
+
+  const visit = await PrimaryVisit.findOne({
+    where: {
+      user_id,
+      land_id: landId,
+      employee_id: employeeId,
+    },
+  });
+
+  if (!visit) {
+    throw new Error("Primary visit not found or not assigned to you");
+  }
+
+  const updateData = {};
+
+  if (meeting_status) updateData.meeting_status = meeting_status;
+  if (visit_date) updateData.visit_date = visit_date;
+  if (time) updateData.time = time;
+
+  if (land_visit_photos) updateData.land_visit_photos = land_visit_photos;
+
+  if (fee_receipt) {
+    // expected structure
+    // { amount: 1000, receipt_url: "..." }
+    updateData.fee_receipt = fee_receipt;
+  }
+
+  if (buyer_visit) {
+    // expected structure
+    // { sheet_url: "..." }
+    updateData.buyer_visit = buyer_visit;
+  }
+
+  await visit.update(updateData);
+
+  return visit;
+};
+
+export const updatePrimaryVisitByAdmin = async (
+  userId,
+  landId,
+  employeeId
+) => {
   const visit = await PrimaryVisit.findOne({
     where: {
       user_id: userId,
@@ -458,13 +537,39 @@ export const updatePrimaryVisitByLand = async (userId, landId, data) => {
     },
   });
 
-  if (!visit) throw new Error("Primary visit not found");
+  if (!visit) {
+    throw new Error("Primary visit not found");
+  }
 
-  const { employee_id, id, ...allowedData } = data;
-
-  await visit.update(allowedData);
+  await visit.update({
+    employee_id: employeeId,
+  });
 
   return visit;
+};
+
+export const createLandFeedback = async (employeeId, data) => {
+  const { user_id, buyer_agreement, lands } = data;
+
+  if (!user_id) throw new Error("user_id is required");
+  if (!lands || !Array.isArray(lands)) {
+    throw new Error("lands must be an array");
+  }
+
+  for (const item of lands) {
+    if (!item.land_id) {
+      throw new Error("Each land must have land_id");
+    }
+  }
+
+  const feedback = await LandFeedBack.create({
+    employee_id: employeeId,
+    user_id,
+    buyer_aggrement: buyer_agreement,
+    land_feedback: lands,
+  });
+
+  return feedback;
 };
 
 export const createShortlisting = async (userId, data) => {
@@ -498,6 +603,10 @@ export const getShortlistingByUser = async (userId) => {
       {
         model: Land,
         as: "shortlistLand",
+        include: [
+          { model: LandMedia, as: "media" },
+          { model: LandDetails, as: "landDetails" },
+        ],
       },
     ],
     order: [["created_at", "DESC"]],
@@ -563,6 +672,10 @@ export const getFinalListByUser = async (userId) => {
       {
         model: Land,
         as: "finalizeLand",
+        include: [
+          { model: LandMedia, as: "media" },
+          { model: LandDetails, as: "landDetails" },
+        ],
       },
     ],
     order: [["created_at", "DESC"]],
@@ -585,7 +698,6 @@ export const deleteFinalList = async (userId, landId) => {
 
   return true;
 };
-
 
 export const isFinalListed = async (userId, landId) => {
   const exists = await FinalList.findOne({

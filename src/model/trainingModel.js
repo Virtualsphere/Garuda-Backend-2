@@ -1,38 +1,39 @@
 import { DataTypes } from "sequelize";
 import sequelize from "../db/db.js";
 
-const Agent= sequelize.define("Agent", {
+const Training= sequelize.define("Training", {
     id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true
     },
-    state: {
+    land_verification: {
+        type: DataTypes.STRING,
+        allowNull: false,
+    },
+    new_land_entry: {
         type: DataTypes.STRING
     },
-    district: {
+    buyer_visit_assistant: {
         type: DataTypes.STRING
     },
-    mandal: {
+    session_management: {
         type: DataTypes.STRING
     },
-    village: {
+    path_logging: {
         type: DataTypes.STRING
     },
-    name: {
+    wallet_features: {
         type: DataTypes.STRING
     },
-    phone: {
+    profile_settings: {
         type: DataTypes.STRING
     },
-    refered_by: {
-        type: DataTypes.INTEGER
-    }
 },{
-  tableName: "agent",
+  tableName: "training",
   timestamps: true,
   createdAt: "created_at",
   updatedAt: "updated_at",
 });
 
-export default Agent;
+export default Training;

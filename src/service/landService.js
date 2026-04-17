@@ -6,10 +6,31 @@ import {
   LandMedia,
   LandDocuments,
   Employee,
-  AssignedVillage
+  AssignedVillage,
+  Path
 } from "../model/associationModel.js";
 
+import polyline from "@mapbox/polyline";
+
 import sequelize from "../db/db.js";
+
+const getLandWithFarmerDetails = async (landIds = []) => {
+  if (!landIds || landIds.length === 0) return [];
+
+  const lands = await Land.findAll({
+    where: {
+      id: landIds,
+    },
+    include: [
+      {
+        model: FarmerDetails,
+        as: "farmerDetails",
+      },
+    ],
+  });
+
+  return lands;
+};
 
 export const createLand = async (data, employeeId) => {
   const t = await sequelize.transaction();
@@ -131,7 +152,49 @@ export const getLandById = async (id) => {
   return land;
 };
 
-export const updateLand = async (id, data, employeeId) => {
+export const getLandByIdForUser = async (id) => {
+  const land = await Land.findByPk(id, {
+    include: [
+      { model: Employee, as: "creator" },
+      { model: Employee, as: "verifier" },
+      { model: LandDetails, as: "landDetails" },
+      { model: LandGPS, as: "gps" },
+      { model: LandMedia, as: "media" },
+      { model: LandDocuments, as: "documents" },
+    ],
+  });
+
+  if (!land) throw new Error("Land not found");
+
+  return land;
+};
+
+export const getLandByStatus = async (userId, status) => {
+  const lands = await Land.findAll({
+    where: { 
+      created_by: userId, 
+      form_status: status 
+    },
+    include: [
+      { model: Employee, as: "creator" },
+      { model: Employee, as: "verifier" },
+      { model: FarmerDetails, as: "farmerDetails" },
+      { model: LandDetails, as: "landDetails" },
+      { model: LandGPS, as: "gps" },
+      { model: LandMedia, as: "media" },
+      { model: LandDocuments, as: "documents" },
+    ],
+    order: [["created_at", "DESC"]],
+  });
+
+  if (!lands || lands.length === 0) {
+    throw new Error(`No lands found with status: ${status}`);
+  }
+
+  return lands;
+};
+
+export const updateLandForVerify = async (id, data, employeeId) => {
   const t = await sequelize.transaction();
 
   try {
@@ -147,7 +210,6 @@ export const updateLand = async (id, data, employeeId) => {
       ...landData
     } = data;
 
-    // Update Land
     await land.update(
       {
         ...landData,
@@ -156,7 +218,6 @@ export const updateLand = async (id, data, employeeId) => {
       { transaction: t }
     );
 
-    // Farmer Details
     if (farmerDetails) {
       const existing = await FarmerDetails.findOne({ where: { land_id: id } });
 
@@ -170,7 +231,6 @@ export const updateLand = async (id, data, employeeId) => {
       }
     }
 
-    // Land Details
     if (landDetails) {
       const existing = await LandDetails.findOne({ where: { land_id: id } });
 
@@ -184,7 +244,6 @@ export const updateLand = async (id, data, employeeId) => {
       }
     }
 
-    // GPS
     if (gps) {
       const existing = await LandGPS.findOne({ where: { land_id: id } });
 
@@ -198,7 +257,6 @@ export const updateLand = async (id, data, employeeId) => {
       }
     }
 
-    // Replace Media
     if (media) {
       await LandMedia.destroy({ where: { land_id: id }, transaction: t });
 
@@ -210,7 +268,99 @@ export const updateLand = async (id, data, employeeId) => {
       await LandMedia.bulkCreate(mediaData, { transaction: t });
     }
 
-    // Replace Documents
+    if (documents) {
+      await LandDocuments.destroy({ where: { land_id: id }, transaction: t });
+
+      const docData = documents.map((d) => ({
+        ...d,
+        land_id: id,
+      }));
+
+      await LandDocuments.bulkCreate(docData, { transaction: t });
+    }
+
+    await t.commit();
+
+    return await getLandById(id);
+  } catch (error) {
+    await t.rollback();
+    throw error;
+  }
+};
+
+export const updateLand = async (id, data) => {
+  const t = await sequelize.transaction();
+
+  try {
+    const land = await Land.findByPk(id);
+    if (!land) throw new Error("Land not found");
+
+    const {
+      farmerDetails,
+      landDetails,
+      gps,
+      media,
+      documents,
+      ...landData
+    } = data;
+
+    await land.update(
+      {
+        ...landData,
+      },
+      { transaction: t }
+    );
+
+    if (farmerDetails) {
+      const existing = await FarmerDetails.findOne({ where: { land_id: id } });
+
+      if (existing) {
+        await existing.update(farmerDetails, { transaction: t });
+      } else {
+        await FarmerDetails.create(
+          { ...farmerDetails, land_id: id },
+          { transaction: t }
+        );
+      }
+    }
+
+    if (landDetails) {
+      const existing = await LandDetails.findOne({ where: { land_id: id } });
+
+      if (existing) {
+        await existing.update(landDetails, { transaction: t });
+      } else {
+        await LandDetails.create(
+          { ...landDetails, land_id: id },
+          { transaction: t }
+        );
+      }
+    }
+
+    if (gps) {
+      const existing = await LandGPS.findOne({ where: { land_id: id } });
+
+      if (existing) {
+        await existing.update(gps, { transaction: t });
+      } else {
+        await LandGPS.create(
+          { ...gps, land_id: id },
+          { transaction: t }
+        );
+      }
+    }
+
+    if (media) {
+      await LandMedia.destroy({ where: { land_id: id }, transaction: t });
+
+      const mediaData = media.map((m) => ({
+        ...m,
+        land_id: id,
+      }));
+
+      await LandMedia.bulkCreate(mediaData, { transaction: t });
+    }
+
     if (documents) {
       await LandDocuments.destroy({ where: { land_id: id }, transaction: t });
 
@@ -257,9 +407,28 @@ export const filterLands = async (filters) => {
   });
 };
 
-export const createAssignedVillage = async (target, assignedStatus, assignedEmployeeId, village, mandal, physicalVerified) => {
+export const createAssignedVillage = async (
+  target,
+  assignedStatus,
+  assignedEmployeeId,
+  village,
+  mandal,
+  physicalVerified = []
+) => {
   try {
-    const assignedVillage = await AssignedVillage.create({ target, assigned_status: assignedStatus, village, mandal, assigned_employee_id: assignedEmployeeId, physical_verified: physicalVerified });
+    const assignedVillage = await AssignedVillage.create({
+      target,
+      assigned_status: assignedStatus,
+      village,
+      mandal,
+      assigned_employee_id: assignedEmployeeId,
+      physical_verified: physicalVerified, // array
+      listed: 0,
+      land_created: [],
+      verified: [],
+      complete_details: [],
+    });
+
     return assignedVillage;
   } catch (error) {
     throw error;
@@ -267,7 +436,7 @@ export const createAssignedVillage = async (target, assignedStatus, assignedEmpl
 };
 
 export const getAllAssignedVillages = async () => {
-  return await AssignedVillage.findAll({
+  const villages = await AssignedVillage.findAll({
     include: [
       {
         model: Employee,
@@ -276,6 +445,21 @@ export const getAllAssignedVillages = async () => {
     ],
     order: [["created_at", "DESC"]],
   });
+
+  const result = [];
+
+  for (const village of villages) {
+    const data = village.toJSON();
+
+    data.land_created = await getLandWithFarmerDetails(data.land_created);
+    data.verified = await getLandWithFarmerDetails(data.verified);
+    data.complete_details = await getLandWithFarmerDetails(data.complete_details);
+    data.physical_verified = await getLandWithFarmerDetails(data.physical_verified);
+
+    result.push(data);
+  }
+
+  return result;
 };
 
 export const getAssignedVillageById = async (id) => {
@@ -292,7 +476,14 @@ export const getAssignedVillageById = async (id) => {
     throw new Error("AssignedVillage not found");
   }
 
-  return assignedVillage;
+  const data = assignedVillage.toJSON();
+
+  data.land_created = await getLandWithFarmerDetails(data.land_created);
+  data.verified = await getLandWithFarmerDetails(data.verified);
+  data.complete_details = await getLandWithFarmerDetails(data.complete_details);
+  data.physical_verified = await getLandWithFarmerDetails(data.physical_verified);
+
+  return data;
 };
 
 export const updateAssignedVillage = async (data) => {
@@ -305,11 +496,21 @@ export const updateAssignedVillage = async (data) => {
       throw new Error("AssignedVillage not found");
     }
 
-    await assignedVillage.update(data, { transaction: t });
+    await assignedVillage.update(
+      {
+        listed: data.listed,
+        land_created: data.land_created,
+        verified: data.verified,
+        complete_details: data.complete_details,
+        physical_verified: data.physical_verified,
+        assigned_status: data.assigned_status,
+      },
+      { transaction: t }
+    );
 
     await t.commit();
 
-    return await getAssignedVillageById(id);
+    return await getAssignedVillageById(data.id); // ✅ fixed
   } catch (error) {
     await t.rollback();
     throw error;
@@ -329,8 +530,11 @@ export const deleteAssignedVillage = async (id) => {
 };
 
 export const getAssignedVillagesByEmployee = async (employeeId) => {
-  const assignedVillage = await AssignedVillage.findAll({
-    where: { assigned_employee_id: employeeId, assigned_status: "ongoing" },
+  const assignedVillages = await AssignedVillage.findAll({
+    where: {
+      assigned_employee_id: employeeId,
+      assigned_status: "ongoing",
+    },
     include: [
       {
         model: Employee,
@@ -340,36 +544,92 @@ export const getAssignedVillagesByEmployee = async (employeeId) => {
     order: [["created_at", "DESC"]],
   });
 
-  if (!assignedVillage) {
-    throw new Error("AssignedVillage not found or not ongoing");
+  if (!assignedVillages || assignedVillages.length === 0) {
+    throw new Error("No ongoing AssignedVillages found");
   }
-
-  const data = assignedVillage.toJSON();
 
   const getCount = (field) => {
     if (!field) return 0;
-
     if (Array.isArray(field)) return field.length;
-
     if (typeof field === "object") return Object.keys(field).length;
-
     return 0;
   };
 
-  return {
-    ...data,
+  const result = [];
 
-    land_created_ids: data.land_created || [],
-    land_created_count: getCount(data.land_created),
+  for (const village of assignedVillages) {
+    const data = village.toJSON();
 
-    complete_details_ids: data.complete_details || [],
-    complete_details_count: getCount(data.complete_details),
+    const landCreatedData = await getLandWithFarmerDetails(data.land_created);
+    const verifiedData = await getLandWithFarmerDetails(data.verified);
+    const completeDetailsData = await getLandWithFarmerDetails(data.complete_details);
+    const physicalVerifiedData = await getLandWithFarmerDetails(data.physical_verified);
 
-    verified_ids: data.verified || [],
-    verified_count: getCount(data.verified),
+    result.push({
+      ...data,
 
-    physical_verified_ids: data.physical_verified || [],
-    physical_verified_count: getCount(data.physical_verified),
-  };
+      land_created: landCreatedData,
+      verified: verifiedData,
+      complete_details: completeDetailsData,
+      physical_verified: physicalVerifiedData,
+
+      land_created_ids: data.land_created || [],
+      verified_ids: data.verified || [],
+      complete_details_ids: data.complete_details || [],
+      physical_verified_ids: data.physical_verified || [],
+
+      land_created_count: getCount(data.land_created),
+      verified_count: getCount(data.verified),
+      complete_details_count: getCount(data.complete_details),
+      physical_verified_count: getCount(data.physical_verified),
+    });
+  }
+
+  return result;
 };
 
+export const createPath = async (employeeId, data) => {
+  const { path_type, path, photo } = data;
+
+  if (!path || !Array.isArray(path) || path.length === 0) {
+    throw new Error("Path coordinates are required");
+  }
+
+  const points = path.map((p) => [p.latitude, p.longitude]);
+
+  const encodedPath = polyline.encode(points);
+
+  const result = await Path.create({
+    employee_id: employeeId,
+    path_type,
+    path: encodedPath,
+    photo,
+  });
+
+  return result;
+};
+
+export const getPathsByEmployee = async (employeeId) => {
+  const paths = await Path.findAll({
+    where: { employee_id: employeeId },
+    order: [["created_at", "DESC"]],
+  });
+
+  return paths.map((item) => {
+    let decodedPath = [];
+
+    if (item.path) {
+      const decoded = polyline.decode(item.path);
+
+      decodedPath = decoded.map(([lat, lng]) => ({
+        latitude: lat,
+        longitude: lng,
+      }));
+    }
+
+    return {
+      ...item.toJSON(),
+      path: decodedPath,
+    };
+  });
+};

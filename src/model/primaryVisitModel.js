@@ -34,12 +34,6 @@ const PrimaryVisit= sequelize.define("PrimaryVisit", {
     },
     buyer_visit: {
         type: DataTypes.JSONB
-    },
-    buyer_aggrement: {
-        type: DataTypes.TEXT
-    },
-    land_feedback: {
-        type: DataTypes.TEXT
     }
 },{
   tableName: "primary_visit",

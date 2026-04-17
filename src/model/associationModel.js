@@ -19,15 +19,62 @@ import Shortlisting from "./shortlistingModel.js";
 import FinalList from "./finalListModel.js";
 import Payment from "./paymentModel.js";
 import WishList from "./wishlistModel.js";
+import Session from "./sessionModel.js";
+import SessionExpense from "./sessionExpenseModel.js";
+import WorkWallet from "./workWalletModel.js";
+import TravelWallet from "./travelWalletModel.js";
+import Path from "./pathModel.js";
+import LandFeedBack from "./landFeedBackModel.js";
+import Agent from "./agentModel.js";
 
 Employee.hasMany(Land, {
   foreignKey: "created_by",
   as: "createdLands",
 });
 
+Employee.hasMany(Agent, {
+  foreignKey: "refered_by",
+  as: "createAgent"
+})
+
+Employee.hasMany(LandFeedBack, {
+  foreignKey: "employee_id",
+  as: "employeeFeedback"
+})
+
+Buyer.hasMany(LandFeedBack, {
+  foreignKey: "user_id",
+  as: "buyerFeedback"
+})
+
 Employee.hasMany(AssignedVillage, {
   foreignKey: "assigned_employee_id",
   as: "assignedVillage"
+});
+
+Employee.hasMany(Session, {
+  foreignKey: "employee_id",
+  as: "employeeSession"
+});
+
+Employee.hasMany(WorkWallet, {
+  foreignKey: "employee_id",
+  as: "employeeWorkWallet"
+});
+
+Employee.hasMany(TravelWallet, {
+  foreignKey: "employee_id",
+  as: "employeeTravelWallet"
+})
+
+Employee.hasMany(Path, {
+  foreignKey: "employee_id",
+  as: "employeePath"
+})
+
+Session.hasMany(SessionExpense, {
+  foreignKey: "session_id",
+  as: "sessionExpense"
 });
 
 Land.hasMany(PrimaryVisit, {
@@ -69,6 +116,11 @@ Mandal.hasMany(Village, {
   foreignKey: "mandal_id",
   as: "villages",
 });
+
+Agent.belongsTo(Employee, {
+  foreignKey: "refered_by",
+  as: "createAgent"
+})
 
 Land.hasMany(Cart, {
   foreignKey: "land_id",
@@ -138,6 +190,16 @@ Availibility.belongsTo(Land, {
 Availibility.belongsTo(Buyer, {
   foreignKey: "user_id",
   as: "availibilityBuyer"
+})
+
+Session.belongsTo(Employee, {
+  foreignKey: "employee_id",
+  as: "employeeSession"
+})
+
+SessionExpense.belongsTo(Session, {
+  foreignKey: "session_id",
+  as: "sessionExpense"
 })
 
 PrimaryVisit.belongsTo(Land, {
@@ -219,6 +281,31 @@ Land.belongsTo(Employee, {
   foreignKey: "created_by",
   as: "creator",
 });
+
+WorkWallet.belongsTo(Employee, {
+  foreignKey: "employee_id",
+  as: "employeeWorkWallet"
+})
+
+TravelWallet.belongsTo(Employee, {
+  foreignKey: "employee_id",
+  as: "employeeTravelWallet"
+})
+
+Path.belongsTo(Employee, {
+  foreignKey: "employee_id",
+  as: "employeePath"
+})
+
+LandFeedBack.belongsTo(Employee, {
+  foreignKey: "employee_id",
+  as: "employeeFeedback"
+})
+
+LandFeedBack.belongsTo(Buyer, {
+  foreignKey: "user_id",
+  as: "buyerFeedback"
+})
 
 Employee.hasMany(Land, {
   foreignKey: "verified_by",
@@ -306,5 +393,12 @@ export {
   FinalList,
   WishList,
   Payment,
-  Cart
+  Cart,
+  Session,
+  SessionExpense,
+  WorkWallet,
+  TravelWallet,
+  Path,
+  LandFeedBack,
+  Agent
 };
