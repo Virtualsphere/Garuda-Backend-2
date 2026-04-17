@@ -35,6 +35,22 @@ export const getAllLands = async (req, res) => {
   }
 };
 
+export const getAllLandsForUser = async (req, res) => {
+  try {
+    const lands = await landService.getAllLandsForUser();
+
+    res.status(200).json({
+      success: true,
+      data: lands,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 export const getLandById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -53,14 +69,29 @@ export const getLandById = async (req, res) => {
   }
 };
 
+export const getLandByIdForUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const land = await landService.getLandByIdForUser(id);
+
+    res.status(200).json({
+      success: true,
+      data: land,
+    });
+  } catch (error) {
+    res.status(404).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 export const updateLand = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const updatedLand = await landService.updateLand(
-      id,
-      req.body
-    );
+    const updatedLand = await landService.updateLand(id, req.body);
 
     res.status(200).json({
       success: true,
@@ -80,15 +111,11 @@ export const updateLandForVerify = async (req, res) => {
     const { id } = req.params;
     const employeeId = req.user?.id;
 
-    const updatedLand = await landService.updateLandForVerify(
-      id,
-      req.body,
-      employeeId
-    );
+    const updatedLand = await landService.updateLandForVerify(id, req.body, employeeId);
 
     res.status(200).json({
       success: true,
-      message: "Land updated successfully",
+      message: "Land verified successfully",
       data: updatedLand,
     });
   } catch (error) {
@@ -138,14 +165,20 @@ export const filterLands = async (req, res) => {
 export const getLandByStatus = async (req, res) => {
   try {
     const userId = req.user?.id;
+    const { status } = req.params;
 
-    const { status }= req.params;
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized: User ID not found",
+      });
+    }
 
-    const land = await landService.getLandById(userId, status);
+    const lands = await landService.getLandByStatus(userId, status);
 
     res.status(200).json({
       success: true,
-      data: land,
+      data: lands,
     });
   } catch (error) {
     res.status(404).json({
