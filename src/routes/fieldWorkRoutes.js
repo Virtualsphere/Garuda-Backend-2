@@ -263,7 +263,7 @@ router.post("/fieldwork/session/expense", verifyToken, fieldWorkController.addEx
 /**
  * @swagger
  * /api/fieldwork/session/end:
- *   post:
+ *   put:
  *     summary: End a work session (JWT required)
  *     tags: [FieldWork]
  *     security:
@@ -295,7 +295,7 @@ router.post("/fieldwork/session/expense", verifyToken, fieldWorkController.addEx
  *       401:
  *         description: Unauthorized
  */
-router.post("/fieldwork/session/end", verifyToken, fieldWorkController.endSessionController);
+router.put("/fieldwork/session/end", verifyToken, fieldWorkController.endSessionController);
 
 /**
  * @swagger
@@ -882,5 +882,41 @@ router.put("/fieldwork/agent/:id", fieldWorkController.updateAgent);
  *         description: Agent not found
  */
 router.delete("/fieldwork/agent/:id", fieldWorkController.deleteAgent);
+
+/**
+ * @swagger
+ * /api/fieldwork/primary-visits:
+ *   get:
+ *     summary: Get all primary visits assigned to the logged-in employee
+ *     tags: [FieldWork]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Primary visits fetched successfully
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Server error
+ */
+router.get("/fieldwork/primary-visits", verifyToken, fieldWorkController.getPrimaryVisitsByEmployee);
+
+/**
+ * @swagger
+ * /api/fieldwork/land-feedback:
+ *   get:
+ *     summary: Get land feedback for the logged-in employee
+ *     tags: [FieldWork]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Land feedback fetched successfully
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Server error
+ */
+router.get("/fieldwork/land-feedback", verifyToken, fieldWorkController.getLandFeedback);
 
 export default router;

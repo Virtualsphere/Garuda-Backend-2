@@ -494,3 +494,50 @@ export const deleteAgent = async (req, res) => {
   }
 };
 
+export const getPrimaryVisitsByEmployee = async (req, res) => {
+  try {
+    const employeeId = req.user?.id;
+
+    if (!employeeId) {
+      return res.status(401).json({
+        message: "Unauthorized: Employee ID not found",
+      });
+    }
+
+    const visits = await buyerService.getPrimaryVisitsByEmployee(employeeId);
+
+    return res.status(200).json({
+      message: "Primary visits fetched successfully",
+      count: visits.length,
+      data: visits,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: error.message || "Something went wrong",
+    });
+  }
+};
+
+export const getLandFeedback = async (req, res) => {
+  try {
+    const employeeId = req.user?.id;
+
+    if (!employeeId) {
+      return res.status(401).json({
+        message: "Unauthorized: Employee ID not found",
+      });
+    }
+
+    const feedback = await buyerService.getLandFeebBack(employeeId);
+
+    return res.status(200).json({
+      message: "Land feedback fetched successfully",
+      count: feedback.length,
+      data: feedback,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: error.message || "Something went wrong",
+    });
+  }
+};

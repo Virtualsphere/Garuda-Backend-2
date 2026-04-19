@@ -2,6 +2,7 @@ import Buyer from "../model/buyerModel.js";
 import RefreshToken from "../model/refreshTokenModel.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import { Op } from "sequelize";
 import {
   Land,
   WishList,
@@ -429,7 +430,12 @@ export const createPrimaryVisit = async (userId, data) => {
 
 export const getPrimaryVisitsByUser = async (userId) => {
   return await PrimaryVisit.findAll({
-    where: { user_id: userId },
+    where: {
+      user_id: userId,
+      meeting_status: {
+        [Op.in]: ["Scheduled", "Postponed"],
+      },
+    },
     include: [
       {
         model: Land,
@@ -444,6 +450,45 @@ export const getPrimaryVisitsByUser = async (userId) => {
         as: "primaryVisitEmployee",
       },
     ],
+    order: [["created_at", "DESC"]],
+  });
+};
+
+export const getPrimaryVisitsByEmployee = async (employeeId) => {
+  return await PrimaryVisit.findAll({
+    where: {
+      employee_id: employeeId,
+      meeting_status: {
+        [Op.in]: ["Scheduled", "Postponed"],
+      },
+    },
+    include: [
+      {
+        model: Land,
+        as: "primaryVisitLand",
+        include: [
+          { model: LandMedia, as: "media" },
+          { model: LandDetails, as: "landDetails" },
+        ],
+      },
+      {
+        model: Employee,
+        as: "primaryVisitEmployee",
+      },
+    ],
+    order: [["created_at", "DESC"]],
+  });
+};
+
+export const getLandFeebBack = async (employeeId) => {
+  return await PrimaryVisit.findAll({
+    where: {
+      employee_id: employeeId,
+      meeting_status: {
+        [Op.in]: ["Scheduled", "Postponed"],
+      },
+    },
+    attributes: ["land_id"],
     order: [["created_at", "DESC"]],
   });
 };

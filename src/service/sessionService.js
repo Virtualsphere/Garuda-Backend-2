@@ -35,7 +35,7 @@ export const addSessionExpense = async (sessionId, expenses) => {
 export const endSession = async (employeeId, data) => {
   const session = await Session.findOne({
     where: {
-      id: employeeId,
+      employee_id: employeeId,
       status: "ACTIVE",
     },
   });
