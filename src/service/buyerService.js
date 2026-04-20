@@ -13,7 +13,9 @@ import {
   Payment,
   Cart,
   Availibility,
-  LandFeedBack
+  LandFeedBack,
+  LandMedia,
+  LandDetails
 } from "../model/associationModel.js";
 
 const ACCESS_TOKEN_SECRET = process.env.JWT_SECRET;
