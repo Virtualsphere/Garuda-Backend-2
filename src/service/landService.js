@@ -413,7 +413,10 @@ export const createAssignedVillage = async (
   assignedEmployeeId,
   village,
   mandal,
-  physicalVerified = []
+  physicalVerified = [],
+  landCreated= [],
+  verifiedLand= [],
+  completeLand= []
 ) => {
   try {
     const assignedVillage = await AssignedVillage.create({
@@ -422,11 +425,11 @@ export const createAssignedVillage = async (
       village,
       mandal,
       assigned_employee_id: assignedEmployeeId,
-      physical_verified: physicalVerified, // array
+      physical_verified: physicalVerified,
       listed: 0,
-      land_created: [],
-      verified: [],
-      complete_details: [],
+      land_created: landCreated,
+      verified: verifiedLand,
+      complete_details: completeLand,
     });
 
     return assignedVillage;

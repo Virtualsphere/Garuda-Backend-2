@@ -14,9 +14,11 @@ export const createAssignedVillage = async (req, res) => {
       village,
       mandal,
       physicalVerified = [],
+      landCreated= [],
+      verifiedLand= [],
+      completeLand= []
     } = req.body;
 
-    // ✅ basic validation
     if (!target || !assignedEmployeeId || !village || !mandal) {
       return res.status(400).json({
         message: "Missing required fields",
@@ -29,7 +31,10 @@ export const createAssignedVillage = async (req, res) => {
       assignedEmployeeId,
       village,
       mandal,
-      physicalVerified
+      physicalVerified,
+      landCreated,
+      verifiedLand,
+      completeLand
     );
 
     return res.status(201).json({

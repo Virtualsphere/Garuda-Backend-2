@@ -47,6 +47,21 @@ const router = express.Router();
  *                 items:
  *                   type: integer
  *                 example: [1, 2, 3]
+ *               landCreated:
+ *                 type: array
+ *                 items:
+ *                   type: integer
+ *                 example: [1, 2, 3]
+ *               verifiedLand:
+ *                 type: array
+ *                 items:
+ *                   type: integer
+ *                 example: [1, 2, 3]
+ *               completeLand:
+ *                 type: array
+ *                 items:
+ *                   type: integer
+ *                 example: [1, 2, 3]
  *     responses:
  *       201:
  *         description: Assigned village created successfully
