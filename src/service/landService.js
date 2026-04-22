@@ -32,6 +32,8 @@ const getLandWithFarmerDetails = async (landIds = []) => {
   return lands;
 };
 
+const DEFAULT_LAND_IMAGE = "http://72.61.169.226:5000/public/temp/1776862609344-180630236-images (2).jpeg";
+
 export const createLand = async (data, employeeId) => {
   const t = await sequelize.transaction();
 
@@ -79,14 +81,27 @@ export const createLand = async (data, employeeId) => {
     }
 
     // Media
-    if (media.length) {
-      const mediaData = media.map((m) => ({
+    // Media (with default fallback)
+    let mediaData = [];
+
+    if (media && media.length > 0) {
+      mediaData = media.map((m) => ({
         ...m,
         land_id: land.id,
       }));
-
-      await LandMedia.bulkCreate(mediaData, { transaction: t });
+    } else {
+      // ✅ Default media
+      mediaData = [
+        {
+          land_id: land.id,
+          category: "default",
+          type: "image",
+          url: DEFAULT_LAND_IMAGE,
+        },
+      ];
     }
+
+    await LandMedia.bulkCreate(mediaData, { transaction: t });
 
     // Documents
     if (documents.length) {

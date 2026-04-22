@@ -11,6 +11,7 @@ const LandMedia = sequelize.define("LandMedia", {
 
   category: {
     type: DataTypes.ENUM(
+      "default",
       "farmer_photo",
       "land_soil",
       "fencing",

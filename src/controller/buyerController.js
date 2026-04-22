@@ -1,5 +1,6 @@
 import * as buyerService from "../service/buyerService.js";
 import * as landService from "../service/landService.js";
+import * as paymentService from "../service/paymentService.js"
 
 export const signup = async (req, res) => {
   try {
@@ -1092,7 +1093,7 @@ export const createPayment = async (req, res) => {
       });
     }
 
-    const result = await buyerService.createPayment(userId, req.body);
+    const result = await paymentService.createPayment(userId, req.body);
 
     return res.status(201).json({
       success: true,
@@ -1123,7 +1124,7 @@ export const getPaymentsByUser = async (req, res) => {
       });
     }
 
-    const result = await buyerService.getPaymentsByUser(userId);
+    const result = await paymentService.getPaymentsByUser(userId);
 
     return res.status(200).json({
       success: true,
@@ -1156,7 +1157,7 @@ export const getPaymentByLand = async (req, res) => {
       });
     }
 
-    const result = await buyerService.getPaymentByLand(userId, landId);
+    const result = await paymentService.getPaymentByLand(userId, landId);
 
     return res.status(200).json({ 
       success: true,
@@ -1195,7 +1196,7 @@ export const updatePayment = async (req, res) => {
       });
     }
 
-    const result = await buyerService.updatePayment(userId, landId, req.body);
+    const result = await paymentService.updatePayment(userId, landId, req.body);
 
     return res.status(200).json({
       success: true,
@@ -1235,7 +1236,7 @@ export const deletePayment = async (req, res) => {
       });
     }
 
-    await buyerService.deletePayment(userId, landIds);
+    await paymentService.deletePayment(userId, landIds);
 
     return res.status(200).json({
       success: true,

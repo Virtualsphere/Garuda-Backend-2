@@ -10,7 +10,6 @@ import {
   Shortlisting,
   PrimaryVisit,
   Employee,
-  Payment,
   Cart,
   Availibility,
   LandFeedBack,
@@ -755,110 +754,4 @@ export const isFinalListed = async (userId, landId) => {
   });
 
   return !!exists;
-};
-
-export const createPayment = async (userId, data) => {
-  let { land_id, amount, payment_status } = data;
-
-  if (!land_id || !amount) {
-    throw new Error("land_id and amount are required");
-  }
-
-  if (!Array.isArray(land_id)) {
-    land_id = [land_id];
-  }
-
-  land_id = [...new Set(land_id)];
-
-  const existing = await Payment.findAll({
-    where: {
-      user_id: userId,
-      land_id,
-    },
-  });
-
-  const existingLandIds = existing.map((item) => item.land_id);
-
-  const newLandIds = land_id.filter(
-    (id) => !existingLandIds.includes(id)
-  );
-
-  const payload = newLandIds.map((id) => ({
-    user_id: userId,
-    land_id: id,
-    amount,
-    payment_status: payment_status || "pending",
-  }));
-
-  const result = await Payment.bulkCreate(payload);
-
-  return result;
-};
-
-export const getPaymentsByUser = async (userId) => {
-  return await Payment.findAll({
-    where: { user_id: userId },
-    include: [
-      {
-        model: Land,
-        as: "paymentLands",
-      },
-    ],
-    order: [["created_at", "DESC"]],
-  });
-};
-
-export const getPaymentByLand = async (userId, landId) => {
-  const payment = await Payment.findOne({
-    where: {
-      user_id: userId,
-      land_id: landId,
-    },
-    include: [
-      {
-        model: Land,
-        as: "paymentLands",
-      },
-    ],
-  });
-
-  if (!payment) {
-    throw new Error("Payment not found");
-  }
-
-  return payment;
-};
-
-export const updatePayment = async (userId, landId, data) => {
-  const payment = await Payment.findOne({
-    where: {
-      user_id: userId,
-      land_id: landId,
-    },
-  });
-
-  if (!payment) {
-    throw new Error("Payment not found");
-  }
-
-  const { user_id, land_id: lid, id, ...allowedData } = data;
-
-  await payment.update(allowedData);
-
-  return payment;
-};
-
-export const deletePayment = async (userId, landIds) => {
-  if (!Array.isArray(landIds)) {
-    landIds = [landIds];
-  }
-
-  await Payment.destroy({
-    where: {
-      user_id: userId,
-      land_id: landIds,
-    },
-  });
-
-  return true;
 };
