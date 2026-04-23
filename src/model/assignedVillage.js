@@ -11,7 +11,7 @@ const AssignedVillage= sequelize.define("AssignedVillage", {
         type: DataTypes.INTEGER
     },
     assigned_status: {
-        type: DataTypes.ENUM('ongoing', 'over'),
+        type: DataTypes.ENUM('ongoing', 'completed'),
         defaultValue: 'ongoing'
     },
     listed: {
