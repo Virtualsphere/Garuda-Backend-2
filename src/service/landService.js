@@ -14,6 +14,8 @@ import polyline from "@mapbox/polyline";
 
 import sequelize from "../db/db.js";
 
+import { Op } from "sequelize";
+
 const getLandWithFarmerDetails = async (landIds = []) => {
   if (!landIds || landIds.length === 0) return [];
 
@@ -137,17 +139,94 @@ export const getAllLands = async () => {
   });
 };
 
-export const getAllLandsForUser= async ()=>{
+export const getAllLandsForUser = async (filters = {}) => {
+  const {
+    state,
+    district,
+    mandal,
+    min_price_per_acre,
+    max_price_per_acre,
+    min_total_budget,
+    max_total_budget,
+    water_source,
+    poultry_shed,
+    cow_shed,
+    farm_pond,
+    electricity
+  } = filters;
+
+  // Land table filters
+  const landWhere = {};
+
+  if (state) landWhere.state = state;
+  if (district) landWhere.district = district;
+  if (mandal) landWhere.mandal = mandal;
+
+  // LandDetails filters
+  const landDetailsWhere = {};
+
+  if (min_price_per_acre || max_price_per_acre) {
+    landDetailsWhere.price_per_acres = {
+      ...(min_price_per_acre && { [Op.gte]: min_price_per_acre }),
+      ...(max_price_per_acre && { [Op.lte]: max_price_per_acre }),
+    };
+  }
+
+  if (min_total_budget || max_total_budget) {
+    landDetailsWhere.total_value = {
+      ...(min_total_budget && { [Op.gte]: min_total_budget }),
+      ...(max_total_budget && { [Op.lte]: max_total_budget }),
+    };
+  }
+
+  if (water_source) {
+    landDetailsWhere.water_source = {
+      [Op.contains]: water_source, // JSONB filter
+    };
+  }
+
+  if (electricity) {
+    landDetailsWhere.electricity = {
+      [Op.contains]: electricity,
+    };
+  }
+
+  if (farm_pond !== undefined) {
+    landDetailsWhere.farm_pond = farm_pond;
+  }
+
+  if (poultry_shed) {
+    landDetailsWhere.poultry_shed_number = {
+      [Op.gt]: 0,
+    };
+  }
+
+  if (cow_shed) {
+    landDetailsWhere.cow_shed_number = {
+      [Op.gt]: 0,
+    };
+  }
+
   return await Land.findAll({
+    where: landWhere,
+
     include: [
-      { model: LandDetails, as: "landDetails" },
+      {
+        model: LandDetails,
+        as: "landDetails",
+        where: Object.keys(landDetailsWhere).length
+          ? landDetailsWhere
+          : undefined, // IMPORTANT: don't apply empty filter
+        required: !!Object.keys(landDetailsWhere).length, // inner join only if filtering
+      },
       { model: LandGPS, as: "gps" },
       { model: LandMedia, as: "media" },
       { model: LandDocuments, as: "documents" },
     ],
+
     order: [["created_at", "DESC"]],
   });
-}
+};
 
 export const getLandById = async (id) => {
   const land = await Land.findByPk(id, {

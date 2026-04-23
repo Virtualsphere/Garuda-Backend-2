@@ -221,8 +221,81 @@ router.post("/buyer/logout", buyerController.logout);
  * @swagger
  * /api/buyer/land:
  *   get:
- *     summary: Get all lands
+ *     summary: Get all lands with optional filters
  *     tags: [Buyer]
+ *     parameters:
+ *       - in: query
+ *         name: state
+ *         schema:
+ *           type: string
+ *         description: Filter by state
+ *
+ *       - in: query
+ *         name: district
+ *         schema:
+ *           type: string
+ *         description: Filter by district
+ *
+ *       - in: query
+ *         name: mandal
+ *         schema:
+ *           type: string
+ *         description: Filter by mandal
+ *
+ *       - in: query
+ *         name: min_price_per_acre
+ *         schema:
+ *           type: number
+ *         description: Minimum price per acre
+ *
+ *       - in: query
+ *         name: max_price_per_acre
+ *         schema:
+ *           type: number
+ *         description: Maximum price per acre
+ *
+ *       - in: query
+ *         name: min_total_budget
+ *         schema:
+ *           type: number
+ *         description: Minimum total budget
+ *
+ *       - in: query
+ *         name: max_total_budget
+ *         schema:
+ *           type: number
+ *         description: Maximum total budget
+ *
+ *       - in: query
+ *         name: farm_pond
+ *         schema:
+ *           type: boolean
+ *         description: Filter lands with farm pond
+ *
+ *       - in: query
+ *         name: poultry_shed
+ *         schema:
+ *           type: boolean
+ *         description: Filter lands with poultry shed
+ *
+ *       - in: query
+ *         name: cow_shed
+ *         schema:
+ *           type: boolean
+ *         description: Filter lands with cow shed
+ *
+ *       - in: query
+ *         name: water_source
+ *         schema:
+ *           type: string
+ *         description: JSON string for water source filter (e.g. {"borewell": true})
+ *
+ *       - in: query
+ *         name: electricity
+ *         schema:
+ *           type: string
+ *         description: JSON string for electricity filter (e.g. {"available": true})
+ *
  *     responses:
  *       200:
  *         description: List of lands

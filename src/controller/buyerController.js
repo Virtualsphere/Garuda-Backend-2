@@ -229,8 +229,39 @@ export const logout = async (req, res) => {
 
 export const getAllLandsForUser = async (req, res) => {
   try {
-    const lands = await landService.getAllLandsForUser();
-  
+    const {
+      state,
+      district,
+      mandal,
+      min_price_per_acre,
+      max_price_per_acre,
+      min_total_budget,
+      max_total_budget,
+      water_source,
+      poultry_shed,
+      cow_shed,
+      farm_pond,
+      electricity
+    } = req.query;
+
+    // Convert types (IMPORTANT)
+    const filters = {
+      state,
+      district,
+      mandal,
+      min_price_per_acre: min_price_per_acre ? Number(min_price_per_acre) : undefined,
+      max_price_per_acre: max_price_per_acre ? Number(max_price_per_acre) : undefined,
+      min_total_budget: min_total_budget ? Number(min_total_budget) : undefined,
+      max_total_budget: max_total_budget ? Number(max_total_budget) : undefined,
+      water_source: water_source ? JSON.parse(water_source) : undefined,
+      electricity: electricity ? JSON.parse(electricity) : undefined,
+      poultry_shed: poultry_shed === "true",
+      cow_shed: cow_shed === "true",
+      farm_pond: farm_pond === "true",
+    };
+
+    const lands = await landService.getAllLandsForUser(filters);
+
     res.status(200).json({
       success: true,
       data: lands,
