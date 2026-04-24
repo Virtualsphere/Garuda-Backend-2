@@ -14,7 +14,8 @@ import {
   Availibility,
   LandFeedBack,
   LandMedia,
-  LandDetails
+  LandDetails,
+  FarmerDetails
 } from "../model/associationModel.js";
 
 const ACCESS_TOKEN_SECRET = process.env.JWT_SECRET;
@@ -489,7 +490,29 @@ export const getLandFeebBack = async (employeeId) => {
         [Op.in]: ["Scheduled", "Postponed"],
       },
     },
-    attributes: ["land_id"],
+    attributes: ["land_id", "employee_id"],
+
+    include: [
+      {
+        model: Employee,
+        as: "primaryVisitEmployee",
+        attributes: ["id", "name"],
+      },
+      {
+        model: Land,
+        as: "primaryVisitLand",
+        attributes: ["id", "mandal", "village"],
+
+        include: [
+          {
+            model: FarmerDetails,
+            as: "farmerDetails",
+            attributes: ["name"],
+          },
+        ],
+      },
+    ],
+
     order: [["created_at", "DESC"]],
   });
 };
