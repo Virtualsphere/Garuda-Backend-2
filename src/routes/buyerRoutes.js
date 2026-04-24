@@ -288,13 +288,13 @@ router.post("/buyer/logout", buyerController.logout);
  *         name: water_source
  *         schema:
  *           type: string
- *         description: JSON string for water source filter (e.g. {"borewell": true})
+ *         description: 'JSON string for water source filter (e.g. {"borewell": true})'
  *
  *       - in: query
  *         name: electricity
  *         schema:
  *           type: string
- *         description: JSON string for electricity filter (e.g. {"available": true})
+ *         description: 'JSON string for electricity filter (e.g. {"available": true})'
  *
  *     responses:
  *       200:

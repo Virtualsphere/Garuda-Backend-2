@@ -222,6 +222,21 @@ export const getPathsController = async (req, res) => {
   }
 };
 
+export const getPathsWithLatAndLongController = async (req, res) => {
+  try {
+    const employeeId = req.user?.id;
+
+    const result = await landService.getPathsByEmployeeWithLatAndLong(employeeId);
+
+    res.json({
+      success: true,
+      data: result,
+    });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+};
+
 export const getWorkWallet = async (req, res) => {
   try {
     const employeeId = req.user?.id;

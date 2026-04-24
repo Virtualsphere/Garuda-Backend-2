@@ -713,3 +713,29 @@ export const getPathsByEmployee = async (employeeId) => {
     raw: true,
   });
 };
+
+
+export const getPathsByEmployeeWithLatAndLong = async (employeeId) => {
+  const paths = await Path.findAll({
+    where: { employee_id: employeeId },
+    order: [["created_at", "DESC"]],
+  });
+
+  return paths.map((item) => {
+    let decodedPath = [];
+
+    if (item.path) {
+      const decoded = polyline.decode(item.path);
+
+      decodedPath = decoded.map(([lat, lng]) => ({
+        latitude: lat,
+        longitude: lng,
+      }));
+    }
+
+    return {
+      ...item.toJSON(),
+      path: decodedPath,
+    };
+  });
+};

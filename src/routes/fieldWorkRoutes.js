@@ -399,6 +399,24 @@ router.post("/fieldwork/path", verifyToken, fieldWorkController.createPathContro
  */
 router.get("/fieldwork/paths", verifyToken, fieldWorkController.getPathsController);
 
+/**
+ * @swagger
+ * /api/fieldwork/paths/coordinates:
+ *   get:
+ *     summary: Get all paths for logged-in employee (JWT required)
+ *     tags: [FieldWork]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Paths fetched successfully
+ *       400:
+ *         description: Bad request
+ *       401:
+ *         description: Unauthorized
+ */
+router.get("/fieldwork/paths/coordinates", verifyToken, fieldWorkController.getPathsWithLatAndLongController);
+
 /* =====================================================
    WORK WALLET
 ===================================================== */
