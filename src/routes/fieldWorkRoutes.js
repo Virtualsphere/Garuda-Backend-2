@@ -641,7 +641,7 @@ router.post("/fieldwork/primary-visit/assign", fieldWorkController.assignEmploye
  *                 example: 10
  *               buyer_agreement:
  *                 type: string
- *                 example: "Buyer agreed to terms"
+ *                 example: "http://72.61.169.226:5000/public/temp/1777114406616-370160143-images (3).jpeg"
  *               lands:
  *                 type: array
  *                 items:
@@ -654,7 +654,7 @@ router.post("/fieldwork/primary-visit/assign", fieldWorkController.assignEmploye
  *                       example: 5
  *                     feedback:
  *                       type: string
- *                       example: "Land looks good"
+ *                       example: "http://72.61.169.226:5000/public/temp/1777114406616-370160143-images (3).jpeg"
  *     responses:
  *       201:
  *         description: Feedback submitted successfully

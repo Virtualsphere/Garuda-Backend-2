@@ -16,6 +16,9 @@ const LandFeedBack= sequelize.define("LandFeedBack", {
     buyer_aggrement: {
         type: DataTypes.TEXT
     },
+    land_id: {
+        type: DataTypes.INTEGER
+    },
     land_feedback: {
         type: DataTypes.TEXT
     }

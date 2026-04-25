@@ -630,18 +630,21 @@ export const createLandFeedback = async (employeeId, data) => {
     throw new Error("lands must be an array");
   }
 
-  for (const item of lands) {
+  const payload = lands.map((item) => {
     if (!item.land_id) {
       throw new Error("Each land must have land_id");
     }
-  }
 
-  const feedback = await LandFeedBack.create({
-    employee_id: employeeId,
-    user_id,
-    buyer_aggrement: buyer_agreement,
-    land_feedback: lands,
+    return {
+      employee_id: employeeId,
+      user_id,
+      land_id: item.land_id,
+      buyer_aggrement: buyer_agreement,
+      land_feedback: item.feedback || null,
+    };
   });
+
+  const feedback = await LandFeedBack.bulkCreate(payload);
 
   return feedback;
 };
