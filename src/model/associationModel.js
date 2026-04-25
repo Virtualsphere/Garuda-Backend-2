@@ -22,7 +22,7 @@ import WishList from "./wishlistModel.js";
 import Session from "./sessionModel.js";
 import SessionExpense from "./sessionExpenseModel.js";
 import WorkWallet from "./workWalletModel.js";
-import TravelWallet from "./travelWalletModel.js";
+import PetrolAdvance from "./petrolAdvanceModel.js";
 import Path from "./pathModel.js";
 import LandFeedBack from "./landFeedBackModel.js";
 import Agent from "./agentModel.js";
@@ -74,9 +74,9 @@ Employee.hasMany(WorkWallet, {
   as: "employeeWorkWallet"
 });
 
-Employee.hasMany(TravelWallet, {
+Employee.hasMany(PetrolAdvance, {
   foreignKey: "employee_id",
-  as: "employeeTravelWallet"
+  as: "employeePetrolAdvance"
 })
 
 Employee.hasMany(Path, {
@@ -299,9 +299,9 @@ WorkWallet.belongsTo(Employee, {
   as: "employeeWorkWallet"
 })
 
-TravelWallet.belongsTo(Employee, {
+PetrolAdvance.belongsTo(Employee, {
   foreignKey: "employee_id",
-  as: "employeeTravelWallet"
+  as: "employeePetrolAdvance"
 })
 
 Path.belongsTo(Employee, {
@@ -409,7 +409,7 @@ export {
   Session,
   SessionExpense,
   WorkWallet,
-  TravelWallet,
+  PetrolAdvance,
   Path,
   LandFeedBack,
   Agent,

@@ -1157,4 +1157,37 @@ router.post("/attendance/weekends", fieldWorkController.markWeekends);
  */
 router.get("/attendance/monthly-report", fieldWorkController.getMonthlyReport);
 
+/**
+ * @swagger
+ * /api/fieldwork/wallet/travel/advance:
+ *   post:
+ *     summary: Add petrol advance (Admin Only)
+ *     tags: [FieldWork]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - employeeId
+ *               - amount
+ *             properties:
+ *               employeeId:
+ *                 type: integer
+ *                 example: 5
+ *               amount:
+ *                 type: number
+ *                 example: 500
+ *     responses:
+ *       201:
+ *         description: Petrol advance added successfully
+ *       400:
+ *         description: Invalid input
+ */
+router.post(
+  "/fieldwork/wallet/travel/advance",
+  fieldWorkController.addPetrolAdvanceController
+);
+
 export default router;

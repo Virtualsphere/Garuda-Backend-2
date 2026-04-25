@@ -1,4 +1,4 @@
-import { Employee, WorkWallet, TravelWallet } from '../model/associationModel.js'
+import { Employee, WorkWallet, PetrolAdvance, Session, SessionExpense } from '../model/associationModel.js'
 import { Op } from "sequelize"
 
 export const updateWorkWallet = async (id) => {
@@ -69,48 +69,96 @@ export const getWorkWalletByEmployee = async (employeeId, startDate, endDate) =>
 };
 
 export const getTravelWalletByEmployee = async (employeeId) => {
-  const wallets = await TravelWallet.findAll({
+
+  const advances = await PetrolAdvance.findAll({
     where: { employee_id: employeeId },
     order: [["created_at", "DESC"]],
   });
 
-  const result = {
-    petrolAdvance: [],
-    petrolCharges: [],
-    busTickets: [],
-    otherExpenses: [],
-  };
-
-  wallets.forEach((item) => {
-    const formattedData = {
-      amount: item.amount,
-      date: item.created_at,
-    };
-
-    switch (item.amount_type) {
-      case "PETROL ADVANCE":
-        result.petrolAdvance.push(formattedData);
-        break;
-
-      case "PETROL CHARGES":
-        result.petrolCharges.push(formattedData);
-        break;
-
-      case "BUS TICKET":
-        result.busTickets.push(formattedData);
-        break;
-
-      case "OTHER EXPENSES":
-        result.otherExpenses.push({
-          ...formattedData,
-          description: item.description, // only here
-        });
-        break;
-
-      default:
-        break;
-    }
+  const sessions = await Session.findAll({
+    where: { employee_id: employeeId, status: "COMPLETED" },
+    include: [
+      {
+        model: SessionExpense,
+        as: "sessionExpense",
+      },
+    ],
+    order: [["created_at", "DESC"]],
   });
 
-  return result;
+  let totalAdvance = 0;
+  let totalPetrolCharges = 0;
+
+  const petrolAdvance = [];
+  const petrolCharges = [];
+  const busTickets = [];
+  const otherExpenses = [];
+
+  advances.forEach((item) => {
+    totalAdvance += item.amount;
+
+    petrolAdvance.push({
+      amount: item.amount,
+      date: item.created_at,
+    });
+  });
+
+  sessions.forEach((session) => {
+
+    if (session.petrol_charges) {
+      totalPetrolCharges += session.petrol_charges;
+
+      petrolCharges.push({
+        amount: session.petrol_charges,
+        date: session.session_end_time,
+      });
+    }
+
+    session.sessionExpense.forEach((exp) => {
+      if (exp.type === "BUS") {
+        busTickets.push({
+          amount: exp.amount,
+          date: exp.created_at,
+        });
+      } else {
+        otherExpenses.push({
+          amount: exp.amount,
+          date: exp.created_at,
+          description: exp.description,
+        });
+      }
+    });
+  });
+
+  return {
+    petrolBalance: totalAdvance - totalPetrolCharges,
+
+    summary: {
+      totalAdvance,
+      totalPetrolCharges,
+    },
+
+    petrolAdvance,
+    petrolCharges,
+    busTickets,
+    otherExpenses,
+  };
+};
+
+export const addPetrolAdvance = async (employeeId, amount) => {
+
+  if (!employeeId) {
+    throw new Error("Employee ID is required");
+  }
+
+  if (!amount || amount <= 0) {
+    throw new Error("Amount must be greater than 0");
+  }
+
+  const entry = await PetrolAdvance.create({
+    employee_id: employeeId,
+    amount,
+  });
+
+  return entry;
 };

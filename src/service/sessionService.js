@@ -32,6 +32,8 @@ export const addSessionExpense = async (sessionId, expenses) => {
   return await SessionExpense.bulkCreate(payload);
 };
 
+const PETROL_RATE = 2.5;
+
 export const endSession = async (employeeId, data) => {
   const session = await Session.findOne({
     where: {
@@ -44,11 +46,27 @@ export const endSession = async (employeeId, data) => {
     throw new Error("No active session found");
   }
 
+  const startKm = data.start_km;
+  const endKm = data.end_km;
+
+  if (startKm == null || endKm == null) {
+    throw new Error("Start KM and End KM are required");
+  }
+
+  const distance = endKm - startKm;
+
+  if (distance < 0) {
+    throw new Error("End KM cannot be less than Start KM");
+  }
+
+  const petrolCharges = distance * PETROL_RATE;
+
   await session.update({
-    start_km: data.start_km,
+    start_km: startKm,
     start_photo: data.start_photo,
-    end_km: data.end_km,
+    end_km: endKm,
     end_photo: data.end_photo,
+    petrol_charges: petrolCharges,
     session_end_time: new Date(),
     status: "COMPLETED",
   });

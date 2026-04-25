@@ -29,6 +29,9 @@ const Session = sequelize.define("Session", {
   end_photo: {
     type: DataTypes.JSONB,
   },
+  petrol_charges: {
+    type: DataTypes.DOUBLE
+  },
   status: {
     type: DataTypes.ENUM("ACTIVE", "COMPLETED"),
     defaultValue: "ACTIVE",

@@ -704,3 +704,29 @@ export const getMonthlyReport = async (req, res) => {
     });
   }
 };
+
+export const addPetrolAdvanceController = async (req, res) => {
+  try {
+    const { employeeId, amount } = req.body;
+
+    if (!employeeId || !amount) {
+      return res.status(400).json({
+        message: "employeeId and amount are required",
+      });
+    }
+
+    const result = await walletService.addPetrolAdvance(
+      employeeId,
+      amount
+    );
+
+    return res.status(201).json({
+      message: "Petrol advance added successfully",
+      data: result,
+    });
+  } catch (error) {
+    return res.status(400).json({
+      message: error.message,
+    });
+  }
+};
