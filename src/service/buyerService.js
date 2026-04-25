@@ -514,7 +514,7 @@ export const getLandFeebBack = async (employeeId) => {
       {
         model: Buyer,
         as: "primaryVisitBuyer",
-        attributes: ["id", "name", "mobile"],
+        attributes: ["id", "name"],
       },
     ],
 
