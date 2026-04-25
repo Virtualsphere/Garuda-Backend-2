@@ -179,13 +179,13 @@ export const getAllLandsForUser = async (filters = {}) => {
     };
   }
 
-  if (water_source) {
+  if (water_source && water_source.length > 0) {
     landDetailsWhere.water_source = {
-      [Op.contains]: water_source, // JSONB filter
+      [Op.contains]: water_source,
     };
   }
 
-  if (electricity) {
+  if (electricity && electricity.length > 0) {
     landDetailsWhere.electricity = {
       [Op.contains]: electricity,
     };
@@ -207,23 +207,27 @@ export const getAllLandsForUser = async (filters = {}) => {
     };
   }
 
+  // Build include dynamically
+  const landDetailsInclude = {
+    model: LandDetails,
+    as: "landDetails",
+  };
+
+  if (Object.keys(landDetailsWhere).length > 0) {
+    landDetailsInclude.where = landDetailsWhere;
+    landDetailsInclude.required = true; // INNER JOIN when filtering
+  } else {
+    landDetailsInclude.required = false; // LEFT JOIN when no filters
+  }
+
   return await Land.findAll({
     where: landWhere,
-
     include: [
-      {
-        model: LandDetails,
-        as: "landDetails",
-        where: Object.keys(landDetailsWhere).length
-          ? landDetailsWhere
-          : undefined, // IMPORTANT: don't apply empty filter
-        required: !!Object.keys(landDetailsWhere).length, // inner join only if filtering
-      },
+      landDetailsInclude,
       { model: LandGPS, as: "gps" },
       { model: LandMedia, as: "media" },
       { model: LandDocuments, as: "documents" },
     ],
-
     order: [["created_at", "DESC"]],
   });
 };
