@@ -91,17 +91,13 @@ export const createLand = async (data, employeeId) => {
         ...m,
         land_id: land.id,
       }));
-    } else {
-      // ✅ Default media
-      mediaData = [
-        {
-          land_id: land.id,
-          category: "default",
-          type: "image",
-          url: DEFAULT_LAND_IMAGE,
-        },
-      ];
-    }
+    } 
+    mediaData.push({
+      land_id: land.id,
+      category: "default",
+      type: "image",
+      url: DEFAULT_LAND_IMAGE,
+    });
 
     await LandMedia.bulkCreate(mediaData, { transaction: t });
 
