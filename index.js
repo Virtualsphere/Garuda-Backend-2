@@ -48,7 +48,7 @@ const PORT = process.env.PORT || 5000;
 
 const startServer = async () => {
   try {
-    await sequelize.sync({ alter: true });
+    await sequelize.sync({ force: true });
     // await ensureStaticQrPaymentSchema();
     console.log("All tables synced with database");
   } catch (err) {

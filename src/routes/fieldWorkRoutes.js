@@ -952,4 +952,209 @@ router.get("/fieldwork/primary-visits", verifyToken, fieldWorkController.getPrim
  */
 router.get("/fieldwork/land-feedback", verifyToken, fieldWorkController.getLandFeedback);
 
+/**
+ * @swagger
+ * /api/attendance/calendar:
+ *   get:
+ *     summary: Get calendar with attendance for logged-in employee (JWT required)
+ *     tags: [Attendance]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: startDate
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: date
+ *         example: "2024-01-01"
+ *       - in: query
+ *         name: endDate
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: date
+ *         example: "2024-12-31"
+ *     responses:
+ *       200:
+ *         description: Calendar with attendance fetched successfully
+ *       400:
+ *         description: Bad request
+ *       401:
+ *         description: Unauthorized
+ */
+router.get("/attendance/calendar", verifyToken, fieldWorkController.getCalendarWithAttendance);
+
+/**
+ * @swagger
+ * /api/attendance/mark:
+ *   post:
+ *     summary: Mark attendance for logged-in employee (JWT required)
+ *     tags: [Attendance]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - date
+ *               - status
+ *             properties:
+ *               date:
+ *                 type: string
+ *                 format: date
+ *                 example: "2024-01-15"
+ *               status:
+ *                 type: string
+ *                 enum: [PRESENT, ABSENT, HALF_DAY, LATE, HOLIDAY, WEEKEND]
+ *                 example: "PRESENT"
+ *     responses:
+ *       200:
+ *         description: Attendance marked successfully
+ *       401:
+ *         description: Unauthorized
+ *       400:
+ *         description: Bad request
+ */
+router.post("/attendance/mark", verifyToken, fieldWorkController.markAttendance);
+
+/**
+ * @swagger
+ * /api/attendance/admin-update:
+ *   put:
+ *     summary: Update attendance for any employee (Admin only)
+ *     tags: [Attendance]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - employeeId
+ *               - date
+ *               - status
+ *             properties:
+ *               employeeId:
+ *                 type: string
+ *                 example: "EMP001"
+ *               date:
+ *                 type: string
+ *                 format: date
+ *                 example: "2024-01-15"
+ *               status:
+ *                 type: string
+ *                 enum: [PRESENT, ABSENT, HALF_DAY, LATE, HOLIDAY, WEEKEND]
+ *                 example: "PRESENT"
+ *     responses:
+ *       200:
+ *         description: Attendance updated by admin successfully
+ *       400:
+ *         description: Bad request
+ */
+router.put("/attendance/admin-update", fieldWorkController.adminUpdateAttendance);
+
+/**
+ * @swagger
+ * /api/attendance/holiday:
+ *   post:
+ *     summary: Add or update holiday (Admin only)
+ *     tags: [Attendance]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - date
+ *             properties:
+ *               date:
+ *                 type: string
+ *                 format: date
+ *                 example: "2024-01-26"
+ *               description:
+ *                 type: string
+ *                 example: "Republic Day"
+ *     responses:
+ *       200:
+ *         description: Holiday added/updated successfully
+ *       400:
+ *         description: Bad request
+ */
+router.post("/attendance/holiday", fieldWorkController.addHoliday);
+
+/**
+ * @swagger
+ * /api/attendance/weekends:
+ *   post:
+ *     summary: Mark weekends for a date range (Admin only)
+ *     tags: [Attendance]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - startDate
+ *               - endDate
+ *             properties:
+ *               startDate:
+ *                 type: string
+ *                 format: date
+ *                 example: "2024-01-01"
+ *               endDate:
+ *                 type: string
+ *                 format: date
+ *                 example: "2024-12-31"
+ *     responses:
+ *       200:
+ *         description: Weekends marked successfully
+ *       400:
+ *         description: Bad request
+ */
+router.post("/attendance/weekends", fieldWorkController.markWeekends);
+
+/**
+ * @swagger
+ * /api/attendance/monthly-report:
+ *   get:
+ *     summary: Get monthly attendance report for an employee
+ *     tags: [Attendance]
+ *     parameters:
+ *       - in: query
+ *         name: employeeId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Employee ID
+ *       - in: query
+ *         name: month
+ *         required: true
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 12
+ *         example: 1
+ *         description: Month (1-12)
+ *       - in: query
+ *         name: year
+ *         required: true
+ *         schema:
+ *           type: integer
+ *           minimum: 2000
+ *         example: 2024
+ *         description: Year
+ *     responses:
+ *       200:
+ *         description: Monthly report fetched successfully
+ *       400:
+ *         description: Bad request
+ */
+router.get("/attendance/monthly-report", fieldWorkController.getMonthlyReport);
+
 export default router;

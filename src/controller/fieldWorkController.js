@@ -4,6 +4,7 @@ import * as sessionService from '../service/sessionService.js'
 import * as walletService from '../service/walletService.js'
 import * as trainingService from '../service/trainingService.js'
 import * as agentService from '../service/agentService.js'
+import * as attendanceService from "../service/attendanceService.js"
 
 export const createAssignedVillage = async (req, res) => {
   try {
@@ -558,6 +559,148 @@ export const getLandFeedback = async (req, res) => {
   } catch (error) {
     return res.status(500).json({
       message: error.message || "Something went wrong",
+    });
+  }
+};
+
+export const getCalendarWithAttendance = async (req, res) => {
+  try {
+    const employeeId = req.user?.id;
+    const { startDate, endDate } = req.query;
+
+    const data = await attendanceService.getCalendarWithAttendance(
+      employeeId,
+      startDate,
+      endDate
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Calendar with attendance fetched successfully",
+      data,
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const markAttendance = async (req, res) => {
+  try {
+    const employeeId = req.user?.id;
+    const { date, status } = req.body;
+
+    if (!employeeId) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    const record = await attendanceService.markAttendance(
+      employeeId,
+      date,
+      status
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Attendance marked successfully",
+      data: record,
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const adminUpdateAttendance = async (req, res) => {
+  try {
+    const { employeeId, date, status } = req.body;
+
+    const record = await attendanceService.adminUpdateAttendance(
+      employeeId,
+      date,
+      status
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Attendance updated by admin successfully",
+      data: record,
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const addHoliday = async (req, res) => {
+  try {
+    const { date, description } = req.body;
+
+    const record = await attendanceService.addHoliday(date, description);
+
+    res.status(200).json({
+      success: true,
+      message: "Holiday added/updated successfully",
+      data: record,
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const markWeekends = async (req, res) => {
+  try {
+    const { startDate, endDate } = req.body;
+
+    const data = await attendanceService.markWeekends(
+      startDate,
+      endDate
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Weekends marked successfully",
+      data,
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const getMonthlyReport = async (req, res) => {
+  try {
+    const { employeeId, month, year } = req.query;
+
+    const report = await attendanceService.getMonthlyReport(
+      employeeId,
+      month,
+      year
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Monthly report fetched successfully",
+      data: report,
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error.message,
     });
   }
 };

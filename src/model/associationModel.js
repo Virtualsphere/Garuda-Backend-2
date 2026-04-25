@@ -26,10 +26,22 @@ import TravelWallet from "./travelWalletModel.js";
 import Path from "./pathModel.js";
 import LandFeedBack from "./landFeedBackModel.js";
 import Agent from "./agentModel.js";
+import Attendance from "./attendanceModel.js";
+import Calendar from "./calendarModel.js";
 
 Employee.hasMany(Land, {
   foreignKey: "created_by",
   as: "createdLands",
+});
+
+Employee.hasMany(Attendance, { 
+  foreignKey: "employee_id",
+  as: "employeeAttendance"
+});
+
+Attendance.belongsTo(Employee, {
+  foreignKey: "employee_id",
+  as: "employeeAttendance"
 });
 
 Employee.hasMany(Agent, {
@@ -400,5 +412,6 @@ export {
   TravelWallet,
   Path,
   LandFeedBack,
-  Agent
+  Agent,
+  Attendance
 };
