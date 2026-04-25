@@ -34,7 +34,7 @@ const getLandWithFarmerDetails = async (landIds = []) => {
   return lands;
 };
 
-const DEFAULT_LAND_IMAGE = "http://72.61.169.226:5000/public/temp/1776862609344-180630236-images (2).jpeg";
+const DEFAULT_LAND_IMAGE = "http://72.61.169.226:5000/public/temp/1777114406616-370160143-images (3).jpeg";
 
 export const createLand = async (data, employeeId) => {
   const t = await sequelize.transaction();

@@ -238,7 +238,7 @@ const router = express.Router();
  *                       enum: [image, video]
  *                     url:
  *                       type: string
- *                       example: "https://example.com/image.jpg"
+ *                       example: "http://72.61.169.226:5000/public/temp/1777114406616-370160143-images (3).jpeg"
  *
  *               documents:
  *                 type: array
@@ -250,7 +250,7 @@ const router = express.Router();
  *                       enum: [PASSBOOK, AADHAR, TITLE_DEED]
  *                     file_url:
  *                       type: string
- *                       example: "https://example.com/doc.pdf"
+ *                       example: "http://72.61.169.226:5000/public/temp/1777114406616-370160143-images (3).jpeg"
  *
  *     responses:
  *       201:
@@ -579,7 +579,7 @@ router.get("/land/:id", landController.getLandById);
  *                       enum: [image, video]
  *                     url:
  *                       type: string
- *                       example: "https://example.com/image.jpg"
+ *                       example: "http://72.61.169.226:5000/public/temp/1777114406616-370160143-images (3).jpeg"
  *
  *               documents:
  *                 type: array
@@ -591,7 +591,7 @@ router.get("/land/:id", landController.getLandById);
  *                       enum: [PASSBOOK, AADHAR, TITLE_DEED]
  *                     file_url:
  *                       type: string
- *                       example: "https://example.com/doc.pdf"
+ *                       example: "http://72.61.169.226:5000/public/temp/1777114406616-370160143-images (3).jpeg"
  *
  *     responses:
  *       200:
@@ -665,6 +665,10 @@ router.put("/land/:id", verifyToken, landController.updateLand);
  *               form_status:
  *                 type: string
  *                 enum: [draft, complete, review]
+ * 
+ *               physcial_verification_status:
+ *                 type: string
+ *                 enum: [pending, complete]
  * 
  *               farmerDetails:
  *                 type: object
@@ -837,7 +841,7 @@ router.put("/land/:id", verifyToken, landController.updateLand);
  *                       enum: [image, video]
  *                     url:
  *                       type: string
- *                       example: "https://example.com/image.jpg"
+ *                       example: "http://72.61.169.226:5000/public/temp/1777114406616-370160143-images (3).jpeg"
  *
  *               documents:
  *                 type: array
@@ -849,7 +853,7 @@ router.put("/land/:id", verifyToken, landController.updateLand);
  *                       enum: [PASSBOOK, AADHAR, TITLE_DEED]
  *                     file_url:
  *                       type: string
- *                       example: "https://example.com/doc.pdf"
+ *                       example: "http://72.61.169.226:5000/public/temp/1777114406616-370160143-images (3).jpeg"
  *
  *     responses:
  *       200:
@@ -857,7 +861,7 @@ router.put("/land/:id", verifyToken, landController.updateLand);
  *       400:
  *         description: Bad request
  */
-router.put("/land/:id", verifyToken, landController.updateLandForVerify);
+router.put("/land/verify/:id", verifyToken, landController.updateLandForVerify);
 
 /* =====================================================
    DELETE LAND (PROTECTED)

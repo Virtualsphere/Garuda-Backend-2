@@ -44,6 +44,14 @@ const Land = sequelize.define("Land", {
     type: DataTypes.ENUM('draft', 'complete', 'review'),
     defaultValue: 'complete'
   },
+  physcial_verification_status: {
+    type: DataTypes.ENUM('pending', 'complete'),
+    defaultValue: 'pending'
+  },
+  verification_status: {
+    type: DataTypes.ENUM('pending', 'complete'),
+    defaultValue: "pending"
+  },
   availablity: {
     type: DataTypes.ENUM('sold', 'available'),
     defaultValue: 'available'
