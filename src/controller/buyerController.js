@@ -244,20 +244,56 @@ export const getAllLandsForUser = async (req, res) => {
       electricity
     } = req.query;
 
-    // Convert types (IMPORTANT)
+    // helper to clean invalid values
+    const clean = (val) => {
+      if (
+        val === undefined ||
+        val === null ||
+        val === "" ||
+        val === "undefined" ||
+        val === "null"
+      ) return undefined;
+      return val;
+    };
+
     const filters = {
-      state,
-      district,
-      mandal,
-      min_price_per_acre: min_price_per_acre ? Number(min_price_per_acre) : undefined,
-      max_price_per_acre: max_price_per_acre ? Number(max_price_per_acre) : undefined,
-      min_total_budget: min_total_budget ? Number(min_total_budget) : undefined,
-      max_total_budget: max_total_budget ? Number(max_total_budget) : undefined,
-      water_source: water_source ? JSON.parse(water_source) : undefined,
-      electricity: electricity ? JSON.parse(electricity) : undefined,
-      poultry_shed: poultry_shed === "true",
-      cow_shed: cow_shed === "true",
-      farm_pond: farm_pond === "true",
+      state: clean(state),
+      district: clean(district),
+      mandal: clean(mandal),
+
+      min_price_per_acre: clean(min_price_per_acre)
+        ? Number(min_price_per_acre)
+        : undefined,
+
+      max_price_per_acre: clean(max_price_per_acre)
+        ? Number(max_price_per_acre)
+        : undefined,
+
+      min_total_budget: clean(min_total_budget)
+        ? Number(min_total_budget)
+        : undefined,
+
+      max_total_budget: clean(max_total_budget)
+        ? Number(max_total_budget)
+        : undefined,
+
+      water_source: clean(water_source)
+        ? JSON.parse(water_source)
+        : undefined,
+
+      electricity: clean(electricity)
+        ? JSON.parse(electricity)
+        : undefined,
+
+      // ✅ FIX: only apply if provided
+      poultry_shed:
+        poultry_shed !== undefined ? poultry_shed === "true" : undefined,
+
+      cow_shed:
+        cow_shed !== undefined ? cow_shed === "true" : undefined,
+
+      farm_pond:
+        farm_pond !== undefined ? farm_pond === "true" : undefined,
     };
 
     const lands = await landService.getAllLandsForUser(filters);

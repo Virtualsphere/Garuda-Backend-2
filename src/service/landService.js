@@ -155,14 +155,18 @@ export const getAllLandsForUser = async (filters = {}) => {
     electricity
   } = filters;
 
-  // Land table filters
+  // -------------------------
+  // Land filters
+  // -------------------------
   const landWhere = {};
 
   if (state) landWhere.state = state;
   if (district) landWhere.district = district;
   if (mandal) landWhere.mandal = mandal;
 
+  // -------------------------
   // LandDetails filters
+  // -------------------------
   const landDetailsWhere = {};
 
   if (min_price_per_acre || max_price_per_acre) {
@@ -179,54 +183,56 @@ export const getAllLandsForUser = async (filters = {}) => {
     };
   }
 
-  if (water_source && water_source.length > 0) {
+  // ✅ FIX: object check instead of length
+  if (water_source && Object.keys(water_source).length > 0) {
     landDetailsWhere.water_source = {
       [Op.contains]: water_source,
     };
   }
 
-  if (electricity && electricity.length > 0) {
+  if (electricity && Object.keys(electricity).length > 0) {
     landDetailsWhere.electricity = {
       [Op.contains]: electricity,
     };
   }
 
+  // ✅ only apply if explicitly provided
   if (farm_pond !== undefined) {
     landDetailsWhere.farm_pond = farm_pond;
   }
 
-  if (poultry_shed) {
-    landDetailsWhere.poultry_shed_number = {
-      [Op.gt]: 0,
-    };
+  if (poultry_shed === true) {
+    landDetailsWhere.poultry_shed_number = { [Op.gt]: 0 };
   }
 
-  if (cow_shed) {
-    landDetailsWhere.cow_shed_number = {
-      [Op.gt]: 0,
-    };
+  if (cow_shed === true) {
+    landDetailsWhere.cow_shed_number = { [Op.gt]: 0 };
   }
 
-  // Build include dynamically
+  // -------------------------
+  // Include logic
+  // -------------------------
   const landDetailsInclude = {
     model: LandDetails,
     as: "landDetails",
+    required: false, // default LEFT JOIN
   };
 
   if (Object.keys(landDetailsWhere).length > 0) {
     landDetailsInclude.where = landDetailsWhere;
-    landDetailsInclude.required = true; // INNER JOIN when filtering
-  } else {
-    landDetailsInclude.required = false; // LEFT JOIN when no filters
+    landDetailsInclude.required = true; // INNER JOIN only when filtering
   }
 
+  // -------------------------
+  // Final query
+  // -------------------------
   return await Land.findAll({
     where: landWhere,
     include: [
       landDetailsInclude,
-      { model: LandGPS, as: "gps" },
-      { model: LandMedia, as: "media" },
-      { model: LandDocuments, as: "documents" },
+      { model: LandGPS, as: "gps", required: false },
+      { model: LandMedia, as: "media", required: false },
+      { model: LandDocuments, as: "documents", required: false },
     ],
     order: [["created_at", "DESC"]],
   });
