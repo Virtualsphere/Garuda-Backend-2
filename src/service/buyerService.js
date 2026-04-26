@@ -17,12 +17,58 @@ import {
   LandDetails,
   FarmerDetails
 } from "../model/associationModel.js";
+import { sendEmail } from "../middleware/mail.js";
 
 const ACCESS_TOKEN_SECRET = process.env.JWT_SECRET;
 const REFRESH_TOKEN_SECRET = process.env.REFRESH_SECRET;
 const ACCESS_TOKEN_EXPIRY = "60m";
 const REFRESH_TOKEN_EXPIRY_DAYS = 60;
 
+export const forgotPassword = async (email) => {
+  const buyer = await Buyer.findOne({ where: { email } });
+
+  if (!buyer) throw new Error("User not found");
+
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+  const expiry = new Date(Date.now() + 10 * 60 * 1000);
+
+  await buyer.update({
+    reset_token: otp,
+    reset_token_expiry: expiry,
+  });
+
+  await sendEmail(
+    email,
+    "Password Reset OTP",
+    `Your OTP is ${otp}`
+  );
+
+  return true;
+};
+
+export const resetPassword = async ({ email, otp, newPassword }) => {
+  const buyer = await Buyer.findOne({ where: { email } });
+
+  if (!buyer) throw new Error("User not found");
+
+  if (
+    buyer.reset_token !== otp ||
+    new Date() > buyer.reset_token_expiry
+  ) {
+    throw new Error("Invalid or expired OTP");
+  }
+
+  const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+  await buyer.update({
+    password: hashedPassword,
+    reset_token: null,
+    reset_token_expiry: null,
+  });
+
+  return true;
+};
 
 const generateAccessToken = (buyer) => {
   return jwt.sign(

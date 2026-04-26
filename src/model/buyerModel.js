@@ -23,7 +23,13 @@ const Buyer= sequelize.define("Buyer", {
     },
     photo: {
         type: DataTypes.STRING
-    }
+    },
+    reset_token: {
+        type: DataTypes.STRING,
+        },
+    reset_token_expiry: {
+        type: DataTypes.DATE,
+    },
 },{
   tableName: "buyers",
   timestamps: true,

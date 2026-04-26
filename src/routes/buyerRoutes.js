@@ -121,6 +121,70 @@ router.post("/buyer/login", buyerController.login);
  */
 router.post("/buyer/refresh", buyerController.refreshToken);
 
+/**
+ * @swagger
+ * /api/buyer/forgot-password:
+ *   post:
+ *     summary: Send OTP to email for password reset
+ *     tags: [Buyer]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 example: "rahul@gmail.com"
+ *
+ *     responses:
+ *       200:
+ *         description: OTP sent successfully
+ *       404:
+ *         description: User not found
+ */
+router.post("/buyer/forgot-password", buyerController.forgotPassword);
+
+/**
+ * @swagger
+ * /api/buyer/reset-password:
+ *   post:
+ *     summary: Reset password using OTP
+ *     tags: [Buyer]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - otp
+ *               - newPassword
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 example: "rahul@gmail.com"
+ *
+ *               otp:
+ *                 type: string
+ *                 example: "123456"
+ *
+ *               newPassword:
+ *                 type: string
+ *                 example: "newpassword123"
+ *
+ *     responses:
+ *       200:
+ *         description: Password reset successful
+ *       400:
+ *         description: Invalid OTP or request
+ */
+router.post("/buyer/reset-password", buyerController.resetPassword);
+
 /* =====================================================
    UPDATE BUYER (PROTECTED)
 ===================================================== */

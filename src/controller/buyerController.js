@@ -2,6 +2,73 @@ import * as buyerService from "../service/buyerService.js";
 import * as landService from "../service/landService.js";
 import * as paymentService from "../service/paymentService.js"
 
+export const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: "Email is required",
+      });
+    }
+
+    await buyerService.forgotPassword(email);
+
+    return res.status(200).json({
+      success: true,
+      message: "OTP sent to your email",
+    });
+  } catch (error) {
+    if (error.message === "User not found") {
+      return res.status(404).json({
+        success: false,
+        message: error.message,
+      });
+    }
+
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const resetPassword = async (req, res) => {
+  try {
+    const { email, otp, newPassword } = req.body;
+
+    if (!email || !otp || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "Email, OTP and newPassword are required",
+      });
+    }
+
+    await buyerService.resetPassword({ email, otp, newPassword });
+
+    return res.status(200).json({
+      success: true,
+      message: "Password reset successfully",
+    });
+  } catch (error) {
+    if (
+      error.message === "User not found" ||
+      error.message === "Invalid or expired OTP"
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: error.message,
+      });
+    }
+
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 export const signup = async (req, res) => {
   try {
     const buyer = await buyerService.signup(req.body);
