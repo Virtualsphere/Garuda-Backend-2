@@ -22,6 +22,7 @@ const LandMedia = sequelize.define("LandMedia", {
       "trees",
       "rocks",
       "electric_poles",
+      "farmer_aggrement",
       "others",
       "video"
     ),
