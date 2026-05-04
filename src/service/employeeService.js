@@ -117,6 +117,13 @@ export const login = async ({ email, password }) => {
   const isMatch = await bcrypt.compare(password, employee.password);
   if (!isMatch) throw new Error("Invalid credentials");
 
+  await RefreshToken.destroy({
+    where: {
+      user_id: employee.id,
+      role: employee.role
+    }
+  });
+
   const accessToken = generateAccessToken(employee);
   const refreshToken = await generateRefreshToken(employee);
 
