@@ -36,6 +36,7 @@ export const forgotPassword = async (email) => {
   await buyer.update({
     reset_token: otp,
     reset_token_expiry: expiry,
+    otp_verified: false,
   });
 
   await sendEmail(
@@ -47,7 +48,7 @@ export const forgotPassword = async (email) => {
   return true;
 };
 
-export const resetPassword = async ({ email, otp, newPassword }) => {
+export const verifyOtp = async ({ email, otp }) => {
   const buyer = await Buyer.findOne({ where: { email } });
 
   if (!buyer) throw new Error("User not found");
@@ -59,12 +60,29 @@ export const resetPassword = async ({ email, otp, newPassword }) => {
     throw new Error("Invalid or expired OTP");
   }
 
+  await buyer.update({
+    otp_verified: true,
+  });
+
+  return true;
+};
+
+export const resetPassword = async ({ email, newPassword }) => {
+  const buyer = await Buyer.findOne({ where: { email } });
+
+  if (!buyer) throw new Error("User not found");
+
+  if (!buyer.otp_verified) {
+    throw new Error("OTP not verified");
+  }
+
   const hashedPassword = await bcrypt.hash(newPassword, 10);
 
   await buyer.update({
     password: hashedPassword,
     reset_token: null,
     reset_token_expiry: null,
+    otp_verified: false,
   });
 
   return true;

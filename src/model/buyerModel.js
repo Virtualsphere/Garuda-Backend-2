@@ -30,6 +30,10 @@ const Buyer= sequelize.define("Buyer", {
     reset_token_expiry: {
         type: DataTypes.DATE,
     },
+    otp_verified: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+    },
 },{
   tableName: "buyers",
   timestamps: true,

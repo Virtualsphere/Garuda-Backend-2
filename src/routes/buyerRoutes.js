@@ -150,6 +150,40 @@ router.post("/buyer/forgot-password", buyerController.forgotPassword);
 
 /**
  * @swagger
+ * /api/buyer/verify-otp:
+ *   post:
+ *     summary: Verify OTP for password reset
+ *     tags: [Buyer]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - otp
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 example: "rahul@gmail.com"
+ *
+ *               otp:
+ *                 type: string
+ *                 example: "123456"
+ *
+ *     responses:
+ *       200:
+ *         description: OTP verified successfully
+ *       400:
+ *         description: Invalid or expired OTP
+ *       404:
+ *         description: User not found
+ */
+router.post("/buyer/verify-otp", buyerController.verifyOtp);
+
+/**
+ * @swagger
  * /api/buyer/reset-password:
  *   post:
  *     summary: Reset password using OTP
