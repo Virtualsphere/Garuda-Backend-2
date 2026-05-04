@@ -34,6 +34,41 @@ export const forgotPassword = async (req, res) => {
   }
 };
 
+export const verifyOtp = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+
+    if (!email || !otp) {
+      return res.status(400).json({
+        success: false,
+        message: "Email and OTP are required",
+      });
+    }
+
+    await buyerService.verifyOtp({ email, otp });
+
+    return res.status(200).json({
+      success: true,
+      message: "OTP verified successfully",
+    });
+  } catch (error) {
+    if (
+      error.message === "User not found" ||
+      error.message === "Invalid or expired OTP"
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: error.message,
+      });
+    }
+
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 export const resetPassword = async (req, res) => {
   try {
     const { email, otp, newPassword } = req.body;
