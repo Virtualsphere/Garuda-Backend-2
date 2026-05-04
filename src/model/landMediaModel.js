@@ -5,8 +5,7 @@ const LandMedia = sequelize.define("LandMedia", {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
 
   land_id: {
-    type: DataTypes.INTEGER,
-    allowNull: false
+    type: DataTypes.INTEGER
   },
 
   category: {
@@ -25,13 +24,11 @@ const LandMedia = sequelize.define("LandMedia", {
       "farmer_aggrement",
       "others",
       "video"
-    ),
-    allowNull: false
+    )
   },
 
   type: {
-    type: DataTypes.ENUM("image", "video"),
-    allowNull: false
+    type: DataTypes.ENUM("image", "video")
   },
 
   url: {

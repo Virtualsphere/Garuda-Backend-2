@@ -8,8 +8,7 @@ const FarmerDetails = sequelize.define("FarmerDetails", {
     autoIncrement: true
   },
   land_id: {
-    type: DataTypes.INTEGER,
-    allowNull: false
+    type: DataTypes.INTEGER
   },
   name: {
     type: DataTypes.STRING

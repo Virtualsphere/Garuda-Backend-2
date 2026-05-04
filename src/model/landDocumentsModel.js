@@ -5,8 +5,7 @@ const LandDocuments = sequelize.define("LandDocuments", {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
 
   land_id: {
-    type: DataTypes.INTEGER,
-    allowNull: false
+    type: DataTypes.INTEGER
   },
 
   doc_type: {
@@ -14,13 +13,11 @@ const LandDocuments = sequelize.define("LandDocuments", {
       "PASSBOOK",
       "AADHAR",
       "TITLE_DEED"
-    ),
-    allowNull: false
+    )
   },
 
   file_url: {
-    type: DataTypes.TEXT,
-    allowNull: false
+    type: DataTypes.TEXT
   }
 
 }, {
