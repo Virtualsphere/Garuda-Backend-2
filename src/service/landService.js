@@ -720,7 +720,6 @@ export const getPathsByEmployee = async (employeeId) => {
   });
 };
 
-
 export const getPathsByEmployeeWithLatAndLong = async (employeeId) => {
   const paths = await Path.findAll({
     where: { employee_id: employeeId },
@@ -745,3 +744,149 @@ export const getPathsByEmployeeWithLatAndLong = async (employeeId) => {
     };
   });
 };
+
+export const updateLandForCallVerify = async (id, data, employeeId) => {
+  const t = await sequelize.transaction();
+
+  try {
+    const land = await Land.findByPk(id);
+    if (!land) throw new Error("Land not found");
+
+    const {
+      farmerDetails,
+      landDetails,
+      gps,
+      media,
+      documents,
+      ...landData
+    } = data;
+
+    await land.update(
+      {
+        ...landData,
+        call_verification_by: employeeId,
+      },
+      { transaction: t }
+    );
+
+    if (farmerDetails) {
+      const existing = await FarmerDetails.findOne({ where: { land_id: id } });
+
+      if (existing) {
+        await existing.update(farmerDetails, { transaction: t });
+      } else {
+        await FarmerDetails.create(
+          { ...farmerDetails, land_id: id },
+          { transaction: t }
+        );
+      }
+    }
+
+    if (landDetails) {
+      const existing = await LandDetails.findOne({ where: { land_id: id } });
+
+      if (existing) {
+        await existing.update(landDetails, { transaction: t });
+      } else {
+        await LandDetails.create(
+          { ...landDetails, land_id: id },
+          { transaction: t }
+        );
+      }
+    }
+
+    if (gps) {
+      const existing = await LandGPS.findOne({ where: { land_id: id } });
+
+      if (existing) {
+        await existing.update(gps, { transaction: t });
+      } else {
+        await LandGPS.create(
+          { ...gps, land_id: id },
+          { transaction: t }
+        );
+      }
+    }
+
+    if (media) {
+      await LandMedia.destroy({ where: { land_id: id }, transaction: t });
+
+      const mediaData = media.map((m) => ({
+        ...m,
+        land_id: id,
+      }));
+
+      await LandMedia.bulkCreate(mediaData, { transaction: t });
+    }
+
+    if (documents) {
+      await LandDocuments.destroy({ where: { land_id: id }, transaction: t });
+
+      const docData = documents.map((d) => ({
+        ...d,
+        land_id: id,
+      }));
+
+      await LandDocuments.bulkCreate(docData, { transaction: t });
+    }
+
+    await t.commit();
+
+    return await getLandById(id);
+  } catch (error) {
+    await t.rollback();
+    throw error;
+  }
+};
+
+export const getPendingCallVerificationLands = async (status) => {
+  return await Land.findAll({
+    where: {
+      call_verification_status: status,
+      form_status: "complete",
+    },
+    include: [
+      { model: FarmerDetails, as: "farmerDetails" },
+      { model: LandDetails, as: "landDetails" },
+      { model: LandGPS, as: "gps" },
+      { model: LandMedia, as: "media" },
+      { model: LandDocuments, as: "documents" },
+    ],
+    order: [["created_at", "DESC"]],
+  });
+};
+
+export const getPendingPhysicalVerificationLands = async (status) => {
+  return await Land.findAll({
+    where: {
+      call_verification_status: "complete",
+      physcial_verification_status: status,
+    },
+    include: [
+      { model: FarmerDetails, as: "farmerDetails" },
+      { model: LandDetails, as: "landDetails" },
+      { model: LandGPS, as: "gps" },
+      { model: LandMedia, as: "media" },
+      { model: LandDocuments, as: "documents" },
+    ],
+    order: [["created_at", "DESC"]],
+  });
+};
+
+export const getPendingFinalVerificationLands = async (status) => {
+  return await Land.findAll({
+    where: {
+      physcial_verification_status: "complete",
+      verification_status: status,
+    },
+    include: [
+      { model: FarmerDetails, as: "farmerDetails" },
+      { model: LandDetails, as: "landDetails" },
+      { model: LandGPS, as: "gps" },
+      { model: LandMedia, as: "media" },
+      { model: LandDocuments, as: "documents" },
+    ],
+    order: [["created_at", "DESC"]],
+  });
+};
+

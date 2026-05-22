@@ -187,3 +187,77 @@ export const getLandByStatus = async (req, res) => {
     });
   }
 };
+
+export const updateLandForCallVerify = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const employeeId = req.user?.id;
+
+    const updatedLand = await landService.updateLandForCallVerify(id, req.body, employeeId);
+
+    res.status(200).json({
+      success: true,
+      message: "Land verified successfully",
+      data: updatedLand,
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const getPendingCallVerificationLands = async (req, res) => {
+  try {
+    const { status } = req.params;
+
+    const lands = await landService.getPendingCallVerificationLands(status);
+
+    res.status(200).json({
+      success: true,
+      data: lands,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const getPendingPhysicalVerificationLands = async (req, res) => {
+  try {
+    const { status } = req.params;
+
+    const lands = await landService.getPendingPhysicalVerificationLands(status);
+
+    res.status(200).json({
+      success: true,
+      data: lands,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const getPendingFinalVerificationLands = async (req, res) => {
+  try {
+    const { status } = req.params;
+
+    const lands = await landService.getPendingFinalVerificationLands(status);
+
+    res.status(200).json({
+      success: true,
+      data: lands,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};

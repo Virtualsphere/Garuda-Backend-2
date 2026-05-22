@@ -25,7 +25,10 @@ const Land = sequelize.define("Land", {
   location_longitude:{
     type: DataTypes.TEXT
   },
-  land_status: {
+  land_sale_available_status: {
+    type: DataTypes.JSONB
+  },
+  mortage_availability_status: {
     type: DataTypes.JSONB
   },
   urgency_listing: {
@@ -39,6 +42,13 @@ const Land = sequelize.define("Land", {
   },
   verified_by: {
     type: DataTypes.INTEGER,
+  },
+  call_verification_by: {
+    type: DataTypes.INTEGER
+  },
+  call_verification_status: {
+    type: DataTypes.ENUM('complete', 'pending', 'rejected'),
+    defaultValue: 'pending'
   },
   form_status: {
     type: DataTypes.ENUM('draft', 'complete', 'review'),
