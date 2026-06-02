@@ -28,6 +28,7 @@ import LandFeedBack from "./landFeedBackModel.js";
 import Agent from "./agentModel.js";
 import Attendance from "./attendanceModel.js";
 import Calendar from "./calendarModel.js";
+import Town from "./townModel.js";
 
 Employee.hasMany(Land, {
   foreignKey: "created_by",

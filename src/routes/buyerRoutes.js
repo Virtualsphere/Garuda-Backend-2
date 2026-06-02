@@ -322,6 +322,8 @@ router.post("/buyer/logout", buyerController.logout);
  *     summary: Get all lands with optional filters
  *     tags: [Buyer]
  *     parameters:
+ *
+ *       # ─── Location ───────────────────────────────────────────────
  *       - in: query
  *         name: state
  *         schema:
@@ -341,6 +343,28 @@ router.post("/buyer/logout", buyerController.logout);
  *         description: Filter by mandal
  *
  *       - in: query
+ *         name: town
+ *         schema:
+ *           type: string
+ *         description: >
+ *           Filter by town (accepted by API but not applied on backend —
+ *           town field is not yet defined in the database)
+ *
+ *       # ─── Budget ─────────────────────────────────────────────────
+ *       - in: query
+ *         name: min_total_budget
+ *         schema:
+ *           type: number
+ *         description: Minimum total budget (maps to total_value)
+ *
+ *       - in: query
+ *         name: max_total_budget
+ *         schema:
+ *           type: number
+ *         description: Maximum total budget (maps to total_value)
+ *
+ *       # ─── Price Per Acre ──────────────────────────────────────────
+ *       - in: query
  *         name: min_price_per_acre
  *         schema:
  *           type: number
@@ -352,53 +376,132 @@ router.post("/buyer/logout", buyerController.logout);
  *           type: number
  *         description: Maximum price per acre
  *
+ *       # ─── Area Range ──────────────────────────────────────────────
  *       - in: query
- *         name: min_total_budget
+ *         name: min_acres
  *         schema:
  *           type: number
- *         description: Minimum total budget
+ *         description: Minimum land area in acres (maps to total_acres)
  *
  *       - in: query
- *         name: max_total_budget
+ *         name: max_acres
  *         schema:
  *           type: number
- *         description: Maximum total budget
+ *         description: Maximum land area in acres (maps to total_acres)
+ *
+ *       # ─── Property Characteristics ───────────────────────────────
+ *       - in: query
+ *         name: soil_type
+ *         schema:
+ *           type: string
+ *           enum: [Red, Black, Mixed Red, Sandy, Alluvial]
+ *         description: >
+ *           Filter by soil type. Send "all" or omit to skip this filter.
  *
  *       - in: query
- *         name: farm_pond
+ *         name: nearest_road_type
  *         schema:
- *           type: boolean
- *         description: Filter lands with farm pond
+ *           type: string
+ *           enum: [Highway, Double Road, Single Road, Gravel Road]
+ *         description: >
+ *           Filter by nearest road type. Send "all" or omit to skip this filter.
  *
  *       - in: query
- *         name: poultry_shed
+ *         name: land_attached_to_road
  *         schema:
- *           type: boolean
- *         description: Filter lands with poultry shed
- *
- *       - in: query
- *         name: cow_shed
- *         schema:
- *           type: boolean
- *         description: Filter lands with cow shed
+ *           type: string
+ *           enum: [yes, no]
+ *         description: >
+ *           Whether the land is directly attached to a road.
+ *           Send "all" or omit to skip this filter.
  *
  *       - in: query
  *         name: water_source
  *         schema:
  *           type: string
- *         description: 'JSON string for water source filter (e.g. {"borewell": true})'
+ *         description: >
+ *           JSON array of water source values to filter by (uses JSONB contains).
+ *           Example: ["Borewell", "Canal"]
+ *           Send "all", empty array, or omit to skip this filter.
+ *
+ *       - in: query
+ *         name: farm_pond
+ *         schema:
+ *           type: boolean
+ *         description: >
+ *           Filter lands that have a farm pond.
+ *           Send "all" or omit to skip this filter.
+ *
+ *       - in: query
+ *         name: residence
+ *         schema:
+ *           type: string
+ *         description: >
+ *           JSON array of residence types to filter by (uses JSONB contains).
+ *           Example: ["Developed Farm House", "RCC House"]
+ *           Send "all", empty array, or omit to skip this filter.
+ *
+ *       - in: query
+ *         name: fencing_status
+ *         schema:
+ *           type: string
+ *           enum: [All Sides with Gate, All Sides, Partially, No]
+ *         description: >
+ *           Filter by fencing status. Send "all" or omit to skip this filter.
+ *
+ *       - in: query
+ *         name: poultry_shed
+ *         schema:
+ *           type: boolean
+ *         description: >
+ *           Filter lands that have at least one poultry shed
+ *           (poultry_shed_number > 0). Omit to skip this filter.
+ *
+ *       - in: query
+ *         name: cow_shed
+ *         schema:
+ *           type: boolean
+ *         description: >
+ *           Filter lands that have at least one cow shed
+ *           (cow_shed_number > 0). Omit to skip this filter.
  *
  *       - in: query
  *         name: electricity
  *         schema:
  *           type: string
- *         description: 'JSON string for electricity filter (e.g. {"available": true})'
+ *         description: >
+ *           JSON array of electricity values to filter by (uses JSONB contains).
+ *           Example: ["3 Phase", "Solar"]
+ *           Send "all", empty array, or omit to skip this filter.
  *
  *     responses:
  *       200:
- *         description: List of lands
+ *         description: List of lands matching the given filters
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
  *       500:
- *         description: Server Error
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: Internal server error
  */
 router.get("/buyer/land", buyerController.getAllLandsForUser);
 

@@ -335,80 +335,75 @@ export const getAllLandsForUser = async (req, res) => {
       state,
       district,
       mandal,
+      town,
       min_price_per_acre,
       max_price_per_acre,
       min_total_budget,
       max_total_budget,
+      min_acres,
+      max_acres,
+      soil_type,
+      nearest_road_type,
+      land_attached_to_road,
       water_source,
+      farm_pond,
+      residence,
+      fencing_status,
       poultry_shed,
       cow_shed,
-      farm_pond,
-      electricity
+      electricity,
     } = req.query;
 
-    // helper to clean invalid values
+    // Returns undefined for any empty / null / "undefined" / "null" / "all" value
     const clean = (val) => {
       if (
         val === undefined ||
         val === null ||
         val === "" ||
         val === "undefined" ||
-        val === "null"
-      ) return undefined;
+        val === "null" ||
+        val.toString().toLowerCase() === "all"
+      )
+        return undefined;
       return val;
     };
 
     const filters = {
-      state: clean(state),
+      state:    clean(state),
       district: clean(district),
-      mandal: clean(mandal),
+      mandal:   clean(mandal),
+      // town is intentionally omitted — accepted but not forwarded
 
-      min_price_per_acre: clean(min_price_per_acre)
-        ? Number(min_price_per_acre)
-        : undefined,
+      min_price_per_acre: clean(min_price_per_acre) ? Number(min_price_per_acre) : undefined,
+      max_price_per_acre: clean(max_price_per_acre) ? Number(max_price_per_acre) : undefined,
 
-      max_price_per_acre: clean(max_price_per_acre)
-        ? Number(max_price_per_acre)
-        : undefined,
+      min_total_budget: clean(min_total_budget) ? Number(min_total_budget) : undefined,
+      max_total_budget: clean(max_total_budget) ? Number(max_total_budget) : undefined,
 
-      min_total_budget: clean(min_total_budget)
-        ? Number(min_total_budget)
-        : undefined,
+      min_acres: clean(min_acres) ? Number(min_acres) : undefined,
+      max_acres: clean(max_acres) ? Number(max_acres) : undefined,
 
-      max_total_budget: clean(max_total_budget)
-        ? Number(max_total_budget)
-        : undefined,
+      soil_type:            clean(soil_type),
+      nearest_road_type:    clean(nearest_road_type),
+      land_attached_to_road: clean(land_attached_to_road),
+      fencing_status:       clean(fencing_status),
 
-      water_source: clean(water_source)
-        ? JSON.parse(water_source)
-        : undefined,
+      // JSON array fields — parse only when present and not "all"
+      water_source: clean(water_source) ? JSON.parse(water_source) : undefined,
+      residence:    clean(residence)    ? JSON.parse(residence)    : undefined,
+      electricity:  clean(electricity)  ? JSON.parse(electricity)  : undefined,
 
-      electricity: clean(electricity)
-        ? JSON.parse(electricity)
-        : undefined,
-
-      // ✅ FIX: only apply if provided
-      poultry_shed:
-        poultry_shed !== undefined ? poultry_shed === "true" : undefined,
-
-      cow_shed:
-        cow_shed !== undefined ? cow_shed === "true" : undefined,
-
-      farm_pond:
-        farm_pond !== undefined ? farm_pond === "true" : undefined,
+      // Boolean fields — only apply when explicitly "true" or "false"
+      farm_pond:    clean(farm_pond)    !== undefined ? farm_pond    === "true" : undefined,
+      poultry_shed: clean(poultry_shed) !== undefined ? poultry_shed === "true" : undefined,
+      cow_shed:     clean(cow_shed)     !== undefined ? cow_shed     === "true" : undefined,
     };
 
     const lands = await landService.getAllLandsForUser(filters);
 
-    res.status(200).json({
-      success: true,
-      data: lands,
-    });
+    res.status(200).json({ success: true, data: lands });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 

@@ -34,7 +34,7 @@ const getLandWithFarmerDetails = async (landIds = []) => {
   return lands;
 };
 
-const DEFAULT_LAND_IMAGE = "http://72.61.169.226:5000/public/temp/1777114406616-370160143-images (3).jpeg";
+const DEFAULT_LAND_IMAGE = "https://images.pexels.com/photos/7752033/pexels-photo-7752033.jpeg?cs=srgb&amp;dl=pexels-altaf-shah-3143825-7752033.jpg&amp;fm=jpg&amp;_gl=1*1rbwsk6*_ga*MTcwODY3MTM2Mi4xNzYzMTIzMzA3*_ga_8JE65Q40S6*czE3ODA0MTg1MDYkbzIkZzAkdDE3ODA0MTg1MDYkajYwJGwwJGgw";
 
 export const createLand = async (data, employeeId) => {
   const t = await sequelize.transaction();
@@ -140,83 +140,126 @@ export const getAllLandsForUser = async (filters = {}) => {
     state,
     district,
     mandal,
+    // town — not destructured, intentionally ignored
     min_price_per_acre,
     max_price_per_acre,
     min_total_budget,
     max_total_budget,
+    min_acres,
+    max_acres,
+    soil_type,
+    nearest_road_type,
+    land_attached_to_road,
     water_source,
+    farm_pond,
+    residence,
+    fencing_status,
     poultry_shed,
     cow_shed,
-    farm_pond,
-    electricity
+    electricity,
   } = filters;
 
   // -------------------------
-  // Land filters
+  // Land (top-level) filters
   // -------------------------
   const landWhere = {};
 
-  if (state) landWhere.state = state;
+  if (state)    landWhere.state    = state;
   if (district) landWhere.district = district;
-  if (mandal) landWhere.mandal = mandal;
+  if (mandal)   landWhere.mandal   = mandal;
 
   // -------------------------
   // LandDetails filters
   // -------------------------
   const landDetailsWhere = {};
 
+  // Price per acre range
   if (min_price_per_acre || max_price_per_acre) {
     landDetailsWhere.price_per_acres = {
-      ...(min_price_per_acre && { [Op.gte]: min_price_per_acre }),
-      ...(max_price_per_acre && { [Op.lte]: max_price_per_acre }),
+      ...(min_price_per_acre !== undefined && { [Op.gte]: min_price_per_acre }),
+      ...(max_price_per_acre !== undefined && { [Op.lte]: max_price_per_acre }),
     };
   }
 
+  // Total budget range
   if (min_total_budget || max_total_budget) {
     landDetailsWhere.total_value = {
-      ...(min_total_budget && { [Op.gte]: min_total_budget }),
-      ...(max_total_budget && { [Op.lte]: max_total_budget }),
+      ...(min_total_budget !== undefined && { [Op.gte]: min_total_budget }),
+      ...(max_total_budget !== undefined && { [Op.lte]: max_total_budget }),
     };
   }
 
-  // ✅ FIX: object check instead of length
-  if (water_source && Object.keys(water_source).length > 0) {
-    landDetailsWhere.water_source = {
-      [Op.contains]: water_source,
+  // Area range (acres)
+  if (min_acres || max_acres) {
+    landDetailsWhere.total_acres = {
+      ...(min_acres !== undefined && { [Op.gte]: min_acres }),
+      ...(max_acres !== undefined && { [Op.lte]: max_acres }),
     };
   }
 
-  if (electricity && Object.keys(electricity).length > 0) {
-    landDetailsWhere.electricity = {
-      [Op.contains]: electricity,
-    };
+  // Soil type — single string value from DB
+  if (soil_type) {
+    landDetailsWhere.soil_type = soil_type;
   }
 
-  // ✅ only apply if explicitly provided
+  // Nearest road type — single string value from DB
+  if (nearest_road_type) {
+    landDetailsWhere.nearest_road_type = nearest_road_type;
+  }
+
+  // Attached to road — ENUM 'yes' | 'no'
+  if (land_attached_to_road) {
+    landDetailsWhere.land_attached_to_road = land_attached_to_road; // expect "yes" or "no"
+  }
+
+  // Fencing status — single string value from DB
+  if (fencing_status) {
+    landDetailsWhere.fencing_status = fencing_status;
+  }
+
+  // Water source — JSONB array, use Op.contains
+  if (water_source && Array.isArray(water_source) && water_source.length > 0) {
+    landDetailsWhere.water_source = { [Op.contains]: water_source };
+  }
+
+  // Residence — JSONB array, use Op.contains
+  if (residence && Array.isArray(residence) && residence.length > 0) {
+    landDetailsWhere.residence = { [Op.contains]: residence };
+  }
+
+  // Electricity — JSONB array, use Op.contains
+  if (electricity && Array.isArray(electricity) && electricity.length > 0) {
+    landDetailsWhere.electricity = { [Op.contains]: electricity };
+  }
+
+  // Farm pond — boolean, only filter when explicitly provided
   if (farm_pond !== undefined) {
     landDetailsWhere.farm_pond = farm_pond;
   }
 
+  // Poultry shed — filter lands that have at least 1
   if (poultry_shed === true) {
     landDetailsWhere.poultry_shed_number = { [Op.gt]: 0 };
   }
 
+  // Cow shed — filter lands that have at least 1
   if (cow_shed === true) {
     landDetailsWhere.cow_shed_number = { [Op.gt]: 0 };
   }
 
   // -------------------------
-  // Include logic
+  // LandDetails include setup
   // -------------------------
   const landDetailsInclude = {
     model: LandDetails,
     as: "landDetails",
-    required: false, // default LEFT JOIN
+    required: false, // LEFT JOIN by default — returns all lands
   };
 
+  // Switch to INNER JOIN only when at least one detail-level filter is active
   if (Object.keys(landDetailsWhere).length > 0) {
     landDetailsInclude.where = landDetailsWhere;
-    landDetailsInclude.required = true; // INNER JOIN only when filtering
+    landDetailsInclude.required = true;
   }
 
   // -------------------------
@@ -226,9 +269,9 @@ export const getAllLandsForUser = async (filters = {}) => {
     where: landWhere,
     include: [
       landDetailsInclude,
-      { model: LandGPS, as: "gps", required: false },
-      { model: LandMedia, as: "media", required: false },
-      { model: LandDocuments, as: "documents", required: false },
+      { model: LandGPS,       as: "gps",       required: false },
+      { model: LandMedia,     as: "media",      required: false },
+      { model: LandDocuments, as: "documents",  required: false },
     ],
     order: [["created_at", "DESC"]],
   });
