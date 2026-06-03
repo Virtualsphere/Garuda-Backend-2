@@ -51,19 +51,31 @@ const parseTrees = (landDetails) => {
 
   return TREE_FIELD_MAP
     .map(({ field, type }) => {
-      const raw = landDetails[field]; // e.g. "mango-10" or "apple-10"
+      const raw = landDetails[field];
       if (!raw) return null;
 
-      const lastDash = raw.lastIndexOf("-");
-      if (lastDash === -1) return null;
+      let name = null;
+      let count = 0;
 
-      const name  = raw.slice(0, lastDash);   // "apple"
-      const count = parseInt(raw.slice(lastDash + 1), 10); // 10
+      const lastDash = raw.lastIndexOf("-");
+
+      if (lastDash !== -1) {
+        // Format: "apple-10" or "mango-5"
+        name  = raw.slice(0, lastDash);
+        count = parseInt(raw.slice(lastDash + 1), 10);
+      } else {
+        // Format: plain number string "5", "8"
+        count = parseInt(raw, 10);
+      }
 
       if (!count || count <= 0) return null;
 
       return {
-        type:  type ?? name.charAt(0).toUpperCase() + name.slice(1), // use dynamic name if type is null
+        // known type uses label, other with dash uses parsed name, other with plain number falls back to field name
+        type: type ?? (name
+          ? name.charAt(0).toUpperCase() + name.slice(1)
+          : field.replace("_trees_number", "").charAt(0).toUpperCase() + field.replace("_trees_number", "").slice(1)
+        ),
         count,
       };
     })
