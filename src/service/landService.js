@@ -94,7 +94,7 @@ export const createLand = async (data, employeeId) => {
     } 
     mediaData.push({
       land_id: land.id,
-      category: "default",
+      category: "card",
       type: "image",
       url: DEFAULT_LAND_IMAGE,
     });

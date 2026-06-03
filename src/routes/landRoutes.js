@@ -239,7 +239,7 @@ const router = express.Router();
  *                     category:
  *                       type: string
  *                       enum:
- *                         [farmer_photo, land_soil, fencing, farm_pond, residence, shed, water_source, trees, rocks, electric_poles, others, video]
+ *                         [card, farmer_photo, land_soil, fencing, farm_pond, residence, shed, water_source, trees, rocks, electric_poles, others, video]
  *                     type:
  *                       type: string
  *                       enum: [image, video]
@@ -603,7 +603,7 @@ router.get("/land/:id", landController.getLandById);
  *                     category:
  *                       type: string
  *                       enum:
- *                         [farmer_photo, land_soil, fencing, farm_pond, residence, shed, water_source, trees, rocks, electric_poles, farmer_aggrement, others, video]
+ *                         [card, farmer_photo, land_soil, fencing, farm_pond, residence, shed, water_source, trees, rocks, electric_poles, farmer_aggrement, others, video]
  *                     type:
  *                       type: string
  *                       enum: [image, video]
@@ -872,7 +872,7 @@ router.put("/land/:id", verifyToken, landController.updateLand);
  *                     category:
  *                       type: string
  *                       enum:
- *                         [farmer_photo, land_soil, fencing, farm_pond, residence, shed, water_source, trees, rocks, electric_poles, others, video]
+ *                         [card, farmer_photo, land_soil, fencing, farm_pond, residence, shed, water_source, trees, rocks, electric_poles, others, video]
  *                     type:
  *                       type: string
  *                       enum: [image, video]
@@ -1145,7 +1145,7 @@ router.put("/land/verify/:id", verifyToken, landController.updateLandForVerify);
  *                     category:
  *                       type: string
  *                       enum:
- *                         [farmer_photo, land_soil, fencing, farm_pond, residence, shed, water_source, trees, rocks, electric_poles, others, video]
+ *                         [card, farmer_photo, land_soil, fencing, farm_pond, residence, shed, water_source, trees, rocks, electric_poles, others, video]
  *                     type:
  *                       type: string
  *                       enum: [image, video]
