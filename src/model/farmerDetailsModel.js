@@ -16,6 +16,9 @@ const FarmerDetails = sequelize.define("FarmerDetails", {
   phone: {
     type: DataTypes.STRING
   },
+  whatsapp_status: {
+    type: DataTypes.BOOLEAN
+  },
   whatsapp: {
     type: DataTypes.STRING
   },
@@ -44,6 +47,25 @@ const FarmerDetails = sequelize.define("FarmerDetails", {
   timestamps: true,
   createdAt: "created_at",
   updatedAt: "updated_at",
+  hooks: {
+    beforeCreate: (farmerDetails) => {
+      syncWhatsappStatus(farmerDetails);
+    },
+    beforeUpdate: (farmerDetails) => {
+      syncWhatsappStatus(farmerDetails);
+    },
+    beforeBulkCreate: (farmerDetailsList) => {
+      farmerDetailsList.forEach(syncWhatsappStatus);
+    },
+  },
 });
+
+function syncWhatsappStatus(instance) {
+  const { phone, whatsapp } = instance;
+
+  if (phone && whatsapp) {
+    instance.whatsapp_status = phone.trim() === whatsapp.trim();
+  }
+}
 
 export default FarmerDetails;
