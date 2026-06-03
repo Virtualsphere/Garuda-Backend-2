@@ -34,6 +34,42 @@ const getLandWithFarmerDetails = async (landIds = []) => {
   return lands;
 };
 
+const TREE_FIELD_MAP = [
+  { field: "mango_trees_number",    type: "Mango"    },
+  { field: "coconut_trees_number",  type: "Coconut"  },
+  { field: "neem_trees_number",     type: "Neem"     },
+  { field: "baniyan_trees_number",  type: "Baniyan"  },
+  { field: "tamarind_trees_number", type: "Tamarind" },
+  { field: "sapoto_trees_number",   type: "Sapoto"   },
+  { field: "guava_trees_number",    type: "Guava"    },
+  { field: "teak_trees_number",     type: "Teak"     },
+  { field: "other_trees_number",    type: null       }, // null = dynamic
+];
+
+const parseTrees = (landDetails) => {
+  if (!landDetails) return [];
+
+  return TREE_FIELD_MAP
+    .map(({ field, type }) => {
+      const raw = landDetails[field]; // e.g. "mango-10" or "apple-10"
+      if (!raw) return null;
+
+      const lastDash = raw.lastIndexOf("-");
+      if (lastDash === -1) return null;
+
+      const name  = raw.slice(0, lastDash);   // "apple"
+      const count = parseInt(raw.slice(lastDash + 1), 10); // 10
+
+      if (!count || count <= 0) return null;
+
+      return {
+        type:  type ?? name.charAt(0).toUpperCase() + name.slice(1), // use dynamic name if type is null
+        count,
+      };
+    })
+    .filter(Boolean);
+};
+
 const DEFAULT_LAND_IMAGE = "https://images.pexels.com/photos/7752033/pexels-photo-7752033.jpeg?cs=srgb&amp;dl=pexels-altaf-shah-3143825-7752033.jpg&amp;fm=jpg&amp;_gl=1*1rbwsk6*_ga*MTcwODY3MTM2Mi4xNzYzMTIzMzA3*_ga_8JE65Q40S6*czE3ODA0MTg1MDYkbzIkZzAkdDE3ODA0MTg1MDYkajYwJGwwJGgw";
 
 export const createLand = async (data, employeeId) => {
@@ -298,18 +334,25 @@ export const getLandById = async (id) => {
 export const getLandByIdForUser = async (id) => {
   const land = await Land.findByPk(id, {
     include: [
-      { model: Employee, as: "creator" },
-      { model: Employee, as: "verifier" },
-      { model: LandDetails, as: "landDetails" },
-      { model: LandGPS, as: "gps" },
-      { model: LandMedia, as: "media" },
-      { model: LandDocuments, as: "documents" },
+      { model: Employee,     as: "creator"     },
+      { model: Employee,     as: "verifier"    },
+      { model: LandDetails,  as: "landDetails" },
+      { model: LandGPS,      as: "gps"         },
+      { model: LandMedia,    as: "media"        },
+      { model: LandDocuments, as: "documents"  },
     ],
   });
 
   if (!land) throw new Error("Land not found");
 
-  return land;
+  const result = land.toJSON();
+
+  if (result.landDetails) {
+    result.landDetails.trees = parseTrees(result.landDetails);
+    TREE_FIELD_MAP.forEach(({ field }) => delete result.landDetails[field]);
+  }
+
+  return result;
 };
 
 export const getLandByStatus = async (userId, status) => {
