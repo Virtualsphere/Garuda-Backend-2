@@ -24,8 +24,7 @@ const LandMedia = sequelize.define("LandMedia", {
       "electric_poles",
       "farmer_aggrement",
       "others",
-      "video",
-      "card"
+      "video"
     )
   },
 

@@ -90,6 +90,34 @@ router.post("/location/mandal", locationController.createMandal);
 
 /**
  * @swagger
+ * /api/location/town:
+ *   post:
+ *     summary: Create a new town
+ *     tags: [Location]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [name, district_id]
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 example: "Gachibowli"
+ *               district_id:
+ *                 type: integer
+ *                 example: 1
+ *     responses:
+ *       201:
+ *         description: Town created successfully
+ *       400:
+ *         description: Bad request
+ */
+router.post("/location/town", locationController.createTown);
+
+/**
+ * @swagger
  * /api/location/village:
  *   post:
  *     summary: Create a new village
@@ -203,6 +231,27 @@ router.get("/location/mandals/:district_id", locationController.getMandalsByDist
 
 /**
  * @swagger
+ * /api/location/towns/{district_id}:
+ *   get:
+ *     summary: Get towns by district
+ *     tags: [Location]
+ *     parameters:
+ *       - in: path
+ *         name: district_id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         example: 1
+ *     responses:
+ *       200:
+ *         description: List of towns
+ *       500:
+ *         description: Server Error
+ */
+router.get("/location/towns/:district_id", locationController.getTownsByDistrict);
+
+/**
+ * @swagger
  * /api/location/villages/{mandal_id}:
  *   get:
  *     summary: Get villages by mandal
@@ -279,6 +328,33 @@ router.put("/location/state/:id", locationController.updateState);
  *         description: Not found
  */
 router.put("/location/district/:id", locationController.updateDistrict);
+
+/**
+ * @swagger
+ * /api/location/town/{id}:
+ *   put:
+ *     summary: Update town
+ *     tags: [Location]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 example: "Gachibowli"
+ *     responses:
+ *       200:
+ *         description: List of towns
+ *       404:
+ *         description: Not found
+ */
+router.put("/location/town/:id", locationController.updateTown);
 
 /**
  * @swagger
@@ -373,6 +449,24 @@ router.delete("/location/state/:id", locationController.deleteState);
  *         description: Not found
  */
 router.delete("/location/district/:id", locationController.deleteDistrict);
+
+/**
+ * @swagger
+ * /api/location/town/{id}:
+ *   delete:
+ *     summary: Delete town
+ *     tags: [Location]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: List of towns
+ *       404:
+ *         description: Not found
+ */
+router.delete("/location/town/:id", locationController.deleteTown);
 
 /**
  * @swagger

@@ -2,7 +2,7 @@ import State from "../model/stateModel.js";
 import District from "../model/districtModel.js";
 import Mandal from "../model/mandalModel.js";
 import Village from "../model/villageModel.js";
-
+import Town from "../model/townModel.js";
 /* =====================================================
    CREATE
 ===================================================== */
@@ -34,6 +34,16 @@ export const createMandal = async ({ name, district_id }) => {
   if (!district) throw new Error("District not found");
 
   return await Mandal.create({ name, district_id });
+};
+
+export const createTown = async ({ name, district_id }) => {
+  if (!name || !district_id)
+    throw new Error("Name and district_id are required");
+
+  const district = await District.findByPk(district_id);
+  if (!district) throw new Error("District not found");
+
+  return await Town.create({ name, district_id });
 };
 
 // Create Village
@@ -129,6 +139,13 @@ export const getMandalsByDistrict = async (district_id) => {
   });
 };
 
+export const getTownsByDistrict = async (district_id) => {
+  return await Town.findAll({
+    where: { district_id },
+    order: [["name", "ASC"]],
+  });
+};
+
 // Get villages by mandal
 export const getVillagesByMandal = async (mandal_id) => {
   return await Village.findAll({
@@ -165,6 +182,14 @@ export const updateMandal = async (id, data) => {
   return mandal;
 };
 
+export const updateTown = async (id, data) => {
+  const town = await Town.findByPk(id);
+  if (!town) throw new Error("Town not found");
+
+  await town.update(data);
+  return town;
+};
+
 export const updateVillage = async (id, data) => {
   const village = await Village.findByPk(id);
   if (!village) throw new Error("Village not found");
@@ -198,6 +223,14 @@ export const deleteMandal = async (id) => {
   if (!mandal) throw new Error("Mandal not found");
 
   await mandal.destroy();
+  return true;
+};
+
+export const deleteTown = async (id) => {
+  const town = await Town.findByPk(id);
+  if (!town) throw new Error("Town not found");
+
+  await town.destroy();
   return true;
 };
 

@@ -39,7 +39,7 @@ const Employee= sequelize.define("Employee", {
         type: DataTypes.TEXT
     },
     status: {
-        type: DataTypes.ENUM('ACTIVE', 'DEACTIVE'),
+        type: DataTypes.ENUM('ACTIVE', 'DEACTIVE', 'TRAINEE'),
         defaultValue: 'ACTIVE'
     },
     aadhar_number: {

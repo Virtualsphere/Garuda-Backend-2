@@ -19,6 +19,24 @@ const Land = sequelize.define("Land", {
   village: {
     type: DataTypes.STRING
   },
+  nearest_town_1: {
+    type: DataTypes.STRING
+  },
+  nearest_town_1_km: {
+    type: DataTypes.BIGINT
+  },
+  nearest_town_2: {
+    type: DataTypes.STRING
+  },
+  nearest_town_2_km: {
+    type: DataTypes.BIGINT
+  },
+  nearest_town_3: {
+    type: DataTypes.STRING
+  },
+  nearest_town_3_km: {
+    type: DataTypes.BIGINT
+  },
   location_latitude: {
     type: DataTypes.TEXT
   },

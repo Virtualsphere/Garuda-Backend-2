@@ -58,6 +58,24 @@ export const createMandal = async (req, res) => {
   }
 };
 
+// Create Town
+export const createTown = async (req, res) => {
+  try {
+    const town = await locationService.createTown(req.body);
+
+    res.status(201).json({
+      success: true,
+      message: "Town created successfully",
+      data: town,
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 // Create Village
 export const createVillage = async (req, res) => {
   try {
@@ -160,6 +178,25 @@ export const getMandalsByDistrict = async (req, res) => {
   }
 };
 
+// Get towns by district
+export const getTownsByDistrict = async (req, res) => {
+  try {
+    const { district_id } = req.params;
+
+    const towns = await locationService.getTownsByDistrict(district_id);
+
+    res.status(200).json({
+      success: true,
+      data: towns,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 // Get villages by mandal
 export const getVillagesByMandal = async (req, res) => {
   try {
@@ -240,6 +277,25 @@ export const updateMandal = async (req, res) => {
   }
 };
 
+export const updateTown = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const town = await locationService.updateTown(id, req.body);
+
+    res.status(200).json({
+      success: true,
+      message: "Town updated successfully",
+      data: town,
+    });
+  } catch (error) {
+    res.status(404).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 export const updateVillage = async (req, res) => {
   try {
     const { id } = req.params;
@@ -308,6 +364,24 @@ export const deleteMandal = async (req, res) => {
     res.status(200).json({
       success: true,
       message: "Mandal deleted successfully",
+    });
+  } catch (error) {
+    res.status(404).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const deleteTown = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    await locationService.deleteTown(id);
+
+    res.status(200).json({
+      success: true,
+      message: "Town deleted successfully",
     });
   } catch (error) {
     res.status(404).json({
