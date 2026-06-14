@@ -66,33 +66,6 @@ const LandDetails = sequelize.define("LandDetails", {
   farm_pond: {
     type: DataTypes.BOOLEAN
   },
-  mango_trees_number: {
-    type: DataTypes.STRING
-  },
-  coconut_trees_number: {
-    type: DataTypes.STRING
-  },
-  neem_trees_number: {
-    type: DataTypes.STRING
-  },
-  baniyan_trees_number: {
-    type: DataTypes.STRING
-  },
-  tamarind_trees_number: {
-    type: DataTypes.STRING
-  },
-  sapoto_trees_number: {
-    type: DataTypes.STRING
-  },
-  guava_trees_number: {
-    type: DataTypes.STRING
-  },
-  teak_trees_number: {
-    type: DataTypes.STRING
-  },
-  other_trees_number: {
-    type: DataTypes.STRING
-  },
   complaints: {
     type: DataTypes.JSONB
   }

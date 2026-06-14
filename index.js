@@ -12,6 +12,7 @@ import landRoutes from './src/routes/landRoutes.js';
 import employeeRoutes from './src/routes/employeeRoutes.js';
 import documentRoutes from './src/routes/documentRoutes.js';
 import fieldWorkRoutes from './src/routes/fieldWorkRoutes.js'
+import roleRoutes from './src/routes/roleRoutes.js'
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -36,12 +37,19 @@ app.get("/", (req, res) => {
   res.send("welcome to garuda server");
 });
 
+app.get("/status", (req, res) => {
+  res.status(200).json({
+    status: "ok"
+  });
+});
+
 app.use('/api', employeeRoutes);
 app.use('/api', landRoutes);
 app.use('/api', locationRoutes);
 app.use('/api', buyerRoutes);
 app.use('/api', documentRoutes);
 app.use('/api', fieldWorkRoutes);
+app.use('/api', roleRoutes);
 // app.use('/api', paymentRoutes)
 
 const PORT = process.env.PORT || 5000;

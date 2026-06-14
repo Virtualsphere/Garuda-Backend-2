@@ -42,6 +42,30 @@ const router = express.Router();
  *               location_longitude:
  *                 type: string
  *                 example: "78.4294"
+ * 
+ *               nearest_town_1:
+ *                 type: string
+ *                 example: "jankpuri"
+ * 
+ *               nearest_town_1_km:
+ *                 type: int
+ *                 example: 14
+ * 
+ *               nearest_town_2:
+ *                 type: string
+ *                 example: "jankpuri"
+ * 
+ *               nearest_town_2_km:
+ *                 type: int
+ *                 example: 14
+ * 
+ *               nearest_town_3:
+ *                 type: string
+ *                 example: "jankpuri"
+ * 
+ *               nearest_town_3_km:
+ *                 type: int
+ *                 example: 14
  *
  *               land_sale_available_status:
  *                 type: object
@@ -183,33 +207,6 @@ const router = express.Router();
  *                     example: 10
  *                   farm_pond:
  *                     type: boolean
- *                   mango_trees_number:
- *                      type: string
- *                      example: mango-10
- *                   coconut_trees_number:
- *                      type: string
- *                      example: coconut-10
- *                   neem_trees_number:
- *                      type: string
- *                      example: neem-10
- *                   baniyan_trees_number:
- *                      type: string
- *                      example: baniyan-10
- *                   tamarind_trees_number:
- *                      type: string
- *                      example: tamarind-10
- *                   sapoto_trees_number:
- *                      type: string
- *                      example: sapoto-10
- *                   guava_trees_number:
- *                      type: string
- *                      example: guava-10
- *                   teak_trees_number:
- *                      type: string
- *                      example: teak-10
- *                   other_trees_number:
- *                      type: string
- *                      example: banana-10
  *                   complaints:
  *                      type: object
  *                      example:
@@ -221,6 +218,53 @@ const router = express.Router();
  *                        - "Sealing"
  *                        - "path issue"
  *                        - "No Path at all"
+ *               trees:
+ *                 type: array
+ *                 description: >
+ *                   Trees present on the land. Each entry is a separate row
+ *                   in the land_tree table.
+ *                 items:
+ *                   type: object
+ *                   required: [type, count]
+ *                   properties:
+ *                     type:
+ *                       type: string
+ *                       example: "Mango"
+ *                       description: >
+ *                         Tree species name (e.g. Mango, Coconut, Neem, Baniyan,
+ *                         Tamarind, Sapoto, Guava, Teak, or any custom name)
+ *                     count:
+ *                       type: integer
+ *                       example: 10
+ *                 example:
+ *                   - { type: "Mango", count: 10 }
+ *                   - { type: "Coconut", count: 5 }
+ *               shed:
+ *                 type: array
+ *                 description: >
+ *                   List of shed dimension records. Each item creates one row in land_shed_Dimensions.
+ *                   You can send multiple sheds — e.g. 2 poultry sheds with different sizes,
+ *                   or a mix of poultry and cow sheds.
+ *                   Only fill in the fields that apply to each shed row; unused fields can be omitted (null).
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     poultry_shed_length:
+ *                       type: integer
+ *                       example: 100
+ *                     poultry_shed_width:
+ *                       type: integer
+ *                       example: 40
+ *                     cow_shed_length:
+ *                       type: integer
+ *                       example: null
+ *                     cow_shed_width:
+ *                       type: integer
+ *                       example: null
+ *                 example:
+ *                   - { poultry_shed_length: 100, poultry_shed_width: 40, cow_shed_length: null, cow_shed_width: null }
+ *                   - { poultry_shed_length: 80,  poultry_shed_width: 35, cow_shed_length: null, cow_shed_width: null }
+ *                   - { poultry_shed_length: null, poultry_shed_width: null, cow_shed_length: 60, cow_shed_width: 25 }
  *               gps:
  *                 type: object
  *                 properties:
@@ -390,6 +434,30 @@ router.get("/land/:id", landController.getLandById);
  *               location_longitude:
  *                 type: string
  *                 example: "78.4294"
+ * 
+ *               nearest_town_1:
+ *                 type: string
+ *                 example: "jankpuri"
+ * 
+ *               nearest_town_1_km:
+ *                 type: int
+ *                 example: 14
+ * 
+ *               nearest_town_2:
+ *                 type: string
+ *                 example: "jankpuri"
+ * 
+ *               nearest_town_2_km:
+ *                 type: int
+ *                 example: 14
+ * 
+ *               nearest_town_3:
+ *                 type: string
+ *                 example: "jankpuri"
+ * 
+ *               nearest_town_3_km:
+ *                 type: int
+ *                 example: 14
  *
  *               land_sale_available_status:
  *                 type: object
@@ -547,33 +615,6 @@ router.get("/land/:id", landController.getLandById);
  *                     example: 10
  *                   farm_pond:
  *                     type: boolean
- *                   mango_trees_number:
- *                      type: string
- *                      example: mango-10
- *                   coconut_trees_number:
- *                      type: string
- *                      example: coconut-10
- *                   neem_trees_number:
- *                      type: string
- *                      example: neem-10
- *                   baniyan_trees_number:
- *                      type: string
- *                      example: baniyan-10
- *                   tamarind_trees_number:
- *                      type: string
- *                      example: tamarind-10
- *                   sapoto_trees_number:
- *                      type: string
- *                      example: sapoto-10
- *                   guava_trees_number:
- *                      type: string
- *                      example: guava-10
- *                   teak_trees_number:
- *                      type: string
- *                      example: teak-10
- *                   other_trees_number:
- *                      type: string
- *                      example: banana-10
  *                   complaints:
  *                      type: object
  *                      example:
@@ -585,6 +626,55 @@ router.get("/land/:id", landController.getLandById);
  *                        - "Sealing"
  *                        - "path issue"
  *                        - "No Path at all"
+ * 
+ *               trees:
+ *                 type: array
+ *                 description: >
+ *                   Trees present on the land. Each entry is a separate row
+ *                   in the land_tree table.
+ *                 items:
+ *                   type: object
+ *                   required: [type, count]
+ *                   properties:
+ *                     type:
+ *                       type: string
+ *                       example: "Mango"
+ *                       description: >
+ *                         Tree species name (e.g. Mango, Coconut, Neem, Baniyan,
+ *                         Tamarind, Sapoto, Guava, Teak, or any custom name)
+ *                     count:
+ *                       type: integer
+ *                       example: 10
+ *                 example:
+ *                   - { type: "Mango", count: 10 }
+ *                   - { type: "Coconut", count: 5 }
+ *               shed:
+ *                 type: array
+ *                 description: >
+ *                   List of shed dimension records. Each item creates one row in land_shed_Dimensions.
+ *                   You can send multiple sheds — e.g. 2 poultry sheds with different sizes,
+ *                   or a mix of poultry and cow sheds.
+ *                   Only fill in the fields that apply to each shed row; unused fields can be omitted (null).
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     poultry_shed_length:
+ *                       type: integer
+ *                       example: 100
+ *                     poultry_shed_width:
+ *                       type: integer
+ *                       example: 40
+ *                     cow_shed_length:
+ *                       type: integer
+ *                       example: null
+ *                     cow_shed_width:
+ *                       type: integer
+ *                       example: null
+ *                 example:
+ *                   - { poultry_shed_length: 100, poultry_shed_width: 40, cow_shed_length: null, cow_shed_width: null }
+ *                   - { poultry_shed_length: 80,  poultry_shed_width: 35, cow_shed_length: null, cow_shed_width: null }
+ *                   - { poultry_shed_length: null, poultry_shed_width: null, cow_shed_length: 60, cow_shed_width: 25 }
+ * 
  *               gps:
  *                 type: object
  *                 properties:
@@ -671,6 +761,30 @@ router.put("/land/:id", verifyToken, landController.updateLand);
  *               location_longitude:
  *                 type: string
  *                 example: "78.4294"
+ * 
+ *               nearest_town_1:
+ *                 type: string
+ *                 example: "jankpuri"
+ * 
+ *               nearest_town_1_km:
+ *                 type: int
+ *                 example: 14
+ * 
+ *               nearest_town_2:
+ *                 type: string
+ *                 example: "jankpuri"
+ * 
+ *               nearest_town_2_km:
+ *                 type: int
+ *                 example: 14
+ * 
+ *               nearest_town_3:
+ *                 type: string
+ *                 example: "jankpuri"
+ * 
+ *               nearest_town_3_km:
+ *                 type: int
+ *                 example: 14
  *
  *               land_sale_available_status:
  *                 type: object
@@ -816,33 +930,7 @@ router.put("/land/:id", verifyToken, landController.updateLand);
  *                     example: 10
  *                   farm_pond:
  *                     type: boolean
- *                   mango_trees_number:
- *                      type: string
- *                      example: mango-10
- *                   coconut_trees_number:
- *                      type: string
- *                      example: coconut-10
- *                   neem_trees_number:
- *                      type: string
- *                      example: neem-10
- *                   baniyan_trees_number:
- *                      type: string
- *                      example: baniyan-10
- *                   tamarind_trees_number:
- *                      type: string
- *                      example: tamarind-10
- *                   sapoto_trees_number:
- *                      type: string
- *                      example: sapoto-10
- *                   guava_trees_number:
- *                      type: string
- *                      example: guava-10
- *                   teak_trees_number:
- *                      type: string
- *                      example: teak-10
- *                   other_trees_number:
- *                      type: string
- *                      example: banana-10
+ * 
  *                   complaints:
  *                      type: object
  *                      example:
@@ -854,6 +942,55 @@ router.put("/land/:id", verifyToken, landController.updateLand);
  *                        - "Sealing"
  *                        - "path issue"
  *                        - "No Path at all"
+ * 
+ *               trees:
+ *                 type: array
+ *                 description: >
+ *                   Trees present on the land. Each entry is a separate row
+ *                   in the land_tree table.
+ *                 items:
+ *                   type: object
+ *                   required: [type, count]
+ *                   properties:
+ *                     type:
+ *                       type: string
+ *                       example: "Mango"
+ *                       description: >
+ *                         Tree species name (e.g. Mango, Coconut, Neem, Baniyan,
+ *                         Tamarind, Sapoto, Guava, Teak, or any custom name)
+ *                     count:
+ *                       type: integer
+ *                       example: 10
+ *                 example:
+ *                   - { type: "Mango", count: 10 }
+ *                   - { type: "Coconut", count: 5 }
+ *               shed:
+ *                 type: array
+ *                 description: >
+ *                   List of shed dimension records. Each item creates one row in land_shed_Dimensions.
+ *                   You can send multiple sheds — e.g. 2 poultry sheds with different sizes,
+ *                   or a mix of poultry and cow sheds.
+ *                   Only fill in the fields that apply to each shed row; unused fields can be omitted (null).
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     poultry_shed_length:
+ *                       type: integer
+ *                       example: 100
+ *                     poultry_shed_width:
+ *                       type: integer
+ *                       example: 40
+ *                     cow_shed_length:
+ *                       type: integer
+ *                       example: null
+ *                     cow_shed_width:
+ *                       type: integer
+ *                       example: null
+ *                 example:
+ *                   - { poultry_shed_length: 100, poultry_shed_width: 40, cow_shed_length: null, cow_shed_width: null }
+ *                   - { poultry_shed_length: 80,  poultry_shed_width: 35, cow_shed_length: null, cow_shed_width: null }
+ *                   - { poultry_shed_length: null, poultry_shed_width: null, cow_shed_length: 60, cow_shed_width: 25 }
+ * 
  *               gps:
  *                 type: object
  *                 properties:
@@ -940,6 +1077,30 @@ router.put("/land/verify/:id", verifyToken, landController.updateLandForVerify);
  *               location_longitude:
  *                 type: string
  *                 example: "78.4294"
+ * 
+ *               nearest_town_1:
+ *                 type: string
+ *                 example: "jankpuri"
+ * 
+ *               nearest_town_1_km:
+ *                 type: int
+ *                 example: 14
+ * 
+ *               nearest_town_2:
+ *                 type: string
+ *                 example: "jankpuri"
+ * 
+ *               nearest_town_2_km:
+ *                 type: int
+ *                 example: 14
+ * 
+ *               nearest_town_3:
+ *                 type: string
+ *                 example: "jankpuri"
+ * 
+ *               nearest_town_3_km:
+ *                 type: int
+ *                 example: 14
  *
  *               land_sale_available_status:
  *                 type: object
@@ -1089,33 +1250,6 @@ router.put("/land/verify/:id", verifyToken, landController.updateLandForVerify);
  *                     example: 10
  *                   farm_pond:
  *                     type: boolean
- *                   mango_trees_number:
- *                      type: string
- *                      example: mango-10
- *                   coconut_trees_number:
- *                      type: string
- *                      example: coconut-10
- *                   neem_trees_number:
- *                      type: string
- *                      example: neem-10
- *                   baniyan_trees_number:
- *                      type: string
- *                      example: baniyan-10
- *                   tamarind_trees_number:
- *                      type: string
- *                      example: tamarind-10
- *                   sapoto_trees_number:
- *                      type: string
- *                      example: sapoto-10
- *                   guava_trees_number:
- *                      type: string
- *                      example: guava-10
- *                   teak_trees_number:
- *                      type: string
- *                      example: teak-10
- *                   other_trees_number:
- *                      type: string
- *                      example: banana-10
  *                   complaints:
  *                      type: object
  *                      example:
@@ -1127,6 +1261,55 @@ router.put("/land/verify/:id", verifyToken, landController.updateLandForVerify);
  *                        - "Sealing"
  *                        - "path issue"
  *                        - "No Path at all"
+ * 
+ *               trees:
+ *                 type: array
+ *                 description: >
+ *                   Trees present on the land. Each entry is a separate row
+ *                   in the land_tree table.
+ *                 items:
+ *                   type: object
+ *                   required: [type, count]
+ *                   properties:
+ *                     type:
+ *                       type: string
+ *                       example: "Mango"
+ *                       description: >
+ *                         Tree species name (e.g. Mango, Coconut, Neem, Baniyan,
+ *                         Tamarind, Sapoto, Guava, Teak, or any custom name)
+ *                     count:
+ *                       type: integer
+ *                       example: 10
+ *                 example:
+ *                   - { type: "Mango", count: 10 }
+ *                   - { type: "Coconut", count: 5 }
+ *               shed:
+ *                 type: array
+ *                 description: >
+ *                   List of shed dimension records. Each item creates one row in land_shed_Dimensions.
+ *                   You can send multiple sheds — e.g. 2 poultry sheds with different sizes,
+ *                   or a mix of poultry and cow sheds.
+ *                   Only fill in the fields that apply to each shed row; unused fields can be omitted (null).
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     poultry_shed_length:
+ *                       type: integer
+ *                       example: 100
+ *                     poultry_shed_width:
+ *                       type: integer
+ *                       example: 40
+ *                     cow_shed_length:
+ *                       type: integer
+ *                       example: null
+ *                     cow_shed_width:
+ *                       type: integer
+ *                       example: null
+ *                 example:
+ *                   - { poultry_shed_length: 100, poultry_shed_width: 40, cow_shed_length: null, cow_shed_width: null }
+ *                   - { poultry_shed_length: 80,  poultry_shed_width: 35, cow_shed_length: null, cow_shed_width: null }
+ *                   - { poultry_shed_length: null, poultry_shed_width: null, cow_shed_length: 60, cow_shed_width: 25 }
+ * 
  *               gps:
  *                 type: object
  *                 properties:

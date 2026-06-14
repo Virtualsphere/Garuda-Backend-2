@@ -29,6 +29,9 @@ import Agent from "./agentModel.js";
 import Attendance from "./attendanceModel.js";
 import Calendar from "./calendarModel.js";
 import Town from "./townModel.js";
+import EmployeeTown from "./employeeTownModel.js";
+import LandShedDimensions from "./landShedDimensionsModel.js";
+import LandTree from "./landTreeModel.js";
 
 Employee.hasMany(Land, {
   foreignKey: "created_by",
@@ -372,7 +375,40 @@ Land.hasMany(LandMedia, {
 LandMedia.belongsTo(Land, {
   foreignKey: "land_id",
   as: "land",
-});
+})
+
+Land.hasMany(LandTree, {
+  foreignKey: "land_id",
+  as: "tree",
+  onDelete: "CASCADE"
+})
+
+LandTree.belongsTo(Land, {
+  foreignKey: "land_id",
+  as: "land",
+})
+
+Land.hasMany(LandShedDimensions, {
+  foreignKey: "land_id",
+  as: "shed",
+  onDelete: "CASCADE"
+})
+
+LandShedDimensions.belongsTo(Land, {
+  foreignKey: "land_id",
+  as: "land",
+})
+
+Employee.hasOne(EmployeeTown, {
+  foreignKey: "employee_id",
+  as: "employeeTown",
+  onDelete: "CASCADE"
+})
+
+EmployeeTown.belongsTo(Employee, {
+  foreignKey: "employee_id",
+  as: "employee",
+})
 
 Land.hasMany(LandDocuments, {
   foreignKey: "land_id",
@@ -414,5 +450,8 @@ export {
   Path,
   LandFeedBack,
   Agent,
-  Attendance
+  Attendance,
+  LandTree,
+  LandShedDimensions,
+  EmployeeTown
 };

@@ -464,6 +464,185 @@ router.put("/employee/salary-package/:id", employeeController.updateSalaryPackag
  */
 router.put("/employee/work-location/:id", employeeController.updateWorkLocation);
 
+/**
+ * @swagger
+ * /api/employee/town:
+ *   put:
+ *     summary: Create or update employee town details (JWT required)
+ *     description: >
+ *       If no town record exists for the authenticated employee, a new one is created.
+ *       If a record already exists, it is updated. The employee ID is extracted
+ *       automatically from the access token — no ID needed in the URL or body.
+ *     tags: [Employee]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [town1, town2, town3]
+ *             properties:
+ *               town1:
+ *                 type: string
+ *                 example: "Hyderabad"
+ *               town2:
+ *                 type: string
+ *                 example: "Secunderabad"
+ *               town3:
+ *                 type: string
+ *                 example: "Warangal"
+ *     responses:
+ *       200:
+ *         description: Employee town updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Employee town updated successfully"
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                       example: 1
+ *                     employee_id:
+ *                       type: integer
+ *                       example: 42
+ *                     town1:
+ *                       type: string
+ *                       example: "Hyderabad"
+ *                     town2:
+ *                       type: string
+ *                       example: "Secunderabad"
+ *                     town3:
+ *                       type: string
+ *                       example: "Warangal"
+ *                     created_at:
+ *                       type: string
+ *                       format: date-time
+ *                       example: "2024-01-01T00:00:00.000Z"
+ *                     updated_at:
+ *                       type: string
+ *                       format: date-time
+ *                       example: "2024-01-01T00:00:00.000Z"
+ *       201:
+ *         description: Employee town created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Employee town created successfully"
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                       example: 1
+ *                     employee_id:
+ *                       type: integer
+ *                       example: 42
+ *                     town1:
+ *                       type: string
+ *                       example: "Hyderabad"
+ *                     town2:
+ *                       type: string
+ *                       example: "Secunderabad"
+ *                     town3:
+ *                       type: string
+ *                       example: "Warangal"
+ *                     created_at:
+ *                       type: string
+ *                       format: date-time
+ *                       example: "2024-01-01T00:00:00.000Z"
+ *                     updated_at:
+ *                       type: string
+ *                       format: date-time
+ *                       example: "2024-01-01T00:00:00.000Z"
+ *       400:
+ *         description: Missing required fields
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "town1, town2, and town3 are required"
+ *       401:
+ *         description: Unauthorized — missing or invalid token
+ *       404:
+ *         description: Employee not found
+ *       500:
+ *         description: Internal server error
+ */
+router.put("/employee/town", verifyToken, employeeController.upsertEmployeeTown);
+
+/**
+ * @swagger
+ * /api/employee/town:
+ *   get:
+ *     summary: Get employee town by employee ID (JWT token required)
+ *     tags: [Employee Town]
+ *     responses:
+ *       200:
+ *         description: Employee town fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Employee town fetched successfully"
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                       example: 1
+ *                     employee_id:
+ *                       type: integer
+ *                       example: 42
+ *                     town1:
+ *                       type: string
+ *                       example: "Hyderabad"
+ *                     town2:
+ *                       type: string
+ *                       example: "Secunderabad"
+ *                     town3:
+ *                       type: string
+ *                       example: "Warangal"
+ *                     created_at:
+ *                       type: string
+ *                       format: date-time
+ *                       example: "2024-01-01T00:00:00.000Z"
+ *                     updated_at:
+ *                       type: string
+ *                       format: date-time
+ *                       example: "2024-01-01T00:00:00.000Z"
+ *       404:
+ *         description: Employee not found or Employee town not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Employee town not found"
+ *       500:
+ *         description: Internal server error
+ */
+router.get("/employee/town", verifyToken, employeeController.getEmployeeTownByEmployeeId);
+
 /* =====================================================
    DELETE EMPLOYEE
 ===================================================== */

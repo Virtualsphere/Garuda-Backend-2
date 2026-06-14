@@ -1,5 +1,6 @@
 import Employee from "../model/employeeModel.js";
 import RefreshToken from "../model/refreshTokenModel.js";
+import EmployeeTown from "../model/employeeTownModel.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { Op } from "sequelize";
@@ -298,4 +299,31 @@ export const updateWorkLocation = async (id, locationData) => {
 
   const { password: _, ...employeeWithoutPassword } = employee.toJSON();
   return employeeWithoutPassword;
+};
+
+export const upsertEmployeeTown = async (employeeId, townData) => {
+  const employee = await Employee.findByPk(employeeId);
+  if (!employee) throw new Error("Employee not found");
+ 
+  const { town1, town2, town3 } = townData;
+ 
+  const existing = await EmployeeTown.findOne({ where: { employee_id: employeeId } });
+ 
+  if (existing) {
+    await existing.update({ town1, town2, town3 });
+    return { action: "updated", data: existing };
+  }
+ 
+  const created = await EmployeeTown.create({ employee_id: employeeId, town1, town2, town3 });
+  return { action: "created", data: created };
+};
+
+export const getEmployeeTownByEmployeeId = async (employeeId) => {
+  const employee = await Employee.findByPk(employeeId);
+  if (!employee) throw new Error("Employee not found");
+ 
+  const town = await EmployeeTown.findOne({ where: { employee_id: employeeId } });
+  if (!town) throw new Error("Employee town not found");
+ 
+  return town;
 };

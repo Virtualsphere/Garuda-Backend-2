@@ -266,3 +266,48 @@ export const updateWorkLocation = async (req, res) => {
     });
   }
 };
+
+export const upsertEmployeeTown = async (req, res) => {
+  try {
+    const employeeId = req.user.id;
+    const { town1, town2, town3 } = req.body;
+ 
+    if (!town1 || !town2 || !town3) {
+      return res.status(400).json({ message: "town1, town2, and town3 are required" });
+    }
+ 
+    const result = await employeeService.upsertEmployeeTown(employeeId, { town1, town2, town3 });
+ 
+    const status = result.action === "created" ? 201 : 200;
+    return res.status(status).json({
+      message: `Employee town ${result.action} successfully`,
+      data: result.data,
+    });
+  } catch (error) {
+    if (error.message === "Employee not found") {
+      return res.status(404).json({ message: error.message });
+    }
+    return res.status(500).json({ message: "Internal server error", error: error.message });
+  }
+};
+
+export const getEmployeeTownByEmployeeId = async (req, res) => {
+  try {
+    const employeeId = req.user.id;
+ 
+    const town = await employeeTownService.getEmployeeTownByEmployeeId(employeeId);
+ 
+    return res.status(200).json({
+      message: "Employee town fetched successfully",
+      data: town,
+    });
+  } catch (error) {
+    if (error.message === "Employee not found") {
+      return res.status(404).json({ message: error.message });
+    }
+    if (error.message === "Employee town not found") {
+      return res.status(404).json({ message: error.message });
+    }
+    return res.status(500).json({ message: "Internal server error", error: error.message });
+  }
+};
