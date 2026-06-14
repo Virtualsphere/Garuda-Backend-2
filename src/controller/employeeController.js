@@ -290,3 +290,24 @@ export const upsertEmployeeTown = async (req, res) => {
     return res.status(500).json({ message: "Internal server error", error: error.message });
   }
 };
+
+export const getEmployeeTownByEmployeeId = async (req, res) => {
+  try {
+    const employeeId = req.user.id;
+ 
+    const town = await employeeTownService.getEmployeeTownByEmployeeId(employeeId);
+ 
+    return res.status(200).json({
+      message: "Employee town fetched successfully",
+      data: town,
+    });
+  } catch (error) {
+    if (error.message === "Employee not found") {
+      return res.status(404).json({ message: error.message });
+    }
+    if (error.message === "Employee town not found") {
+      return res.status(404).json({ message: error.message });
+    }
+    return res.status(500).json({ message: "Internal server error", error: error.message });
+  }
+};

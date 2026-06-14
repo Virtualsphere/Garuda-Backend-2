@@ -236,22 +236,35 @@ const router = express.Router();
  *                     count:
  *                       type: integer
  *                       example: 10
+ *                 example:
+ *                   - { type: "Mango", count: 10 }
+ *                   - { type: "Coconut", count: 5 }
  *               shed:
- *                 type: object
- *                 description: Shed dimensions for the land (stored in land_shed_Dimensions table)
- *                 properties:
- *                   poultry_shed_length:
- *                     type: integer
- *                     example: 100
- *                   poultry_shed_width:
- *                     type: integer
- *                     example: 40
- *                   cow_shed_length:
- *                     type: integer
- *                     example: 80
- *                   cow_shed_width:
- *                     type: integer
- *                     example: 30
+ *                 type: array
+ *                 description: >
+ *                   List of shed dimension records. Each item creates one row in land_shed_Dimensions.
+ *                   You can send multiple sheds — e.g. 2 poultry sheds with different sizes,
+ *                   or a mix of poultry and cow sheds.
+ *                   Only fill in the fields that apply to each shed row; unused fields can be omitted (null).
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     poultry_shed_length:
+ *                       type: integer
+ *                       example: 100
+ *                     poultry_shed_width:
+ *                       type: integer
+ *                       example: 40
+ *                     cow_shed_length:
+ *                       type: integer
+ *                       example: null
+ *                     cow_shed_width:
+ *                       type: integer
+ *                       example: null
+ *                 example:
+ *                   - { poultry_shed_length: 100, poultry_shed_width: 40, cow_shed_length: null, cow_shed_width: null }
+ *                   - { poultry_shed_length: 80,  poultry_shed_width: 35, cow_shed_length: null, cow_shed_width: null }
+ *                   - { poultry_shed_length: null, poultry_shed_width: null, cow_shed_length: 60, cow_shed_width: 25 }
  *               gps:
  *                 type: object
  *                 properties:
@@ -632,22 +645,35 @@ router.get("/land/:id", landController.getLandById);
  *                     count:
  *                       type: integer
  *                       example: 10
+ *                 example:
+ *                   - { type: "Mango", count: 10 }
+ *                   - { type: "Coconut", count: 5 }
  *               shed:
- *                 type: object
- *                 description: Shed dimensions for the land (stored in land_shed_Dimensions table)
- *                 properties:
- *                   poultry_shed_length:
- *                     type: integer
- *                     example: 100
- *                   poultry_shed_width:
- *                     type: integer
- *                     example: 40
- *                   cow_shed_length:
- *                     type: integer
- *                     example: 80
- *                   cow_shed_width:
- *                     type: integer
- *                     example: 30
+ *                 type: array
+ *                 description: >
+ *                   List of shed dimension records. Each item creates one row in land_shed_Dimensions.
+ *                   You can send multiple sheds — e.g. 2 poultry sheds with different sizes,
+ *                   or a mix of poultry and cow sheds.
+ *                   Only fill in the fields that apply to each shed row; unused fields can be omitted (null).
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     poultry_shed_length:
+ *                       type: integer
+ *                       example: 100
+ *                     poultry_shed_width:
+ *                       type: integer
+ *                       example: 40
+ *                     cow_shed_length:
+ *                       type: integer
+ *                       example: null
+ *                     cow_shed_width:
+ *                       type: integer
+ *                       example: null
+ *                 example:
+ *                   - { poultry_shed_length: 100, poultry_shed_width: 40, cow_shed_length: null, cow_shed_width: null }
+ *                   - { poultry_shed_length: 80,  poultry_shed_width: 35, cow_shed_length: null, cow_shed_width: null }
+ *                   - { poultry_shed_length: null, poultry_shed_width: null, cow_shed_length: 60, cow_shed_width: 25 }
  * 
  *               gps:
  *                 type: object
@@ -935,22 +961,35 @@ router.put("/land/:id", verifyToken, landController.updateLand);
  *                     count:
  *                       type: integer
  *                       example: 10
+ *                 example:
+ *                   - { type: "Mango", count: 10 }
+ *                   - { type: "Coconut", count: 5 }
  *               shed:
- *                 type: object
- *                 description: Shed dimensions for the land (stored in land_shed_Dimensions table)
- *                 properties:
- *                   poultry_shed_length:
- *                     type: integer
- *                     example: 100
- *                   poultry_shed_width:
- *                     type: integer
- *                     example: 40
- *                   cow_shed_length:
- *                     type: integer
- *                     example: 80
- *                   cow_shed_width:
- *                     type: integer
- *                     example: 30
+ *                 type: array
+ *                 description: >
+ *                   List of shed dimension records. Each item creates one row in land_shed_Dimensions.
+ *                   You can send multiple sheds — e.g. 2 poultry sheds with different sizes,
+ *                   or a mix of poultry and cow sheds.
+ *                   Only fill in the fields that apply to each shed row; unused fields can be omitted (null).
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     poultry_shed_length:
+ *                       type: integer
+ *                       example: 100
+ *                     poultry_shed_width:
+ *                       type: integer
+ *                       example: 40
+ *                     cow_shed_length:
+ *                       type: integer
+ *                       example: null
+ *                     cow_shed_width:
+ *                       type: integer
+ *                       example: null
+ *                 example:
+ *                   - { poultry_shed_length: 100, poultry_shed_width: 40, cow_shed_length: null, cow_shed_width: null }
+ *                   - { poultry_shed_length: 80,  poultry_shed_width: 35, cow_shed_length: null, cow_shed_width: null }
+ *                   - { poultry_shed_length: null, poultry_shed_width: null, cow_shed_length: 60, cow_shed_width: 25 }
  * 
  *               gps:
  *                 type: object
@@ -1241,22 +1280,35 @@ router.put("/land/verify/:id", verifyToken, landController.updateLandForVerify);
  *                     count:
  *                       type: integer
  *                       example: 10
+ *                 example:
+ *                   - { type: "Mango", count: 10 }
+ *                   - { type: "Coconut", count: 5 }
  *               shed:
- *                 type: object
- *                 description: Shed dimensions for the land (stored in land_shed_Dimensions table)
- *                 properties:
- *                   poultry_shed_length:
- *                     type: integer
- *                     example: 100
- *                   poultry_shed_width:
- *                     type: integer
- *                     example: 40
- *                   cow_shed_length:
- *                     type: integer
- *                     example: 80
- *                   cow_shed_width:
- *                     type: integer
- *                     example: 30
+ *                 type: array
+ *                 description: >
+ *                   List of shed dimension records. Each item creates one row in land_shed_Dimensions.
+ *                   You can send multiple sheds — e.g. 2 poultry sheds with different sizes,
+ *                   or a mix of poultry and cow sheds.
+ *                   Only fill in the fields that apply to each shed row; unused fields can be omitted (null).
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     poultry_shed_length:
+ *                       type: integer
+ *                       example: 100
+ *                     poultry_shed_width:
+ *                       type: integer
+ *                       example: 40
+ *                     cow_shed_length:
+ *                       type: integer
+ *                       example: null
+ *                     cow_shed_width:
+ *                       type: integer
+ *                       example: null
+ *                 example:
+ *                   - { poultry_shed_length: 100, poultry_shed_width: 40, cow_shed_length: null, cow_shed_width: null }
+ *                   - { poultry_shed_length: 80,  poultry_shed_width: 35, cow_shed_length: null, cow_shed_width: null }
+ *                   - { poultry_shed_length: null, poultry_shed_width: null, cow_shed_length: 60, cow_shed_width: 25 }
  * 
  *               gps:
  *                 type: object
