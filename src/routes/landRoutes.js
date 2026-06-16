@@ -1480,6 +1480,6 @@ router.get("/land/pending-physical-verification/:status", verifyToken, landContr
  *       404:
  *         description: No lands found
  */
-router.get("/land/pending-final-verification/:status", verifyToken, landController.getPendingCallVerificationLands);
+router.get("/land/pending-final-verification/:status", verifyToken, landController.getPendingFinalVerificationLands);
 
 export default router;

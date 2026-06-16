@@ -587,7 +587,7 @@ router.put("/employee/town", verifyToken, employeeController.upsertEmployeeTown)
 
 /**
  * @swagger
- * /api/employee/town:
+ * /api/employee-town:
  *   get:
  *     summary: Get employee town by employee ID (JWT token required)
  *     tags: [Employee Town]
@@ -641,7 +641,7 @@ router.put("/employee/town", verifyToken, employeeController.upsertEmployeeTown)
  *       500:
  *         description: Internal server error
  */
-router.get("/employee/town", verifyToken, employeeController.getEmployeeTownByEmployeeId);
+router.get("/employee-town", verifyToken, employeeController.getEmployeeTownByEmployeeId);
 
 /* =====================================================
    DELETE EMPLOYEE
