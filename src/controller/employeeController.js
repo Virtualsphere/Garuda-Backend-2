@@ -295,7 +295,7 @@ export const getEmployeeTownByEmployeeId = async (req, res) => {
   try {
     const employeeId = req.user.id;
  
-    const town = await employeeTownService.getEmployeeTownByEmployeeId(employeeId);
+    const town = await employeeService.getEmployeeTownByEmployeeId(employeeId);
  
     return res.status(200).json({
       message: "Employee town fetched successfully",
@@ -311,3 +311,4 @@ export const getEmployeeTownByEmployeeId = async (req, res) => {
     return res.status(500).json({ message: "Internal server error", error: error.message });
   }
 };
+

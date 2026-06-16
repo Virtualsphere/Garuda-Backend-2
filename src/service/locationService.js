@@ -71,6 +71,11 @@ export const getAllLocations = async () => {
         required: false,
         include: [
           {
+            model: Town,
+            as: "towns",
+            required: false,
+          },
+          {
             model: Mandal,
             as: "mandals",
             required: false,

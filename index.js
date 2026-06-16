@@ -13,6 +13,7 @@ import employeeRoutes from './src/routes/employeeRoutes.js';
 import documentRoutes from './src/routes/documentRoutes.js';
 import fieldWorkRoutes from './src/routes/fieldWorkRoutes.js'
 import roleRoutes from './src/routes/roleRoutes.js'
+import accessRoutes from './src/routes/accessRoutes.js'
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -50,6 +51,7 @@ app.use('/api', buyerRoutes);
 app.use('/api', documentRoutes);
 app.use('/api', fieldWorkRoutes);
 app.use('/api', roleRoutes);
+app.use('/api', accessRoutes);
 // app.use('/api', paymentRoutes)
 
 const PORT = process.env.PORT || 5000;
