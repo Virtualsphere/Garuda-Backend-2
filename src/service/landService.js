@@ -30,6 +30,12 @@ const getLandWithFarmerDetails = async (landIds = []) => {
   });
 };
 
+const LAKH  = 100_000;
+const CRORE = 10_000_000;
+
+const toStoredPrice  = (raw) => (raw != null ? raw / LAKH  : null);
+const toStoredValue  = (raw) => (raw != null ? raw / CRORE : null);
+
 const DEFAULT_LAND_IMAGE =
   "https://images.pexels.com/photos/7752033/pexels-photo-7752033.jpeg?cs=srgb&dl=pexels-altaf-shah-3143825-7752033.jpg&fm=jpg&_gl=1*1rbwsk6*_ga*MTcwODY3MTM2Mi4xNzYzMTIzMzA3*_ga_8JE65Q40S6*czE3ODA0MTg1MDYkbzIkZzAkdDE3ODA0MTg1MDYkajYwJGwwJGgw";
 
@@ -130,7 +136,7 @@ export const createLand = async (data, employeeId) => {
   try {
     const {
       farmerDetails,
-      landDetails,
+      landDetails: rawLandDetails,
       gps,
       media     = [],
       documents = [],
@@ -346,12 +352,12 @@ const _updateLandCore = async (id, data, extraLandFields = {}, t) => {
 
   const {
     farmerDetails,
-    landDetails,
+    landDetails: rawLandDetails,
     gps,
     media,
     documents,
     trees,
-    shed,       // now an array: [{ ... }, { ... }]
+    shed,
     ...landData
   } = data;
 
