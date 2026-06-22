@@ -133,6 +133,16 @@ Mandal.hasMany(Village, {
   as: "villages",
 });
 
+District.hasMany(Town, {
+  foreignKey: "district_id",
+  as: "towns",
+});
+
+Town.belongsTo(District, {
+  foreignKey: "district_id",
+  as: "district",
+});
+
 Agent.belongsTo(Employee, {
   foreignKey: "refered_by",
   as: "createAgent"
@@ -453,5 +463,6 @@ export {
   Attendance,
   LandTree,
   LandShedDimensions,
-  EmployeeTown
+  EmployeeTown,
+  Town
 };
