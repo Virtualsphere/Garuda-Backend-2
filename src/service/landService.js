@@ -136,7 +136,7 @@ export const createLand = async (data, employeeId) => {
   try {
     const {
       farmerDetails,
-      landDetails: rawLandDetails,
+      landDetails,
       gps,
       media     = [],
       documents = [],
@@ -352,12 +352,12 @@ const _updateLandCore = async (id, data, extraLandFields = {}, t) => {
 
   const {
     farmerDetails,
-    landDetails: rawLandDetails,
+    landDetails,
     gps,
     media,
     documents,
     trees,
-    shed,
+    shed,       // now an array: [{ ... }, { ... }]
     ...landData
   } = data;
 
