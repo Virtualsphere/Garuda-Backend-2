@@ -366,6 +366,20 @@ router.get("/land/filter/all", landController.filterLands);
  */
 router.get("/land", landController.getAllLands);
 
+/**
+ * @swagger
+ * /api/trainee/land:
+ *   get:
+ *     summary: Get all trainee lands
+ *     tags: [Land]
+ *     responses:
+ *       200:
+ *         description: List of lands
+ *       500:
+ *         description: Server Error
+ */
+router.get("/trainee/land", landController.getAllTraineeLands);
+
 /* =====================================================
    GET LAND BY ID
 ===================================================== */

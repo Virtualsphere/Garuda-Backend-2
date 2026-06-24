@@ -37,6 +37,9 @@ const Land = sequelize.define("Land", {
   nearest_town_3_km: {
     type: DataTypes.BIGINT
   },
+  trainee: {
+    type: DataTypes.BOOLEAN
+  },
   location_latitude: {
     type: DataTypes.TEXT
   },

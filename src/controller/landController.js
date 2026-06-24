@@ -35,6 +35,22 @@ export const getAllLands = async (req, res) => {
   }
 };
 
+export const getAllTraineeLands = async (req, res) => {
+  try {
+    const lands = await landService.getAllTraineeLands();
+
+    res.status(200).json({
+      success: true,
+      data: lands,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 export const getAllLandsForUser = async (req, res) => {
   try {
     const lands = await landService.getAllLandsForUser();

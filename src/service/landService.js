@@ -36,6 +36,15 @@ const CRORE = 10_000_000;
 const toStoredPrice  = (raw) => (raw != null ? raw / LAKH  : null);
 const toStoredValue  = (raw) => (raw != null ? raw / CRORE : null);
 
+const normalizeLandDetails = (landDetails) => {
+  if (!landDetails) return landDetails;
+  return {
+    ...landDetails,
+    price_per_acres: toStoredPrice(landDetails.price_per_acres),
+    total_value:     toStoredValue(landDetails.total_value),
+  };
+};
+
 const DEFAULT_LAND_IMAGE =
   "https://images.pexels.com/photos/7752033/pexels-photo-7752033.jpeg?cs=srgb&dl=pexels-altaf-shah-3143825-7752033.jpg&fm=jpg&_gl=1*1rbwsk6*_ga*MTcwODY3MTM2Mi4xNzYzMTIzMzA3*_ga_8JE65Q40S6*czE3ODA0MTg1MDYkbzIkZzAkdDE3ODA0MTg1MDYkajYwJGwwJGgw";
 
@@ -130,6 +139,7 @@ export const createLand = async (data, employeeId) => {
   // Guard: verify employee exists before inserting (avoids FK violation)
   const employee = await Employee.findByPk(employeeId);
   if (!employee) throw new Error("Employee not found — invalid token");
+  const isTrainee = employee.status === "TRAINEE";
 
   const t = await sequelize.transaction();
 
@@ -147,7 +157,7 @@ export const createLand = async (data, employeeId) => {
 
     // -- Land --
     const land = await Land.create(
-      { ...landData, created_by: employeeId },
+      { ...landData, created_by: employeeId, trainee: isTrainee },
       { transaction: t }
     );
 
@@ -162,7 +172,7 @@ export const createLand = async (data, employeeId) => {
     // -- Land Details --
     if (landDetails) {
       await LandDetails.create(
-        { ...landDetails, land_id: land.id },
+        { ...normalizeLandDetails(landDetails), land_id: land.id },
         { transaction: t }
       );
     }
@@ -214,8 +224,17 @@ export const createLand = async (data, employeeId) => {
 // READ
 // ---------------------------------------------------------------------------
 
+export const getAllTraineeLands = async () => {
+  return await Land.findAll({
+    where: { trainee: true },
+    include: FULL_LAND_INCLUDE,
+    order: [["created_at", "DESC"]],
+  });
+};
+
 export const getAllLands = async () => {
   return await Land.findAll({
+    where: { trainee: false },
     include: FULL_LAND_INCLUDE,
     order: [["created_at", "DESC"]],
   });
@@ -232,7 +251,10 @@ export const getAllLandsForUser = async (filters = {}) => {
     poultry_shed, cow_shed, electricity,
   } = filters;
 
-  const landWhere = {};
+  const landWhere = {
+    trainee:     false,
+    form_status: "complete",
+  };
   if (state)    landWhere.state    = state;
   if (district) landWhere.district = district;
   if (mandal)   landWhere.mandal   = mandal;
@@ -312,7 +334,7 @@ export const getLandByIdForUser = async (id) => {
 
 export const getLandByStatus = async (userId, status) => {
   const lands = await Land.findAll({
-    where:   { created_by: userId, form_status: status },
+    where:   { created_by: userId, form_status: status, trainee: false },
     include: FULL_LAND_INCLUDE,
     order:   [["created_at", "DESC"]],
   });
@@ -325,7 +347,7 @@ export const getLandByStatus = async (userId, status) => {
 };
 
 export const filterLands = async (filters) => {
-  const where = {};
+  const where = { trainee: false };
   if (filters.state)    where.state    = filters.state;
   if (filters.district) where.district = filters.district;
   if (filters.mandal)   where.mandal   = filters.mandal;
@@ -375,8 +397,8 @@ const _updateLandCore = async (id, data, extraLandFields = {}, t) => {
   if (landDetails) {
     const existing = await LandDetails.findOne({ where: { land_id: id }, transaction: t });
     existing
-      ? await existing.update(landDetails, { transaction: t })
-      : await LandDetails.create({ ...landDetails, land_id: id }, { transaction: t });
+      ? await existing.update(normalizeLandDetails(landDetails), { transaction: t })
+      : await LandDetails.create({ ...normalizeLandDetails(landDetails), land_id: id }, { transaction: t });
   }
 
   // -- GPS --
@@ -466,7 +488,7 @@ export const deleteLand = async (id) => {
 
 export const getPendingCallVerificationLands = async (status) => {
   return await Land.findAll({
-    where:   { call_verification_status: status, form_status: "complete" },
+    where:   { call_verification_status: status, form_status: "complete", trainee: false },
     include: VERIFICATION_INCLUDE,
     order:   [["created_at", "DESC"]],
   });
@@ -474,7 +496,7 @@ export const getPendingCallVerificationLands = async (status) => {
 
 export const getPendingPhysicalVerificationLands = async (status) => {
   return await Land.findAll({
-    where:   { call_verification_status: "complete", physcial_verification_status: status },
+    where:   { call_verification_status: "complete", physcial_verification_status: status, trainee: false },
     include: VERIFICATION_INCLUDE,
     order:   [["created_at", "DESC"]],
   });
@@ -482,7 +504,7 @@ export const getPendingPhysicalVerificationLands = async (status) => {
 
 export const getPendingFinalVerificationLands = async (status) => {
   return await Land.findAll({
-    where:   { physcial_verification_status: "complete", verification_status: status },
+    where:   { physcial_verification_status: "complete", verification_status: status, trainee: false },
     include: VERIFICATION_INCLUDE,
     order:   [["created_at", "DESC"]],
   });
