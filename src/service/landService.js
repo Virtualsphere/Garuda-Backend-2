@@ -30,24 +30,6 @@ const getLandWithFarmerDetails = async (landIds = []) => {
   });
 };
 
-const LAKH  = 100_000;
-const CRORE = 10_000_000;
-
-const toStoredPrice  = (raw) => (raw != null ? raw / LAKH  : null);
-const toStoredValue  = (raw) => (raw != null ? raw / CRORE : null);
-
-const normalizeLandDetails = (landDetails) => {
-  if (!landDetails) return landDetails;
-  return {
-    ...landDetails,
-    price_per_acres: toStoredPrice(landDetails.price_per_acres),
-    total_value:     toStoredValue(landDetails.total_value),
-  };
-};
-
-const DEFAULT_LAND_IMAGE =
-  "https://images.pexels.com/photos/7752033/pexels-photo-7752033.jpeg?cs=srgb&dl=pexels-altaf-shah-3143825-7752033.jpg&fm=jpg&_gl=1*1rbwsk6*_ga*MTcwODY3MTM2Mi4xNzYzMTIzMzA3*_ga_8JE65Q40S6*czE3ODA0MTg1MDYkbzIkZzAkdDE3ODA0MTg1MDYkajYwJGwwJGgw";
-
 // ---------------------------------------------------------------------------
 // Standard includes
 // ---------------------------------------------------------------------------
@@ -172,7 +154,7 @@ export const createLand = async (data, employeeId) => {
     // -- Land Details --
     if (landDetails) {
       await LandDetails.create(
-        { ...normalizeLandDetails(landDetails), land_id: land.id },
+        { ...landDetails, land_id: land.id },
         { transaction: t }
       );
     }
@@ -185,15 +167,11 @@ export const createLand = async (data, employeeId) => {
       );
     }
 
-    // -- Media (always add default card image) --
-    const mediaData = media.map((m) => ({ ...m, land_id: land.id }));
-    mediaData.push({
-      land_id:  land.id,
-      category: "card",
-      type:     "image",
-      url:      DEFAULT_LAND_IMAGE,
-    });
-    await LandMedia.bulkCreate(mediaData, { transaction: t });
+    // -- Media --
+    if (media.length) {
+      const mediaData = media.map((m) => ({ ...m, land_id: land.id }));
+      await LandMedia.bulkCreate(mediaData, { transaction: t });
+    }
 
     // -- Documents --
     if (documents.length) {
@@ -397,8 +375,8 @@ const _updateLandCore = async (id, data, extraLandFields = {}, t) => {
   if (landDetails) {
     const existing = await LandDetails.findOne({ where: { land_id: id }, transaction: t });
     existing
-      ? await existing.update(normalizeLandDetails(landDetails), { transaction: t })
-      : await LandDetails.create({ ...normalizeLandDetails(landDetails), land_id: id }, { transaction: t });
+      ? await existing.update(landDetails, { transaction: t })
+      : await LandDetails.create({ ...landDetails, land_id: id }, { transaction: t });
   }
 
   // -- GPS --
