@@ -8,7 +8,7 @@ import { Op } from "sequelize";
 const ACCESS_TOKEN_SECRET = process.env.JWT_SECRET;
 const REFRESH_TOKEN_SECRET = process.env.REFRESH_SECRET;
 
-const ACCESS_TOKEN_EXPIRY = "60m";
+const ACCESS_TOKEN_EXPIRY = "12h";
 const REFRESH_TOKEN_EXPIRY_DAYS = 60;
 
 const generateAccessToken = (employee) => {
