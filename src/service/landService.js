@@ -117,6 +117,17 @@ const replaceSheds = async (landId, sheds, t) => {
 // CREATE
 // ---------------------------------------------------------------------------
 
+/** Convert empty strings to null so optional ENUM/string columns accept partial payloads. */
+const sanitizeOptionalFields = (payload = {}) => {
+  const cleaned = { ...payload };
+  for (const [key, value] of Object.entries(cleaned)) {
+    if (typeof value === "string" && value.trim() === "") {
+      cleaned[key] = null;
+    }
+  }
+  return cleaned;
+};
+
 export const createLand = async (data, employeeId) => {
   // Guard: verify employee exists before inserting (avoids FK violation)
   const employee = await Employee.findByPk(employeeId);
@@ -139,14 +150,14 @@ export const createLand = async (data, employeeId) => {
 
     // -- Land --
     const land = await Land.create(
-      { ...landData, created_by: employeeId, trainee: isTrainee },
+      { ...sanitizeOptionalFields(landData), created_by: employeeId, trainee: isTrainee },
       { transaction: t }
     );
 
     // -- Farmer Details --
     if (farmerDetails) {
       await FarmerDetails.create(
-        { ...farmerDetails, land_id: land.id },
+        { ...sanitizeOptionalFields(farmerDetails), land_id: land.id },
         { transaction: t }
       );
     }
@@ -154,7 +165,7 @@ export const createLand = async (data, employeeId) => {
     // -- Land Details --
     if (landDetails) {
       await LandDetails.create(
-        { ...landDetails, land_id: land.id },
+        { ...sanitizeOptionalFields(landDetails), land_id: land.id },
         { transaction: t }
       );
     }
@@ -361,22 +372,27 @@ const _updateLandCore = async (id, data, extraLandFields = {}, t) => {
     ...landData
   } = data;
 
-  await land.update({ ...landData, ...extraLandFields }, { transaction: t });
+  await land.update(
+    { ...sanitizeOptionalFields(landData), ...extraLandFields },
+    { transaction: t }
+  );
 
   // -- Farmer Details --
   if (farmerDetails) {
+    const cleanedFarmer = sanitizeOptionalFields(farmerDetails);
     const existing = await FarmerDetails.findOne({ where: { land_id: id }, transaction: t });
     existing
-      ? await existing.update(farmerDetails, { transaction: t })
-      : await FarmerDetails.create({ ...farmerDetails, land_id: id }, { transaction: t });
+      ? await existing.update(cleanedFarmer, { transaction: t })
+      : await FarmerDetails.create({ ...cleanedFarmer, land_id: id }, { transaction: t });
   }
 
   // -- Land Details --
   if (landDetails) {
+    const cleanedDetails = sanitizeOptionalFields(landDetails);
     const existing = await LandDetails.findOne({ where: { land_id: id }, transaction: t });
     existing
-      ? await existing.update(landDetails, { transaction: t })
-      : await LandDetails.create({ ...landDetails, land_id: id }, { transaction: t });
+      ? await existing.update(cleanedDetails, { transaction: t })
+      : await LandDetails.create({ ...cleanedDetails, land_id: id }, { transaction: t });
   }
 
   // -- GPS --

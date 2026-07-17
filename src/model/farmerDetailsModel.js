@@ -24,22 +24,27 @@ const FarmerDetails = sequelize.define("FarmerDetails", {
   },
   ownership_type: {
     type: DataTypes.ENUM('Ancestral', 'Purchased'),
-    defaultValue: 'Ancestral'
+    allowNull: true,
   },
   locality: {
-    type: DataTypes.ENUM('Local', 'Non-local')
+    type: DataTypes.ENUM('Local', 'Non-local'),
+    allowNull: true,
   },
   ownership_status: {
-    type: DataTypes.ENUM('Own', 'Joint')
+    type: DataTypes.ENUM('Own', 'Joint'),
+    allowNull: true,
   },
   age: {
-    type: DataTypes.ENUM('Upto 30', '30-50', '50+')
+    type: DataTypes.ENUM('Upto 30', '30-50', '50+'),
+    allowNull: true,
   },
   literacy: {
-    type: DataTypes.ENUM('Illiterate', 'Literate', 'High School', 'Graduate')
+    type: DataTypes.ENUM('Illiterate', 'Literate', 'High School', 'Graduate'),
+    allowNull: true,
   },
   nature: {
-    type: DataTypes.ENUM('Calm', 'Polite', 'Normal', 'Rude')
+    type: DataTypes.ENUM('Calm', 'Polite', 'Normal', 'Rude'),
+    allowNull: true,
   },
 
 }, {

@@ -22,7 +22,8 @@ const LandDetails = sequelize.define("LandDetails", {
     type: DataTypes.STRING
   },
   land_attached_to_road: {
-    type: DataTypes.ENUM('yes', 'no')
+    type: DataTypes.ENUM('yes', 'no'),
+    allowNull: true,
   },
   path_ownership: {
     type: DataTypes.STRING
