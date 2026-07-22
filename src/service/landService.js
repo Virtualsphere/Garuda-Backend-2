@@ -58,6 +58,8 @@ const PUBLIC_LAND_INCLUDE = [
 ];
 
 const VERIFICATION_INCLUDE = [
+  { model: Employee,           as: "creator"      },
+  { model: Employee,           as: "verifier"     },
   { model: FarmerDetails,      as: "farmerDetails" },
   { model: LandDetails,        as: "landDetails"   },
   { model: LandGPS,            as: "gps"           },
