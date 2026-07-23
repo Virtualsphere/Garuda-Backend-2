@@ -1,2 +1,6 @@
 node_modules
 /src/public/temp
+# GCP / CI credentials (never commit)
+github-actions-key.json
+*-key.json
+*.pem
