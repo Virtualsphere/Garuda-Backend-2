@@ -1,239 +1,180 @@
 import express from "express";
-import * as roleController from "../controller/roleController.js";
+import * as permissionController from "../controller/permissionController.js";
 import verifyToken from "../middleware/authMiddleware.js";
+import requireAdmin from "../middleware/requireAdmin.js";
 
 const router = express.Router();
 
 /* =====================================================
-   CREATE ROLE (PROTECTED)
+   GET PERMISSION CATALOG
 ===================================================== */
 
 /**
  * @swagger
- * /api/role:
- *   post:
- *     summary: Create a new role (JWT required)
- *     tags: [Role]
+ * /api/permission/catalog:
+ *   get:
+ *     summary: List all page permissions in the catalog (JWT required)
+ *     tags: [Permission]
  *     security:
  *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required: [name]
- *             properties:
- *               name:
- *                 type: string
- *                 example: "Admin"
- *     responses:
- *       201:
- *         description: Role created successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "Role created successfully"
- *                 data:
- *                   $ref: '#/components/schemas/Role'
- *       400:
- *         description: Role name is required
- *       401:
- *         description: Unauthorized
- *       409:
- *         description: Role with this name already exists
- *       500:
- *         description: Internal server error
- */
-router.post("/role", verifyToken, roleController.createRole);
-
-/* =====================================================
-   GET ALL ROLES
-===================================================== */
-
-/**
- * @swagger
- * /api/role:
- *   get:
- *     summary: Get all roles
- *     tags: [Role]
  *     responses:
  *       200:
- *         description: Roles fetched successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "Roles fetched successfully"
- *                 data:
- *                   type: array
- *                   items:
- *                     $ref: '#/components/schemas/Role'
- *       500:
- *         description: Internal server error
+ *         description: Catalog fetched successfully
  */
-router.get("/role", roleController.getAllRoles);
+router.get("/permission/catalog", verifyToken, permissionController.getCatalog);
 
 /* =====================================================
-   GET ROLE BY ID
+   MY EFFECTIVE PERMISSIONS
 ===================================================== */
 
 /**
  * @swagger
- * /api/role/{id}:
+ * /api/permission/me:
  *   get:
- *     summary: Get role by ID
- *     tags: [Role]
+ *     summary: Get the effective permissions for the logged-in employee (JWT required)
+ *     tags: [Permission]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Effective permissions fetched successfully
+ */
+router.get("/permission/me", verifyToken, permissionController.getMyPermissions);
+
+/* =====================================================
+   ROLE PERMISSIONS (ADMIN ONLY)
+===================================================== */
+
+/**
+ * @swagger
+ * /api/permission/role/{roleName}:
+ *   get:
+ *     summary: Get the permission keys assigned to a role (admin only)
+ *     tags: [Permission]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
- *         name: id
+ *         name: roleName
  *         required: true
  *         schema:
- *           type: integer
- *         description: Role ID
+ *           type: string
  *     responses:
  *       200:
- *         description: Role fetched successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "Role fetched successfully"
- *                 data:
- *                   $ref: '#/components/schemas/Role'
- *       404:
- *         description: Role not found
- *       500:
- *         description: Internal server error
+ *         description: Role permissions fetched successfully
+ *       403:
+ *         description: Admin access required
  */
-router.get("/role/:id", roleController.getRoleById);
-
-/* =====================================================
-   UPDATE ROLE (PROTECTED)
-===================================================== */
+router.get("/permission/role/:roleName", verifyToken, requireAdmin, permissionController.getRolePermissions);
 
 /**
  * @swagger
- * /api/role/{id}:
+ * /api/permission/role/{roleName}:
  *   put:
- *     summary: Update a role (JWT required)
- *     tags: [Role]
+ *     summary: Replace the permission set for a role (admin only)
+ *     tags: [Permission]
  *     security:
  *       - bearerAuth: []
  *     parameters:
  *       - in: path
- *         name: id
+ *         name: roleName
  *         required: true
  *         schema:
- *           type: integer
- *         description: Role ID
+ *           type: string
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
- *             required: [name]
+ *             required: [permissionKeys]
  *             properties:
- *               name:
- *                 type: string
- *                 example: "Super Admin"
+ *               permissionKeys:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 example: ["add_land"]
  *     responses:
  *       200:
- *         description: Role updated successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "Role updated successfully"
- *                 data:
- *                   $ref: '#/components/schemas/Role'
+ *         description: Role permissions updated
  *       400:
- *         description: Role name is required
- *       401:
- *         description: Unauthorized
- *       404:
- *         description: Role not found
- *       409:
- *         description: Role with this name already exists
- *       500:
- *         description: Internal server error
+ *         description: Invalid permission keys
+ *       403:
+ *         description: Admin access required
  */
-router.put("/role/:id", verifyToken, roleController.updateRole);
+router.put("/permission/role/:roleName", verifyToken, requireAdmin, permissionController.setRolePermissions);
 
 /* =====================================================
-   DELETE ROLE (PROTECTED)
+   EMPLOYEE PERMISSION OVERRIDES (ADMIN ONLY)
 ===================================================== */
 
 /**
  * @swagger
- * /api/role/{id}:
- *   delete:
- *     summary: Delete a role (JWT required)
- *     tags: [Role]
+ * /api/permission/employee/{employeeId}:
+ *   get:
+ *     summary: Get effective permissions and overrides for an employee (admin only)
+ *     tags: [Permission]
  *     security:
  *       - bearerAuth: []
  *     parameters:
  *       - in: path
- *         name: id
+ *         name: employeeId
  *         required: true
  *         schema:
  *           type: integer
- *         description: Role ID
  *     responses:
  *       200:
- *         description: Role deleted successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "Role deleted successfully"
- *       401:
- *         description: Unauthorized
+ *         description: Employee permissions fetched successfully
+ *       403:
+ *         description: Admin access required
  *       404:
- *         description: Role not found
- *       500:
- *         description: Internal server error
+ *         description: Employee not found
  */
-router.delete("/role/:id", verifyToken, roleController.deleteRole);
+router.get("/permission/employee/:employeeId", verifyToken, requireAdmin, permissionController.getEmployeePermissions);
+
+/**
+ * @swagger
+ * /api/permission/employee/{employeeId}:
+ *   put:
+ *     summary: Upsert permission overrides for an employee (admin only)
+ *     tags: [Permission]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: employeeId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [overrides]
+ *             properties:
+ *               overrides:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     permissionKey:
+ *                       type: string
+ *                       example: "add_land"
+ *                     type:
+ *                       type: string
+ *                       enum: [ALLOW, DENY]
+ *     responses:
+ *       200:
+ *         description: Employee permissions updated
+ *       400:
+ *         description: Invalid overrides
+ *       403:
+ *         description: Admin access required
+ *       404:
+ *         description: Employee not found
+ */
+router.put("/permission/employee/:employeeId", verifyToken, requireAdmin, permissionController.setEmployeePermissions);
 
 export default router;
-
-/**
- * @swagger
- * components:
- *   schemas:
- *     Role:
- *       type: object
- *       properties:
- *         id:
- *           type: integer
- *           example: 1
- *         name:
- *           type: string
- *           example: "Admin"
- *         created_at:
- *           type: string
- *           format: date-time
- *           example: "2024-01-01T00:00:00.000Z"
- *         updated_at:
- *           type: string
- *           format: date-time
- *           example: "2024-01-01T00:00:00.000Z"
- */
