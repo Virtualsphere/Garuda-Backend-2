@@ -1,6 +1,7 @@
 import express from "express";
 import * as landController from "../controller/landController.js";
 import verifyToken from "../middleware/authMiddleware.js";
+import checkPermission from "../middleware/checkPermission.js";
 
 const router = express.Router();
 
@@ -311,7 +312,7 @@ const router = express.Router();
  *       401:
  *         description: Unauthorized
  */
-router.post("/land", verifyToken, landController.createLand);
+router.post("/land", verifyToken, checkPermission("add_land"), landController.createLand);
 
 /* =====================================================
    FILTER LANDS
@@ -1368,7 +1369,7 @@ router.put("/land/verify/:id", verifyToken, landController.updateLandForVerify);
  *       400:
  *         description: Bad request
  */
-router.put("/land/call/verify/:id", verifyToken, landController.updateLandForCallVerify);
+router.put("/land/call/verify/:id", verifyToken, checkPermission("call_verification"), landController.updateLandForCallVerify);
 
 /* =====================================================
    DELETE LAND (PROTECTED)

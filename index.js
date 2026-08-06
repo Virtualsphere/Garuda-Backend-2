@@ -14,6 +14,8 @@ import documentRoutes from './src/routes/documentRoutes.js';
 import fieldWorkRoutes from './src/routes/fieldWorkRoutes.js'
 import roleRoutes from './src/routes/roleRoutes.js'
 import accessRoutes from './src/routes/accessRoutes.js'
+import permissionRoutes from './src/routes/permissionRoutes.js'
+import { ensureSeeded as ensurePermissionsSeeded } from './src/service/permissionService.js'
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -52,6 +54,7 @@ app.use('/api', documentRoutes);
 app.use('/api', fieldWorkRoutes);
 app.use('/api', roleRoutes);
 app.use('/api', accessRoutes);
+app.use('/api', permissionRoutes);
 // app.use('/api', paymentRoutes)
 
 const PORT = process.env.PORT || 5000;
@@ -61,6 +64,7 @@ const startServer = async () => {
   try {
     await sequelize.sync({ alter: true });
     // await ensureStaticQrPaymentSchema();
+    await ensurePermissionsSeeded();
     console.log("All tables synced with database");
   } catch (err) {
     console.error("Sync failed (continuing without DB):", err);
