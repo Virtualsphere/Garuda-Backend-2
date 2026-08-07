@@ -71,8 +71,8 @@ export const setEmployeePermissions = async (req, res) => {
 export const getMyPermissions = async (req, res) => {
   try {
     const { id, type } = req.user;
-    const data = await permissionService.getEffectivePermissions(id, type);
-    return res.status(200).json({ success: true, data });
+    const { isAdmin, keys } = await permissionService.getEffectivePermissions(id, type);
+    return res.status(200).json({ success: true, data: { isAdmin, permissions: keys } });
   } catch (error) {
     return res.status(500).json({ success: false, message: "Internal server error", error: error.message });
   }
