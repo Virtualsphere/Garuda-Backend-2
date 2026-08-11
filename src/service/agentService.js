@@ -27,6 +27,28 @@ export const createAgent = async (employeeId, data) => {
   return agent;
 };
 
+export const getAllAgents = async (filters = {}) => {
+  const { state, district, mandal, village, search } = filters;
+
+  const whereClause = {};
+  if (state) whereClause.state = state;
+  if (district) whereClause.district = district;
+  if (mandal) whereClause.mandal = mandal;
+  if (village) whereClause.village = village;
+
+  if (search) {
+    whereClause[Op.or] = [
+      { name: { [Op.iLike]: `%${search}%` } },
+      { phone: { [Op.iLike]: `%${search}%` } },
+    ];
+  }
+
+  return await Agent.findAll({
+    where: whereClause,
+    order: [["created_at", "DESC"]],
+  });
+};
+
 export const getAgentsByLocation = async (filters = {}) => {
   const { state, district } = filters;
 

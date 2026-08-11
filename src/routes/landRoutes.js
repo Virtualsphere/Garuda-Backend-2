@@ -1372,6 +1372,63 @@ router.put("/land/verify/:id", verifyToken, landController.updateLandForVerify);
 router.put("/land/call/verify/:id", verifyToken, checkPermission("call_verification"), landController.updateLandForCallVerify);
 
 /* =====================================================
+   AGENT LINKING (PROTECTED)
+===================================================== */
+
+/**
+ * @swagger
+ * /api/land/link-agent/{id}:
+ *   put:
+ *     summary: Link a land record to an agent (JWT required)
+ *     tags: [Land]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               agentId:
+ *                 type: integer
+ *     responses:
+ *       200:
+ *         description: Land linked to agent successfully
+ *       400:
+ *         description: Bad request
+ */
+router.put("/land/link-agent/:id", verifyToken, landController.linkLandToAgent);
+
+/**
+ * @swagger
+ * /api/land/by-agent/{id}:
+ *   get:
+ *     summary: Get all lands linked to an agent (JWT required)
+ *     tags: [Land]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Lands fetched by agent
+ *       500:
+ *         description: Server error
+ */
+router.get("/land/by-agent/:id", verifyToken, landController.getLandsByAgent);
+
+/* =====================================================
    DELETE LAND (PROTECTED)
 ===================================================== */
 

@@ -224,6 +224,44 @@ export const updateLandForCallVerify = async (req, res) => {
   }
 };
 
+export const linkLandToAgent = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { agentId } = req.body;
+
+    const updatedLand = await landService.linkLandToAgent(id, agentId);
+
+    res.status(200).json({
+      success: true,
+      message: "Land linked to agent successfully",
+      data: updatedLand,
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const getLandsByAgent = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const lands = await landService.getLandsByAgent(id);
+
+    res.status(200).json({
+      success: true,
+      data: lands,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 export const getPendingCallVerificationLands = async (req, res) => {
   try {
     const { status } = req.params;

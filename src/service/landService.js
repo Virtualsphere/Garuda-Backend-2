@@ -467,6 +467,21 @@ export const updateLandForCallVerify = async (id, data, employeeId) => {
   }
 };
 
+export const linkLandToAgent = async (id, agentId) => {
+  const land = await Land.findByPk(id);
+  if (!land) throw new Error("Land not found");
+  await land.update({ agent_id: agentId });
+  return await getLandById(id);
+};
+
+export const getLandsByAgent = async (agentId) => {
+  return await Land.findAll({
+    where:   { agent_id: agentId },
+    include: FULL_LAND_INCLUDE,
+    order:   [["created_at", "DESC"]],
+  });
+};
+
 // ---------------------------------------------------------------------------
 // DELETE
 // ---------------------------------------------------------------------------

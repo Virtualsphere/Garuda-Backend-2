@@ -461,6 +461,30 @@ export const createAgent = async (req, res) => {
   }
 };
 
+export const getAllAgents = async (req, res) => {
+  try {
+    const { state, district, mandal, village, search } = req.query;
+
+    const result = await agentService.getAllAgents({
+      state,
+      district,
+      mandal,
+      village,
+      search,
+    });
+
+    return res.status(200).json({
+      message: "Agents fetched successfully",
+      count: result.length,
+      result,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: error.message,
+    });
+  }
+};
+
 export const getAgentsByLocation = async (req, res) => {
   try {
     const { state, district } = req.query;

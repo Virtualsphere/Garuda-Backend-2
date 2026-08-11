@@ -53,6 +53,16 @@ Employee.hasMany(Agent, {
   as: "createAgent"
 })
 
+Agent.hasMany(Land, {
+  foreignKey: "agent_id",
+  as: "linkedLands"
+});
+
+Land.belongsTo(Agent, {
+  foreignKey: "agent_id",
+  as: "linkedAgent"
+});
+
 Employee.hasMany(LandFeedBack, {
   foreignKey: "employee_id",
   as: "employeeFeedback"

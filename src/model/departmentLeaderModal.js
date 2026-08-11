@@ -8,16 +8,28 @@ const DepartmentLeader= sequelize.define("DepartmentLeader", {
         autoIncrement: true
     },
     leader_id: {
-        type: DataTypes.INTEGER
+        type: DataTypes.INTEGER,
+        allowNull: false
+    },
+    employee_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false
     },
     department_type: {
-        type: String
+        type: DataTypes.STRING,
+        allowNull: false
     }
 },{
-  tableName: "cart",
+  tableName: "department_leaders",
   timestamps: true,
   createdAt: "created_at",
   updatedAt: "updated_at",
+  indexes: [
+    {
+      unique: true,
+      fields: ["employee_id", "department_type"],
+    },
+  ],
 });
 
 export default DepartmentLeader;

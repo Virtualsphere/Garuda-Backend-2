@@ -860,6 +860,42 @@ router.get("/fieldwork/agents", fieldWorkController.getAgentsByLocation);
 
 /**
  * @swagger
+ * /api/fieldwork/agent/list:
+ *   get:
+ *     summary: Get a flat list of individual agents, optionally filtered by location or search
+ *     tags: [FieldWork]
+ *     parameters:
+ *       - in: query
+ *         name: state
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: district
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: mandal
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: village
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Matches against agent name or phone
+ *     responses:
+ *       200:
+ *         description: Agents fetched successfully
+ *       500:
+ *         description: Server error
+ */
+router.get("/fieldwork/agent/list", fieldWorkController.getAllAgents);
+
+/**
+ * @swagger
  * /api/fieldwork/agent/{id}:
  *   put:
  *     summary: Update agent

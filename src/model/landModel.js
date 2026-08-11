@@ -67,6 +67,10 @@ const Land = sequelize.define("Land", {
   call_verification_by: {
     type: DataTypes.INTEGER
   },
+  agent_id: {
+    type: DataTypes.INTEGER,
+    allowNull: true
+  },
   call_verification_status: {
     type: DataTypes.ENUM('complete', 'pending', 'rejected'),
     defaultValue: 'pending'
