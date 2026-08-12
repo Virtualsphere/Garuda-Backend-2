@@ -112,6 +112,25 @@ export const getAllAssignedVillages = async (req, res) => {
   }
 };
 
+export const getVillageAllotmentStats = async (req, res) => {
+  try {
+    const { employeeId } = req.query;
+    const result = await landService.getVillageAllotmentStats(
+      employeeId ? Number(employeeId) : undefined
+    );
+
+    return res.status(200).json({
+      message: "Village allotment stats fetched successfully",
+      count: result.length,
+      result,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: error.message || "Something went wrong",
+    });
+  }
+};
+
 export const getAssignedVillageById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -720,6 +739,110 @@ export const getMonthlyReport = async (req, res) => {
       success: true,
       message: "Monthly report fetched successfully",
       data: report,
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const getDailyRegistry = async (req, res) => {
+  try {
+    const { role, date } = req.query;
+
+    if (!date) {
+      return res.status(400).json({
+        success: false,
+        message: "date is required",
+      });
+    }
+
+    const data = await attendanceService.getDailyRegistry(role, date);
+
+    res.status(200).json({
+      success: true,
+      message: "Daily presence registry fetched successfully",
+      data,
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const getWeeklyRegistry = async (req, res) => {
+  try {
+    const { role, startDate, endDate } = req.query;
+
+    if (!startDate || !endDate) {
+      return res.status(400).json({
+        success: false,
+        message: "startDate and endDate are required",
+      });
+    }
+
+    const data = await attendanceService.getWeeklyRegistry(role, startDate, endDate);
+
+    res.status(200).json({
+      success: true,
+      message: "Weekly presence grid fetched successfully",
+      data,
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const getMonthlyRegistry = async (req, res) => {
+  try {
+    const { role, month, year } = req.query;
+
+    if (!month || !year) {
+      return res.status(400).json({
+        success: false,
+        message: "month and year are required",
+      });
+    }
+
+    const data = await attendanceService.getMonthlyRegistry(role, month, year);
+
+    res.status(200).json({
+      success: true,
+      message: "Monthly presence history fetched successfully",
+      data,
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const bulkUpsertAttendance = async (req, res) => {
+  try {
+    const { date, records } = req.body;
+
+    if (!date || !Array.isArray(records)) {
+      return res.status(400).json({
+        success: false,
+        message: "date and records[] are required",
+      });
+    }
+
+    const data = await attendanceService.bulkUpsertAttendance(date, records);
+
+    res.status(200).json({
+      success: true,
+      message: "Attendance changes saved successfully",
+      data,
     });
   } catch (error) {
     res.status(400).json({

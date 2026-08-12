@@ -15,7 +15,7 @@ import LandShedDimensions from "../model/landShedDimensionsModel.js";
 
 import polyline from "@mapbox/polyline";
 import sequelize from "../db/db.js";
-import { Op } from "sequelize";
+import { Op, fn, col, literal } from "sequelize";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -650,6 +650,43 @@ export const getAssignedVillagesByEmployee = async (employeeId) => {
     });
   }
   return result;
+};
+
+export const getVillageAllotmentStats = async (employeeId) => {
+  const rows = await Land.findAll({
+    attributes: [
+      "village",
+      "mandal",
+      [fn("COUNT", col("id")), "total"],
+      [fn("COUNT", literal("CASE WHEN verification_status = 'complete' THEN 1 END")), "verified"],
+      [fn("COUNT", literal("CASE WHEN physcial_verification_status = 'complete' THEN 1 END")), "physical_audit"],
+      [fn("COUNT", literal("CASE WHEN form_status = 'complete' THEN 1 END")), "fill_details"],
+    ],
+    where: { trainee: false },
+    group: ["village", "mandal"],
+    raw: true,
+  });
+
+  let excluded = new Set();
+  if (employeeId) {
+    const assigned = await AssignedVillage.findAll({
+      where: { assigned_employee_id: employeeId },
+      attributes: ["village", "mandal"],
+      raw: true,
+    });
+    excluded = new Set(assigned.map((a) => `${a.village}|${a.mandal}`));
+  }
+
+  return rows
+    .filter((row) => !excluded.has(`${row.village}|${row.mandal}`))
+    .map((row) => ({
+      village: row.village,
+      mandal: row.mandal,
+      total: parseInt(row.total, 10),
+      verified: parseInt(row.verified, 10),
+      physicalAudit: parseInt(row.physical_audit, 10),
+      fillDetails: parseInt(row.fill_details, 10),
+    }));
 };
 
 // ---------------------------------------------------------------------------

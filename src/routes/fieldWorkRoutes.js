@@ -198,6 +198,30 @@ router.put("/fieldwork/assigned-village", fieldWorkController.updateAssignedVill
  */
 router.delete("/fieldwork/assigned-village/:id", fieldWorkController.deleteAssignedVillage);
 
+/**
+ * @swagger
+ * /api/fieldwork/village-stats:
+ *   get:
+ *     summary: Get live per-village land stats for allotment (JWT required)
+ *     tags: [FieldWork]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: employeeId
+ *         schema:
+ *           type: integer
+ *         description: When provided, excludes villages already assigned to this employee
+ *     responses:
+ *       200:
+ *         description: Village stats fetched successfully
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Server error
+ */
+router.get("/fieldwork/village-stats", verifyToken, fieldWorkController.getVillageAllotmentStats);
+
 /* =====================================================
    SESSION MANAGEMENT
 ===================================================== */
@@ -1192,6 +1216,137 @@ router.post("/attendance/weekends", fieldWorkController.markWeekends);
  *         description: Bad request
  */
 router.get("/attendance/monthly-report", fieldWorkController.getMonthlyReport);
+
+/**
+ * @swagger
+ * /api/attendance/registry/daily:
+ *   get:
+ *     summary: Get daily presence registry for a department (filters employees by role keyword)
+ *     tags: [Attendance]
+ *     parameters:
+ *       - in: query
+ *         name: role
+ *         schema:
+ *           type: string
+ *         example: "call center"
+ *       - in: query
+ *         name: date
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: date
+ *         example: "2026-08-12"
+ *     responses:
+ *       200:
+ *         description: Daily presence registry fetched successfully
+ *       400:
+ *         description: Bad request
+ */
+router.get("/attendance/registry/daily", fieldWorkController.getDailyRegistry);
+
+/**
+ * @swagger
+ * /api/attendance/registry/weekly:
+ *   get:
+ *     summary: Get weekly presence grid for a department
+ *     tags: [Attendance]
+ *     parameters:
+ *       - in: query
+ *         name: role
+ *         schema:
+ *           type: string
+ *         example: "call center"
+ *       - in: query
+ *         name: startDate
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: date
+ *       - in: query
+ *         name: endDate
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: date
+ *     responses:
+ *       200:
+ *         description: Weekly presence grid fetched successfully
+ *       400:
+ *         description: Bad request
+ */
+router.get("/attendance/registry/weekly", fieldWorkController.getWeeklyRegistry);
+
+/**
+ * @swagger
+ * /api/attendance/registry/monthly:
+ *   get:
+ *     summary: Get monthly presence history for a department
+ *     tags: [Attendance]
+ *     parameters:
+ *       - in: query
+ *         name: role
+ *         schema:
+ *           type: string
+ *         example: "call center"
+ *       - in: query
+ *         name: month
+ *         required: true
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: year
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Monthly presence history fetched successfully
+ *       400:
+ *         description: Bad request
+ */
+router.get("/attendance/registry/monthly", fieldWorkController.getMonthlyRegistry);
+
+/**
+ * @swagger
+ * /api/attendance/registry/bulk:
+ *   put:
+ *     summary: Bulk save entry/exit time & status edits made in the presence registry (Admin only)
+ *     tags: [Attendance]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [date, records]
+ *             properties:
+ *               date:
+ *                 type: string
+ *                 format: date
+ *                 example: "2026-08-12"
+ *               records:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     employee_id:
+ *                       type: integer
+ *                     check_in:
+ *                       type: string
+ *                       format: date-time
+ *                     check_out:
+ *                       type: string
+ *                       format: date-time
+ *                     status:
+ *                       type: string
+ *                       enum: [PRESENT, ABSENT, LEAVE]
+ *     responses:
+ *       200:
+ *         description: Attendance changes saved successfully
+ *       400:
+ *         description: Bad request
+ */
+router.put("/attendance/registry/bulk", fieldWorkController.bulkUpsertAttendance);
 
 /**
  * @swagger
