@@ -75,6 +75,34 @@ router.put("/department-leader/allotment", verifyToken, departmentLeaderControll
 router.get("/department-leader/roster", verifyToken, departmentLeaderController.getRoster);
 
 /* =====================================================
+   GET DEPARTMENT TREE (PROTECTED)
+===================================================== */
+
+/**
+ * @swagger
+ * /api/department-leader/tree:
+ *   get:
+ *     summary: Get every leader/employee pairing for a department, unfiltered by leader (JWT required)
+ *     tags: [DepartmentLeader]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: departmentType
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Department tree fetched successfully
+ *       400:
+ *         description: Bad request
+ *       401:
+ *         description: Unauthorized
+ */
+router.get("/department-leader/tree", verifyToken, departmentLeaderController.getDepartmentTree);
+
+/* =====================================================
    REMOVE ALLOTMENT (PROTECTED)
 ===================================================== */
 

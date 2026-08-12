@@ -33,3 +33,10 @@ export const removeAllotment = async (employeeId, departmentType) => {
   await existing.destroy();
   return true;
 };
+
+export const getDepartmentTree = async (departmentType) => {
+  return await DepartmentLeader.findAll({
+    where: { department_type: departmentType },
+    order: [["created_at", "DESC"]],
+  });
+};

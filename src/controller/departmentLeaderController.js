@@ -47,3 +47,18 @@ export const removeAllotment = async (req, res) => {
     return res.status(500).json({ message: "Internal server error", error: error.message });
   }
 };
+
+export const getDepartmentTree = async (req, res) => {
+  try {
+    const { departmentType } = req.query;
+
+    if (!departmentType) {
+      return res.status(400).json({ message: "departmentType is required" });
+    }
+
+    const tree = await departmentLeaderService.getDepartmentTree(departmentType);
+    return res.status(200).json({ message: "Department tree fetched successfully", data: tree });
+  } catch (error) {
+    return res.status(500).json({ message: "Internal server error", error: error.message });
+  }
+};
