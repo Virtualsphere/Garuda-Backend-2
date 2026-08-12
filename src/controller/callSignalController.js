@@ -11,8 +11,8 @@ export const createCallSignal = async (req, res) => {
 
 export const getAllCallSignals = async (req, res) => {
   try {
-    const { department_type, employee_id, direction, status } = req.query;
-    const signals = await callSignalService.getAllCallSignals({ department_type, employee_id, direction, status });
+    const { department_type, employee_id, direction, status, land_id } = req.query;
+    const signals = await callSignalService.getAllCallSignals({ department_type, employee_id, direction, status, land_id });
     return res.status(200).json({ message: "Call signals fetched successfully", data: signals });
   } catch (error) {
     return res.status(500).json({ message: "Internal server error", error: error.message });
@@ -21,8 +21,8 @@ export const getAllCallSignals = async (req, res) => {
 
 export const getCallSignalMetrics = async (req, res) => {
   try {
-    const { department_type, employee_id } = req.query;
-    const metrics = await callSignalService.getCallSignalMetrics({ department_type, employee_id });
+    const { department_type, employee_id, land_id } = req.query;
+    const metrics = await callSignalService.getCallSignalMetrics({ department_type, employee_id, land_id });
     return res.status(200).json({ message: "Call signal metrics fetched successfully", data: metrics });
   } catch (error) {
     return res.status(500).json({ message: "Internal server error", error: error.message });

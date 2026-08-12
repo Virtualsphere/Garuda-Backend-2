@@ -8,13 +8,14 @@ export const createCallSignal = async (data) => {
 };
 
 export const getAllCallSignals = async (filters = {}) => {
-  const { department_type, employee_id, direction, status } = filters;
+  const { department_type, employee_id, direction, status, land_id } = filters;
 
   const whereClause = {};
   if (department_type) whereClause.department_type = department_type;
   if (employee_id) whereClause.employee_id = employee_id;
   if (direction) whereClause.direction = direction;
   if (status) whereClause.status = status;
+  if (land_id) whereClause.land_id = land_id;
 
   return await CallSignal.findAll({
     where: whereClause,
@@ -23,11 +24,12 @@ export const getAllCallSignals = async (filters = {}) => {
 };
 
 export const getCallSignalMetrics = async (filters = {}) => {
-  const { department_type, employee_id } = filters;
+  const { department_type, employee_id, land_id } = filters;
 
   const whereClause = {};
   if (department_type) whereClause.department_type = department_type;
   if (employee_id) whereClause.employee_id = employee_id;
+  if (land_id) whereClause.land_id = land_id;
 
   const calls = await CallSignal.findAll({ where: whereClause });
 

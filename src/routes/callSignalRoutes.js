@@ -86,6 +86,10 @@ router.post("/call-signal", verifyToken, callSignalController.createCallSignal);
  *         name: status
  *         schema:
  *           type: string
+ *       - in: query
+ *         name: land_id
+ *         schema:
+ *           type: integer
  *     responses:
  *       200:
  *         description: Call signals fetched successfully
@@ -113,6 +117,10 @@ router.get("/call-signal", verifyToken, callSignalController.getAllCallSignals);
  *           type: string
  *       - in: query
  *         name: employee_id
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: land_id
  *         schema:
  *           type: integer
  *     responses:
