@@ -24,6 +24,8 @@ services:
   app:
     container_name: garuda_backend
 
+    image: ${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPOSITORY}/${IMAGE_NAME:-garuda-backend}:latest
+
     build:
       context: .
       dockerfile: Dockerfile
