@@ -15,7 +15,8 @@ import {
   LandFeedBack,
   LandMedia,
   LandDetails,
-  FarmerDetails
+  FarmerDetails,
+  Payment
 } from "../model/associationModel.js";
 import { sendEmail } from "../middleware/mail.js";
 
@@ -856,4 +857,36 @@ export const isFinalListed = async (userId, landId) => {
   });
 
   return !!exists;
+};
+
+export const getAllBuyersAdmin = async () => {
+  return await Buyer.findAll({
+    include: [
+      {
+        model: Payment,
+        as: "paymentBuyer"
+      },
+      {
+        model: Cart,
+        as: "cartBuyer",
+      },
+      {
+        model: PrimaryVisit,
+        as: "primaryBuyer",
+      },
+      {
+        model: Employee,
+        as: "executive",
+      }
+    ],
+    order: [["created_at", "DESC"]]
+  });
+};
+
+export const assignExecutive = async (buyerId, executiveId) => {
+  const buyer = await Buyer.findByPk(buyerId);
+  if (!buyer) throw new Error("Buyer not found");
+  
+  await buyer.update({ executive_id: executiveId });
+  return buyer;
 };

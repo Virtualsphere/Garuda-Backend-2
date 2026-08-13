@@ -1363,4 +1363,10 @@ router.get("/buyer/payment", verifyToken, buyerController.getPaymentsByUser);
  */
 router.get("/buyer/payment/:landId", verifyToken, buyerController.getPaymentByLand);
 
+/* =====================================================
+   ADMIN ROUTES
+===================================================== */
+router.get("/admin/buyer", verifyToken, buyerController.getAllBuyersAdmin);
+router.put("/admin/buyer/:id/executive", verifyToken, buyerController.assignExecutive);
+
 export default router;

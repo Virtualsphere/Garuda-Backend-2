@@ -1419,3 +1419,44 @@ export const deletePayment = async (req, res) => {
     });
   }
 };
+
+export const getAllBuyersAdmin = async (req, res) => {
+  try {
+    const buyers = await buyerService.getAllBuyersAdmin();
+    return res.status(200).json({
+      success: true,
+      data: buyers
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+export const assignExecutive = async (req, res) => {
+  try {
+    const buyerId = req.params.id;
+    const { executive_id } = req.body;
+    
+    if (!executive_id) {
+      return res.status(400).json({
+        success: false,
+        message: "executive_id is required"
+      });
+    }
+
+    const buyer = await buyerService.assignExecutive(buyerId, executive_id);
+    return res.status(200).json({
+      success: true,
+      message: "Executive assigned successfully",
+      data: buyer
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};

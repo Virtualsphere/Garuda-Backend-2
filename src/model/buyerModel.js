@@ -11,6 +11,15 @@ const Buyer= sequelize.define("Buyer", {
         type: DataTypes.STRING,
         allowNull: false,
     },
+    buyer_code: {
+        type: DataTypes.STRING,
+        unique: true,
+        allowNull: true,
+    },
+    executive_id: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+    },
     email: {
         type: DataTypes.STRING
     },

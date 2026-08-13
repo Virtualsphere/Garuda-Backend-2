@@ -73,6 +73,16 @@ Buyer.hasMany(LandFeedBack, {
   as: "buyerFeedback"
 })
 
+Employee.hasMany(Buyer, {
+  foreignKey: "executive_id",
+  as: "assignedBuyers"
+})
+
+Buyer.belongsTo(Employee, {
+  foreignKey: "executive_id",
+  as: "executive"
+})
+
 Employee.hasMany(AssignedVillage, {
   foreignKey: "assigned_employee_id",
   as: "assignedVillage"
@@ -236,7 +246,9 @@ Session.belongsTo(Employee, {
 SessionExpense.belongsTo(Session, {
   foreignKey: "session_id",
   as: "sessionExpense"
-})
+});
+
+
 
 PrimaryVisit.belongsTo(Land, {
   foreignKey: "land_id",

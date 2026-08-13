@@ -18,6 +18,7 @@ import permissionRoutes from './src/routes/permissionRoutes.js'
 import settingsRoutes from './src/routes/settingsRoutes.js'
 import callSignalRoutes from './src/routes/callSignalRoutes.js'
 import departmentLeaderRoutes from './src/routes/departmentLeaderRoutes.js'
+import callingRoutes from './src/routes/callingRoutes.js'
 import { ensureSeeded as ensurePermissionsSeeded } from './src/service/permissionService.js'
 
 const __filename = fileURLToPath(import.meta.url);
@@ -61,6 +62,7 @@ app.use('/api', permissionRoutes);
 app.use('/api', settingsRoutes);
 app.use('/api', callSignalRoutes);
 app.use('/api', departmentLeaderRoutes);
+app.use('/api', callingRoutes);
 // app.use('/api', paymentRoutes)
 
 const PORT = process.env.PORT || 5000;

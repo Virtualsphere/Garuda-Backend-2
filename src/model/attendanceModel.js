@@ -22,6 +22,19 @@ const Attendance = sequelize.define("Attendance", {
     type: DataTypes.ENUM('EMPLOYEE', 'ADMIN'),
     defaultValue: 'EMPLOYEE'
   },
+  check_in: {
+    type: DataTypes.DATE
+  },
+  check_out: {
+    type: DataTypes.DATE
+  },
+  verified: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false
+  },
+  exit_type: {
+    type: DataTypes.ENUM('AUTO', 'MANUAL')
+  },
   note: {
     type: DataTypes.STRING
   }
