@@ -38,6 +38,12 @@ const Employee= sequelize.define("Employee", {
     photo: {
         type: DataTypes.TEXT
     },
+    gender: {
+        type: DataTypes.STRING
+    },
+    date_of_birth: {
+        type: DataTypes.DATEONLY
+    },
     status: {
         type: DataTypes.ENUM('ACTIVE', 'DEACTIVE', 'TRAINEE'),
         defaultValue: 'ACTIVE'
@@ -69,8 +75,35 @@ const Employee= sequelize.define("Employee", {
     address: {
         type: DataTypes.TEXT
     },
+    house_no: {
+        type: DataTypes.STRING
+    },
+    colony: {
+        type: DataTypes.STRING
+    },
+    home_village: {
+        type: DataTypes.STRING
+    },
+    home_mandal: {
+        type: DataTypes.STRING
+    },
+    home_town: {
+        type: DataTypes.STRING
+    },
+    home_district: {
+        type: DataTypes.STRING
+    },
     shirt_size: {
         type: DataTypes.STRING
+    },
+    assigned_hub: {
+        type: DataTypes.STRING
+    },
+    contract_start_date: {
+        type: DataTypes.DATEONLY
+    },
+    contract_end_date: {
+        type: DataTypes.DATEONLY
     },
     work_state: {
         type: DataTypes.STRING
