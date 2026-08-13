@@ -1527,7 +1527,7 @@ router.get("/land/pending-call-verification/:status", verifyToken, landControlle
  *       404:
  *         description: No lands found
  */
-router.get("/land/pending-physical-verification/:status", verifyToken, landController.getPendingCallVerificationLands);
+router.get("/land/pending-physical-verification/:status", verifyToken, landController.getPendingPhysicalVerificationLands);
 
 /**
  * @swagger
