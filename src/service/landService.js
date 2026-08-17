@@ -40,10 +40,10 @@ const FULL_LAND_INCLUDE = [
   { model: FarmerDetails,      as: "farmerDetails"},
   { model: LandDetails,        as: "landDetails"  },
   { model: LandGPS,            as: "gps"          },
-  { model: LandMedia,          as: "media"        },
-  { model: LandDocuments,      as: "documents"    },
-  { model: LandTree,           as: "tree"         },
-  { model: LandShedDimensions, as: "shed"         },
+  { model: LandMedia,          as: "media",        separate: true },
+  { model: LandDocuments,      as: "documents",    separate: true },
+  { model: LandTree,           as: "tree",         separate: true },
+  { model: LandShedDimensions, as: "shed",         separate: true },
 ];
 
 const PUBLIC_LAND_INCLUDE = [
@@ -51,10 +51,10 @@ const PUBLIC_LAND_INCLUDE = [
   { model: Employee,           as: "verifier"     },
   { model: LandDetails,        as: "landDetails"  },
   { model: LandGPS,            as: "gps"          },
-  { model: LandMedia,          as: "media"        },
-  { model: LandDocuments,      as: "documents"    },
-  { model: LandTree,           as: "tree"         },
-  { model: LandShedDimensions, as: "shed"         },
+  { model: LandMedia,          as: "media",        separate: true },
+  { model: LandDocuments,      as: "documents",    separate: true },
+  { model: LandTree,           as: "tree",         separate: true },
+  { model: LandShedDimensions, as: "shed",         separate: true },
 ];
 
 const VERIFICATION_INCLUDE = [
@@ -302,10 +302,10 @@ export const getAllLandsForUser = async (filters = {}) => {
     include: [
       landDetailsInclude,
       { model: LandGPS,            as: "gps",       required: false },
-      { model: LandMedia,          as: "media",     required: false },
-      { model: LandDocuments,      as: "documents", required: false },
-      { model: LandTree,           as: "tree",      required: false },
-      { model: LandShedDimensions, as: "shed",      required: false },
+      { model: LandMedia,          as: "media",     separate: true },
+      { model: LandDocuments,      as: "documents", separate: true },
+      { model: LandTree,           as: "tree",      separate: true },
+      { model: LandShedDimensions, as: "shed",      separate: true },
     ],
     order: [["created_at", "DESC"]],
   });
