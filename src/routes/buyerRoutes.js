@@ -1366,7 +1366,83 @@ router.get("/buyer/payment/:landId", verifyToken, buyerController.getPaymentByLa
 /* =====================================================
    ADMIN ROUTES
 ===================================================== */
+
+/**
+ * @swagger
+ * /api/admin/buyer:
+ *   get:
+ *     summary: Get all buyers with payments, cart, visits, and assigned executive (Admin, JWT required)
+ *     tags: [Buyer]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Buyers fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *       500:
+ *         description: Server error
+ */
 router.get("/admin/buyer", verifyToken, buyerController.getAllBuyersAdmin);
+
+/**
+ * @swagger
+ * /api/admin/buyer/{id}/executive:
+ *   put:
+ *     summary: Assign (or reassign) the executive responsible for a buyer (Admin, JWT required)
+ *     tags: [Buyer]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Buyer ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - executive_id
+ *             properties:
+ *               executive_id:
+ *                 type: integer
+ *                 example: 3
+ *     responses:
+ *       200:
+ *         description: Executive assigned successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Executive assigned successfully"
+ *                 data:
+ *                   type: object
+ *       400:
+ *         description: Bad request - executive_id is required
+ *       500:
+ *         description: Server error - e.g. buyer not found
+ */
 router.put("/admin/buyer/:id/executive", verifyToken, buyerController.assignExecutive);
 
 export default router;
