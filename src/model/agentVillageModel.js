@@ -1,11 +1,18 @@
 import { DataTypes } from "sequelize";
 import sequelize from "../db/db.js";
 
-const Agent= sequelize.define("Agent", {
+// Territory deployment: an agent can be posted to several village nodes.
+// agent.village stays the agent's home/primary village; these rows are the
+// full assigned territory the tactical map clusters their avatar onto.
+const AgentVillage = sequelize.define("AgentVillage", {
     id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true
+    },
+    agent_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false
     },
     state: {
         type: DataTypes.STRING
@@ -17,27 +24,14 @@ const Agent= sequelize.define("Agent", {
         type: DataTypes.STRING
     },
     village: {
-        type: DataTypes.STRING
-    },
-    name: {
-        type: DataTypes.STRING
-    },
-    phone: {
-        type: DataTypes.STRING
-    },
-    // Avatar used by the tactical map's identity bubbles.
-    photo: {
         type: DataTypes.STRING,
-        allowNull: true
-    },
-    refered_by: {
-        type: DataTypes.INTEGER
+        allowNull: false
     }
 },{
-  tableName: "agent",
+  tableName: "agent_village",
   timestamps: true,
   createdAt: "created_at",
   updatedAt: "updated_at",
 });
 
-export default Agent;
+export default AgentVillage;

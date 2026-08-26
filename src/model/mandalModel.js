@@ -13,6 +13,16 @@ const Mandal= sequelize.define("Mandal", {
     name: {
         type: DataTypes.STRING,
         allowNull: false,
+    },
+    // Coarsest fallback: used when a village has neither land GPS nor its own
+    // seeded coordinates. See src/scripts/backfillLocationCoords.js.
+    latitude: {
+        type: DataTypes.DECIMAL(9, 6),
+        allowNull: true
+    },
+    longitude: {
+        type: DataTypes.DECIMAL(9, 6),
+        allowNull: true
     }
 },{
   tableName: "mandal",

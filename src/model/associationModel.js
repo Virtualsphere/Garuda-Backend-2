@@ -26,6 +26,8 @@ import PetrolAdvance from "./petrolAdvanceModel.js";
 import Path from "./pathModel.js";
 import LandFeedBack from "./landFeedBackModel.js";
 import Agent from "./agentModel.js";
+import AgentVillage from "./agentVillageModel.js";
+import LandObservation from "./landObservationModel.js";
 import Attendance from "./attendanceModel.js";
 import Calendar from "./calendarModel.js";
 import Town from "./townModel.js";
@@ -61,6 +63,36 @@ Agent.hasMany(Land, {
 Land.belongsTo(Agent, {
   foreignKey: "agent_id",
   as: "linkedAgent"
+});
+
+Agent.hasMany(AgentVillage, {
+  foreignKey: "agent_id",
+  as: "territory"
+});
+
+AgentVillage.belongsTo(Agent, {
+  foreignKey: "agent_id",
+  as: "agent"
+});
+
+Agent.hasMany(LandObservation, {
+  foreignKey: "agent_id",
+  as: "observations"
+});
+
+LandObservation.belongsTo(Agent, {
+  foreignKey: "agent_id",
+  as: "agent"
+});
+
+Land.hasMany(LandObservation, {
+  foreignKey: "land_id",
+  as: "observedBy"
+});
+
+LandObservation.belongsTo(Land, {
+  foreignKey: "land_id",
+  as: "land"
 });
 
 Employee.hasMany(LandFeedBack, {
@@ -482,6 +514,8 @@ export {
   Path,
   LandFeedBack,
   Agent,
+  AgentVillage,
+  LandObservation,
   Attendance,
   LandTree,
   LandShedDimensions,

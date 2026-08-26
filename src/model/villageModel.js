@@ -13,6 +13,17 @@ const Village= sequelize.define("Village", {
     name: {
         type: DataTypes.STRING,
         allowNull: false,
+    },
+    // Fallback map coordinates, seeded by src/scripts/backfillLocationCoords.js.
+    // The centroid of a village's land GPS takes precedence; these only place
+    // villages that have no land with coordinates yet.
+    latitude: {
+        type: DataTypes.DECIMAL(9, 6),
+        allowNull: true
+    },
+    longitude: {
+        type: DataTypes.DECIMAL(9, 6),
+        allowNull: true
     }
 },{
   tableName: "village",

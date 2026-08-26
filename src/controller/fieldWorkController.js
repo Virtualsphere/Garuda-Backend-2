@@ -131,6 +131,25 @@ export const getVillageAllotmentStats = async (req, res) => {
   }
 };
 
+export const getMapNodes = async (req, res) => {
+  try {
+    const { employeeId } = req.query;
+    const result = await landService.getMapNodes(
+      employeeId ? Number(employeeId) : undefined
+    );
+
+    return res.status(200).json({
+      message: "Map nodes fetched successfully",
+      count: result.length,
+      result,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: error.message || "Something went wrong",
+    });
+  }
+};
+
 export const getAssignedVillageById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -553,6 +572,122 @@ export const deleteAgent = async (req, res) => {
     });
   } catch (error) {
     return res.status(404).json({
+      message: error.message,
+    });
+  }
+};
+
+export const getAgentMapNodes = async (req, res) => {
+  try {
+    const { state, district, mandal } = req.query;
+
+    const result = await agentService.getAgentMapNodes({
+      state: state || null,
+      district: district || null,
+      mandal: mandal || null,
+    });
+
+    return res.status(200).json({
+      message: "Agent map nodes fetched successfully",
+      count: result.length,
+      result,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: error.message,
+    });
+  }
+};
+
+export const getAgentLandNodes = async (req, res) => {
+  try {
+    const { agentId, state, district, mandal, village } = req.query;
+
+    const result = await agentService.getAgentLandNodes({
+      agentId: agentId || null,
+      state: state || null,
+      district: district || null,
+      mandal: mandal || null,
+      village: village || null,
+    });
+
+    return res.status(200).json({
+      message: "Agent land nodes fetched successfully",
+      count: result.length,
+      result,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: error.message,
+    });
+  }
+};
+
+export const getAgentTerritory = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const result = await agentService.getAgentTerritory(id);
+
+    return res.status(200).json({
+      message: "Agent territory fetched successfully",
+      count: result.length,
+      result,
+    });
+  } catch (error) {
+    return res.status(404).json({
+      message: error.message,
+    });
+  }
+};
+
+export const setAgentTerritory = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { villages } = req.body;
+
+    const result = await agentService.setAgentTerritory(id, villages);
+
+    return res.status(200).json({
+      message: "Agent territory updated successfully",
+      count: result.length,
+      result,
+    });
+  } catch (error) {
+    return res.status(400).json({
+      message: error.message,
+    });
+  }
+};
+
+export const addAgentObservation = async (req, res) => {
+  try {
+    const { landId, agentId } = req.body;
+
+    const result = await agentService.addObservation(landId, agentId);
+
+    return res.status(201).json({
+      message: "Observation attached successfully",
+      result,
+    });
+  } catch (error) {
+    return res.status(400).json({
+      message: error.message,
+    });
+  }
+};
+
+export const removeAgentObservation = async (req, res) => {
+  try {
+    const { landId, agentId } = req.body;
+
+    await agentService.removeObservation(landId, agentId);
+
+    return res.status(200).json({
+      message: "Observation removed successfully",
+    });
+  } catch (error) {
+    return res.status(400).json({
       message: error.message,
     });
   }

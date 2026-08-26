@@ -222,6 +222,28 @@ router.delete("/fieldwork/assigned-village/:id", fieldWorkController.deleteAssig
  */
 router.get("/fieldwork/village-stats", verifyToken, fieldWorkController.getVillageAllotmentStats);
 
+/**
+ * @swagger
+ * /api/fieldwork/map-nodes:
+ *   get:
+ *     summary: Village nodes with coordinates, stats and allotment, for the tactical map (JWT required)
+ *     tags: [FieldWork]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: employeeId
+ *         schema:
+ *           type: integer
+ *         description: When provided, flags nodes allotted to this employee
+ *     responses:
+ *       200:
+ *         description: Map nodes fetched successfully
+ *       500:
+ *         description: Server error
+ */
+router.get("/fieldwork/map-nodes", verifyToken, fieldWorkController.getMapNodes);
+
 /* =====================================================
    SESSION MANAGEMENT
 ===================================================== */
@@ -975,6 +997,211 @@ router.put("/fieldwork/agent/:id", fieldWorkController.updateAgent);
  *         description: Agent not found
  */
 router.delete("/fieldwork/agent/:id", fieldWorkController.deleteAgent);
+
+/* =====================================================
+   AGENT TACTICAL MAP
+===================================================== */
+
+/**
+ * @swagger
+ * /api/fieldwork/agent/map-nodes:
+ *   get:
+ *     summary: Village nodes with coordinates, land aggregates and the agents deployed on each (JWT required)
+ *     description: >
+ *       Rooted in the administrative village registry, so villages with no agent
+ *       are still returned and can be shown as recruitment targets. Nodes with no
+ *       resolvable coordinate are omitted.
+ *     tags: [FieldWork]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: state
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: district
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: mandal
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Agent map nodes fetched successfully
+ *       500:
+ *         description: Server error
+ */
+router.get("/fieldwork/agent/map-nodes", verifyToken, fieldWorkController.getAgentMapNodes);
+
+/**
+ * @swagger
+ * /api/fieldwork/agent/land-nodes:
+ *   get:
+ *     summary: Land nodes for the allotment map, with observation counts (JWT required)
+ *     tags: [FieldWork]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: agentId
+ *         schema:
+ *           type: integer
+ *         description: When provided, flags each node as linked/observed by this agent and whether it sits in their territory
+ *       - in: query
+ *         name: state
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: district
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: mandal
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: village
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Agent land nodes fetched successfully
+ *       500:
+ *         description: Server error
+ */
+router.get("/fieldwork/agent/land-nodes", verifyToken, fieldWorkController.getAgentLandNodes);
+
+/**
+ * @swagger
+ * /api/fieldwork/agent/{id}/territory:
+ *   get:
+ *     summary: Get the village nodes an agent is deployed to
+ *     tags: [FieldWork]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Agent territory fetched successfully
+ *       404:
+ *         description: Agent not found
+ */
+router.get("/fieldwork/agent/:id/territory", fieldWorkController.getAgentTerritory);
+
+/**
+ * @swagger
+ * /api/fieldwork/agent/{id}/territory:
+ *   put:
+ *     summary: Replace the village nodes an agent is deployed to
+ *     tags: [FieldWork]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - villages
+ *             properties:
+ *               villages:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   required:
+ *                     - village
+ *                   properties:
+ *                     state:
+ *                       type: string
+ *                       example: "Andhra Pradesh"
+ *                     district:
+ *                       type: string
+ *                       example: "Chittoor"
+ *                     mandal:
+ *                       type: string
+ *                       example: "Chandragiri"
+ *                     village:
+ *                       type: string
+ *                       example: "Ramapuram"
+ *     responses:
+ *       200:
+ *         description: Agent territory updated successfully
+ *       400:
+ *         description: Bad request
+ */
+router.put("/fieldwork/agent/:id/territory", fieldWorkController.setAgentTerritory);
+
+/**
+ * @swagger
+ * /api/fieldwork/agent-observation:
+ *   post:
+ *     summary: Attach an agent to a land parcel as an observer (secondary link)
+ *     tags: [FieldWork]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - landId
+ *               - agentId
+ *             properties:
+ *               landId:
+ *                 type: integer
+ *                 example: 12
+ *               agentId:
+ *                 type: integer
+ *                 example: 3
+ *     responses:
+ *       201:
+ *         description: Observation attached successfully
+ *       400:
+ *         description: Bad request
+ */
+// Kept off the /fieldwork/agent/:id path: DELETE /fieldwork/agent/observation
+// would otherwise be matched by the agent-delete route with id="observation".
+router.post("/fieldwork/agent-observation", fieldWorkController.addAgentObservation);
+
+/**
+ * @swagger
+ * /api/fieldwork/agent-observation:
+ *   delete:
+ *     summary: Detach an observing agent from a land parcel
+ *     tags: [FieldWork]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - landId
+ *               - agentId
+ *             properties:
+ *               landId:
+ *                 type: integer
+ *                 example: 12
+ *               agentId:
+ *                 type: integer
+ *                 example: 3
+ *     responses:
+ *       200:
+ *         description: Observation removed successfully
+ *       400:
+ *         description: Bad request
+ */
+router.delete("/fieldwork/agent-observation", fieldWorkController.removeAgentObservation);
 
 /**
  * @swagger

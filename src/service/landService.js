@@ -690,6 +690,136 @@ export const getVillageAllotmentStats = async (employeeId) => {
 };
 
 // ---------------------------------------------------------------------------
+// Map nodes
+// ---------------------------------------------------------------------------
+
+const toNumber = (value) => {
+  if (value === null || value === undefined || value === "") return null;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+};
+
+/**
+ * Village nodes for the tactical map: one entry per village/mandal pair, with
+ * a coordinate, the verification counters, and who it is allotted to.
+ *
+ * Coordinates resolve in three tiers, most trustworthy first:
+ *   1. land-centroid — mean GPS of that village's lands (real field data)
+ *   2. village-seed  — village.latitude/longitude from the Nominatim backfill
+ *   3. mandal-seed   — the parent mandal's seeded coordinate
+ * A node with no tier available comes back with null coordinates and
+ * coordSource null; the UI lists it but cannot pin it.
+ */
+export const getMapNodes = async (employeeId) => {
+  const [rows] = await sequelize.query(
+    `
+    WITH land_agg AS (
+      SELECT
+        village,
+        mandal,
+        MAX(district) AS district,
+        MAX(state)    AS state,
+        COUNT(id)                                                                      AS total,
+        COUNT(CASE WHEN verification_status = 'complete' THEN 1 END)                    AS verified,
+        COUNT(CASE WHEN physcial_verification_status = 'complete' THEN 1 END)           AS physical_audit,
+        COUNT(CASE WHEN form_status = 'complete' THEN 1 END)                            AS fill_details,
+        AVG(NULLIF(location_latitude,  '')::double precision)                           AS centroid_lat,
+        AVG(NULLIF(location_longitude, '')::double precision)                           AS centroid_lng
+      FROM land
+      WHERE trainee = false
+      GROUP BY village, mandal
+    )
+    SELECT
+      la.village,
+      la.mandal,
+      la.district,
+      la.state,
+      la.total,
+      la.verified,
+      la.physical_audit,
+      la.fill_details,
+      la.centroid_lat,
+      la.centroid_lng,
+      v.latitude   AS village_lat,
+      v.longitude  AS village_lng,
+      m.latitude   AS mandal_lat,
+      m.longitude  AS mandal_lng,
+      av.id                  AS assignment_id,
+      av.target              AS target,
+      av.assigned_status     AS assigned_status,
+      av.assigned_employee_id AS assigned_employee_id,
+      e.name                 AS assigned_employee_name,
+      e.photo                AS assigned_employee_photo
+    FROM land_agg la
+    LEFT JOIN mandal  m  ON LOWER(m.name) = LOWER(la.mandal)
+    LEFT JOIN village v  ON LOWER(v.name) = LOWER(la.village)
+                         AND (m.id IS NULL OR v.mandal_id = m.id)
+    LEFT JOIN LATERAL (
+      SELECT *
+      FROM assigned_village a
+      WHERE LOWER(a.village) = LOWER(la.village)
+        AND LOWER(a.mandal)  = LOWER(la.mandal)
+      ORDER BY a.created_at DESC
+      LIMIT 1
+    ) av ON true
+    LEFT JOIN employees e ON e.id = av.assigned_employee_id
+    ORDER BY la.village
+    `
+  );
+
+  return rows.map((row) => {
+    const centroidLat = toNumber(row.centroid_lat);
+    const centroidLng = toNumber(row.centroid_lng);
+    const villageLat  = toNumber(row.village_lat);
+    const villageLng  = toNumber(row.village_lng);
+    const mandalLat   = toNumber(row.mandal_lat);
+    const mandalLng   = toNumber(row.mandal_lng);
+
+    let latitude = null;
+    let longitude = null;
+    let coordSource = null;
+
+    if (centroidLat !== null && centroidLng !== null) {
+      latitude = centroidLat; longitude = centroidLng; coordSource = "land-centroid";
+    } else if (villageLat !== null && villageLng !== null) {
+      latitude = villageLat; longitude = villageLng; coordSource = "village-seed";
+    } else if (mandalLat !== null && mandalLng !== null) {
+      latitude = mandalLat; longitude = mandalLng; coordSource = "mandal-seed";
+    }
+
+    const assignedEmployeeId = row.assigned_employee_id ?? null;
+
+    return {
+      village:  row.village,
+      mandal:   row.mandal,
+      district: row.district,
+      state:    row.state,
+
+      latitude,
+      longitude,
+      coordSource,
+
+      total:         parseInt(row.total, 10),
+      verified:      parseInt(row.verified, 10),
+      physicalAudit: parseInt(row.physical_audit, 10),
+      fillDetails:   parseInt(row.fill_details, 10),
+
+      assignmentId:          row.assignment_id ?? null,
+      target:                row.target ?? null,
+      assignedStatus:        row.assigned_status ?? null,
+      assignedEmployeeId,
+      assignedEmployeeName:  row.assigned_employee_name ?? null,
+      assignedEmployeePhoto: row.assigned_employee_photo ?? null,
+      // Convenience flag so the map can pick a ring colour without re-deriving it.
+      assignedToRequested:
+        employeeId !== undefined && assignedEmployeeId !== null
+          ? Number(assignedEmployeeId) === Number(employeeId)
+          : false,
+    };
+  });
+};
+
+// ---------------------------------------------------------------------------
 // Paths
 // ---------------------------------------------------------------------------
 
