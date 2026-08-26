@@ -1,5 +1,6 @@
 import express from "express";
 import * as locationController from "../controller/locationController.js";
+import verifyToken from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
@@ -30,7 +31,7 @@ const router = express.Router();
  *       400:
  *         description: Bad request
  */
-router.post("/location/state", locationController.createState);
+router.post("/location/state", verifyToken, locationController.createState);
 
 /**
  * @swagger
@@ -58,7 +59,7 @@ router.post("/location/state", locationController.createState);
  *       400:
  *         description: Bad request
  */
-router.post("/location/district", locationController.createDistrict);
+router.post("/location/district", verifyToken, locationController.createDistrict);
 
 /**
  * @swagger
@@ -86,7 +87,7 @@ router.post("/location/district", locationController.createDistrict);
  *       400:
  *         description: Bad request
  */
-router.post("/location/mandal", locationController.createMandal);
+router.post("/location/mandal", verifyToken, locationController.createMandal);
 
 /**
  * @swagger
@@ -114,7 +115,7 @@ router.post("/location/mandal", locationController.createMandal);
  *       400:
  *         description: Bad request
  */
-router.post("/location/town", locationController.createTown);
+router.post("/location/town", verifyToken, locationController.createTown);
 
 /**
  * @swagger
@@ -142,7 +143,7 @@ router.post("/location/town", locationController.createTown);
  *       400:
  *         description: Bad request
  */
-router.post("/location/village", locationController.createVillage);
+router.post("/location/village", verifyToken, locationController.createVillage);
 
 /* =====================================================
    GET
@@ -300,7 +301,7 @@ router.get("/location/villages/:mandal_id", locationController.getVillagesByMand
  *       404:
  *         description: Not found
  */
-router.put("/location/state/:id", locationController.updateState);
+router.put("/location/state/:id", verifyToken, locationController.updateState);
 
 /**
  * @swagger
@@ -327,7 +328,7 @@ router.put("/location/state/:id", locationController.updateState);
 *       404:
  *         description: Not found
  */
-router.put("/location/district/:id", locationController.updateDistrict);
+router.put("/location/district/:id", verifyToken, locationController.updateDistrict);
 
 /**
  * @swagger
@@ -354,7 +355,7 @@ router.put("/location/district/:id", locationController.updateDistrict);
  *       404:
  *         description: Not found
  */
-router.put("/location/town/:id", locationController.updateTown);
+router.put("/location/town/:id", verifyToken, locationController.updateTown);
 
 /**
  * @swagger
@@ -381,7 +382,7 @@ router.put("/location/town/:id", locationController.updateTown);
  *       404:
  *         description: Not found
  */
-router.put("/location/mandal/:id", locationController.updateMandal);
+router.put("/location/mandal/:id", verifyToken, locationController.updateMandal);
 
 /**
  * @swagger
@@ -408,7 +409,7 @@ router.put("/location/mandal/:id", locationController.updateMandal);
  *       404:
  *         description: Not found
  */
-router.put("/location/village/:id", locationController.updateVillage);
+router.put("/location/village/:id", verifyToken, locationController.updateVillage);
 
 /* =====================================================
    DELETE
@@ -430,7 +431,7 @@ router.put("/location/village/:id", locationController.updateVillage);
  *       404:
  *         description: Not found
  */
-router.delete("/location/state/:id", locationController.deleteState);
+router.delete("/location/state/:id", verifyToken, locationController.deleteState);
 
 /**
  * @swagger
@@ -448,7 +449,7 @@ router.delete("/location/state/:id", locationController.deleteState);
  *       404:
  *         description: Not found
  */
-router.delete("/location/district/:id", locationController.deleteDistrict);
+router.delete("/location/district/:id", verifyToken, locationController.deleteDistrict);
 
 /**
  * @swagger
@@ -466,7 +467,7 @@ router.delete("/location/district/:id", locationController.deleteDistrict);
  *       404:
  *         description: Not found
  */
-router.delete("/location/town/:id", locationController.deleteTown);
+router.delete("/location/town/:id", verifyToken, locationController.deleteTown);
 
 /**
  * @swagger
@@ -484,7 +485,7 @@ router.delete("/location/town/:id", locationController.deleteTown);
  *       404:
  *         description: Not found
  */
-router.delete("/location/mandal/:id", locationController.deleteMandal);
+router.delete("/location/mandal/:id", verifyToken, locationController.deleteMandal);
 
 /**
  * @swagger
@@ -502,6 +503,6 @@ router.delete("/location/mandal/:id", locationController.deleteMandal);
  *       404:
  *         description: Not found
  */
-router.delete("/location/village/:id", locationController.deleteVillage);
+router.delete("/location/village/:id", verifyToken, locationController.deleteVillage);
 
 export default router;
