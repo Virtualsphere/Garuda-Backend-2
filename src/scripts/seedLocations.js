@@ -28,10 +28,24 @@
 const API = process.env.GARUDA_API || "https://backend.garudalands.com/api";
 const TOKEN = process.env.GARUDA_TOKEN || "";
 
-const apply    = process.argv.includes("--apply");
-const fromLand = process.argv.includes("--from-land");
-const fileArg  = process.argv.find((a) => a.startsWith("--file="));
-const keepCase = process.argv.includes("--preserve-case");
+// Flags are matched case-insensitively: a typo like --applY silently falling
+// back to a dry run looks identical to a successful no-op run.
+const flags = process.argv.slice(2).map((a) => a.toLowerCase());
+const has = (flag) => flags.includes(flag);
+
+const apply    = has("--apply");
+const fromLand = has("--from-land");
+const keepCase = has("--preserve-case");
+// Taken from argv rather than `flags` so the path keeps its original case.
+const fileArg  = process.argv.slice(2).find((a) => a.toLowerCase().startsWith("--file="));
+
+const KNOWN = ["--apply", "--from-land", "--preserve-case"];
+const unknown = flags.filter((a) => !KNOWN.includes(a) && !a.startsWith("--file="));
+if (unknown.length) {
+  console.error(`Unrecognised flag(s): ${unknown.join(", ")}. Nothing was run.`);
+  console.error(`Valid flags: ${KNOWN.join(", ")}, --file=<path>`);
+  process.exit(1);
+}
 
 /** Place names arrive with stray spaces and inconsistent case ("khammam"). */
 const clean = (raw) => {
@@ -44,14 +58,22 @@ const clean = (raw) => {
 const key = (name) => clean(name).toLowerCase();
 
 const request = async (method, path, body) => {
-  const response = await fetch(`${API}${path}`, {
-    method,
-    headers: {
-      "Content-Type": "application/json",
-      ...(TOKEN ? { Authorization: `Bearer ${TOKEN}` } : {}),
-    },
-    ...(body ? { body: JSON.stringify(body) } : {}),
-  });
+  let response;
+  try {
+    response = await fetch(`${API}${path}`, {
+      method,
+      headers: {
+        "Content-Type": "application/json",
+        ...(TOKEN ? { Authorization: `Bearer ${TOKEN}` } : {}),
+      },
+      ...(body ? { body: JSON.stringify(body) } : {}),
+    });
+  } catch (error) {
+    // fetch() rejects with a bare "fetch failed" on transport errors; the
+    // useful detail (ECONNRESET, DNS, TLS) is only on error.cause.
+    const cause = error.cause ? ` (${error.cause.code || error.cause.message})` : "";
+    throw new Error(`${method} ${path} -- network error: ${error.message}${cause}`);
+  }
 
   const payload = await response.json().catch(() => ({}));
   if (!response.ok) {
@@ -236,5 +258,7 @@ const run = async () => {
 
 run().catch((error) => {
   console.error("Seed failed:", error.message);
+  if (error.cause) console.error("Cause:", error.cause);
+  console.error("\nThe script is idempotent -- fix the cause and re-run; rows already created are skipped.");
   process.exit(1);
 });
