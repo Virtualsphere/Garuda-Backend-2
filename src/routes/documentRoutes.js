@@ -1,9 +1,18 @@
 import express from "express"
 import { upload } from "../middleware/multer.js"
+import { isGcsEnabled, uploadMulterFile } from "../utils/gcs.js"
 
 const router = express.Router()
 
 const BASE_URL = process.env.BACKEND_URL
+
+async function urlFor(file) {
+  if (!file) return null
+  if (isGcsEnabled()) {
+    return uploadMulterFile(file)
+  }
+  return `${BASE_URL}/public/temp/${file.filename}`
+}
 
 /**
  * @swagger
@@ -44,25 +53,15 @@ router.post(
     { name: "document", maxCount: 1 },
     { name: "video", maxCount: 1 },
   ]),
-  (req, res) => {
+  async (req, res) => {
     try {
-      const files = req.files
+      const files = req.files || {}
 
-      let photoUrl = null
-      let documentUrl = null
-      let videoUrl = null
-
-      if (files.photo) {
-        photoUrl = `${BASE_URL}/public/temp/${files.photo[0].filename}`
-      }
-
-      if (files.document) {
-        documentUrl = `${BASE_URL}/public/temp/${files.document[0].filename}`
-      }
-
-      if (files.video) {
-        videoUrl = `${BASE_URL}/public/temp/${files.video[0].filename}`
-      }
+      const [photoUrl, documentUrl, videoUrl] = await Promise.all([
+        urlFor(files.photo?.[0]),
+        urlFor(files.document?.[0]),
+        urlFor(files.video?.[0]),
+      ])
 
       return res.status(200).json({
         message: "Files uploaded successfully",
