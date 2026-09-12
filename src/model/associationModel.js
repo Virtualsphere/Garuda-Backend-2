@@ -28,16 +28,67 @@ import LandFeedBack from "./landFeedBackModel.js";
 import Agent from "./agentModel.js";
 import AgentVillage from "./agentVillageModel.js";
 import LandObservation from "./landObservationModel.js";
+import LandObservationSubmission from "./landObservationSubmissionModel.js";
+import AgentEnquiry from "./agentEnquiryModel.js";
+import AgentTransaction from "./agentTransactionModel.js";
+import AgentCallAttempt from "./agentCallAttemptModel.js";
+import AgentLeadEscalation from "./agentLeadEscalationModel.js";
+import AgentOfficeVisit from "./agentOfficeVisitModel.js";
 import Attendance from "./attendanceModel.js";
 import Calendar from "./calendarModel.js";
 import Town from "./townModel.js";
 import EmployeeTown from "./employeeTownModel.js";
 import LandShedDimensions from "./landShedDimensionsModel.js";
 import LandTree from "./landTreeModel.js";
+import AgentCandidate from "./agentCandidateModel.js";
+import CandidateStatusHistory from "./candidateStatusHistoryModel.js";
+import CandidateVillageInterest from "./candidateVillageInterestModel.js";
+import VillagePosition from "./villagePositionModel.js";
 
 Employee.hasMany(Land, {
   foreignKey: "created_by",
   as: "createdLands",
+});
+
+/* ── Agent recruitment pipeline ──────────────────────────────────── */
+
+AgentCandidate.hasMany(CandidateVillageInterest, {
+  foreignKey: "candidate_id",
+  as: "interests",
+  onDelete: "CASCADE",
+});
+
+CandidateVillageInterest.belongsTo(AgentCandidate, {
+  foreignKey: "candidate_id",
+  as: "candidate",
+});
+
+AgentCandidate.hasMany(CandidateStatusHistory, {
+  foreignKey: "candidate_id",
+  as: "history",
+  onDelete: "CASCADE",
+});
+
+CandidateStatusHistory.belongsTo(AgentCandidate, {
+  foreignKey: "candidate_id",
+  as: "candidate",
+});
+
+// A seat points at the candidate chosen for it, and at the agent once filled.
+VillagePosition.belongsTo(AgentCandidate, {
+  foreignKey: "selected_candidate_id",
+  as: "selectedCandidate",
+});
+
+VillagePosition.belongsTo(Agent, {
+  foreignKey: "agent_id",
+  as: "agent",
+});
+
+// The agent row created when a candidate is appointed.
+AgentCandidate.belongsTo(Agent, {
+  foreignKey: "converted_agent_id",
+  as: "convertedAgent",
 });
 
 Employee.hasMany(Attendance, { 
@@ -93,6 +144,161 @@ Land.hasMany(LandObservation, {
 LandObservation.belongsTo(Land, {
   foreignKey: "land_id",
   as: "land"
+});
+
+/* ── Observation reports filed against a standing assignment ─────── */
+
+LandObservation.hasMany(LandObservationSubmission, {
+  foreignKey: "observation_id",
+  as: "submissions"
+});
+
+LandObservationSubmission.belongsTo(LandObservation, {
+  foreignKey: "observation_id",
+  as: "observation"
+});
+
+Land.hasMany(LandObservationSubmission, {
+  foreignKey: "land_id",
+  as: "observationSubmissions"
+});
+
+LandObservationSubmission.belongsTo(Land, {
+  foreignKey: "land_id",
+  as: "land"
+});
+
+Agent.hasMany(LandObservationSubmission, {
+  foreignKey: "agent_id",
+  as: "observationSubmissions"
+});
+
+LandObservationSubmission.belongsTo(Agent, {
+  foreignKey: "agent_id",
+  as: "agent"
+});
+
+/* ── Agents desk enquiries ─────────────────────────────── */
+
+Employee.hasMany(AgentEnquiry, {
+  foreignKey: "assigned_employee_id",
+  as: "agentEnquiries"
+});
+
+AgentEnquiry.belongsTo(Employee, {
+  foreignKey: "assigned_employee_id",
+  as: "assignedEmployee"
+});
+
+AgentCandidate.hasMany(AgentEnquiry, {
+  foreignKey: "converted_candidate_id",
+  as: "sourceEnquiries"
+});
+
+AgentEnquiry.belongsTo(AgentCandidate, {
+  foreignKey: "converted_candidate_id",
+  as: "convertedCandidate"
+});
+
+/* ── Agent finance ledger ──────────────────────────────── */
+
+Agent.hasMany(AgentTransaction, {
+  foreignKey: "agent_id",
+  as: "transactions"
+});
+
+AgentTransaction.belongsTo(Agent, {
+  foreignKey: "agent_id",
+  as: "agent"
+});
+
+Land.hasMany(AgentTransaction, {
+  foreignKey: "land_id",
+  as: "agentTransactions"
+});
+
+AgentTransaction.belongsTo(Land, {
+  foreignKey: "land_id",
+  as: "land"
+});
+
+/* ── Agent lead working state ──────────────────────────── */
+
+AgentCandidate.hasMany(AgentCallAttempt, {
+  foreignKey: "candidate_id",
+  as: "callAttempts"
+});
+
+AgentCallAttempt.belongsTo(AgentCandidate, {
+  foreignKey: "candidate_id",
+  as: "candidate"
+});
+
+Employee.hasMany(AgentCallAttempt, {
+  foreignKey: "employee_id",
+  as: "agentCallAttempts"
+});
+
+AgentCallAttempt.belongsTo(Employee, {
+  foreignKey: "employee_id",
+  as: "employee"
+});
+
+AgentCandidate.hasMany(AgentLeadEscalation, {
+  foreignKey: "candidate_id",
+  as: "escalations"
+});
+
+AgentLeadEscalation.belongsTo(AgentCandidate, {
+  foreignKey: "candidate_id",
+  as: "candidate"
+});
+
+AgentLeadEscalation.belongsTo(Employee, {
+  foreignKey: "telecaller_id",
+  as: "telecaller"
+});
+
+AgentLeadEscalation.belongsTo(Employee, {
+  foreignKey: "team_leader_id",
+  as: "teamLeader"
+});
+
+AgentCandidate.hasMany(AgentOfficeVisit, {
+  foreignKey: "candidate_id",
+  as: "officeVisits"
+});
+
+AgentOfficeVisit.belongsTo(AgentCandidate, {
+  foreignKey: "candidate_id",
+  as: "candidate"
+});
+
+AgentOfficeVisit.belongsTo(Employee, {
+  foreignKey: "assigned_employee_id",
+  as: "assignedEmployee"
+});
+
+// A lead referred in by an existing agent keeps the link, so an agent's
+// referral count is a query rather than a maintained counter.
+Agent.hasMany(AgentCandidate, {
+  foreignKey: "referring_agent_id",
+  as: "referredCandidates"
+});
+
+AgentCandidate.belongsTo(Agent, {
+  foreignKey: "referring_agent_id",
+  as: "referringAgent"
+});
+
+AgentCandidate.belongsTo(Employee, {
+  foreignKey: "assigned_employee_id",
+  as: "assignedTelecaller"
+});
+
+AgentCandidate.belongsTo(Employee, {
+  foreignKey: "team_leader_id",
+  as: "assignedTeamLeader"
 });
 
 Employee.hasMany(LandFeedBack, {
@@ -520,5 +726,15 @@ export {
   LandTree,
   LandShedDimensions,
   EmployeeTown,
-  Town
+  Town,
+  AgentCandidate,
+  CandidateStatusHistory,
+  CandidateVillageInterest,
+  VillagePosition,
+  LandObservationSubmission,
+  AgentEnquiry,
+  AgentTransaction,
+  AgentCallAttempt,
+  AgentLeadEscalation,
+  AgentOfficeVisit
 };

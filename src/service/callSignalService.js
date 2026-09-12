@@ -1,3 +1,4 @@
+import { Op, fn, col, where } from "sequelize";
 import CallSignal from "../model/callSignalModel.js";
 
 export const createCallSignal = async (data) => {
@@ -8,7 +9,8 @@ export const createCallSignal = async (data) => {
 };
 
 export const getAllCallSignals = async (filters = {}) => {
-  const { department_type, employee_id, direction, status, land_id } = filters;
+  const { department_type, employee_id, direction, status, land_id, caller_phone } =
+    filters;
 
   const whereClause = {};
   if (department_type) whereClause.department_type = department_type;
@@ -16,6 +18,25 @@ export const getAllCallSignals = async (filters = {}) => {
   if (direction) whereClause.direction = direction;
   if (status) whereClause.status = status;
   if (land_id) whereClause.land_id = land_id;
+  // Matched on the last ten digits, which is the subscriber number. The same
+  // person is stored as "+91 98765 43210", "09876543210" and "9876543210"
+  // depending on who typed it, and the call history panel is keyed on the
+  // person rather than on the formatting.
+  if (caller_phone) {
+    const digits = String(caller_phone).replace(/\D/g, "").slice(-10);
+    if (digits) {
+      whereClause[Op.and] = [
+        where(
+          fn(
+            "right",
+            fn("regexp_replace", col("caller_phone"), "[^0-9]", "", "g"),
+            10
+          ),
+          digits
+        ),
+      ];
+    }
+  }
 
   return await CallSignal.findAll({
     where: whereClause,

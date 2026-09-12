@@ -2,18 +2,23 @@ import { Agent, AgentVillage, LandObservation } from '../model/associationModel.
 import { Op, fn, col } from "sequelize";
 import sequelize from "../db/db.js";
 
+/**
+ * Create an agent.
+ *
+ * Capacity is deliberately NOT enforced here. How many agents a village needs
+ * comes from the shared `required_agents_slabs` setting applied to its acreage,
+ * and the unit of capacity is the village *seat* — so the rule is enforced
+ * where seats are awarded (recruitmentService.selectCandidateForPosition),
+ * not at agent creation.
+ *
+ * This replaces an earlier hard cap of 4 agents per mandal, which contradicted
+ * the slab table: a single 600-acre village already calls for 12 agents, while
+ * a mandal contains many villages.
+ */
 export const createAgent = async (employeeId, data) => {
   const { mandal, district, state, village, name, phone, photo } = data;
 
   if (!mandal) throw new Error("Mandal is required");
-
-  const count = await Agent.count({
-    where: { mandal },
-  });
-
-  if (count >= 4) {
-    throw new Error("Cannot add more agents. Mandal is FULL");
-  }
 
   const agent = await Agent.create({
     state,
@@ -24,9 +29,44 @@ export const createAgent = async (employeeId, data) => {
     phone,
     photo,
     refered_by: employeeId,
+    alternate_phone: data.alternate_phone,
+    email: data.email,
+    address: data.address,
+    joining_date: data.joining_date,
+    status: data.status || "ACTIVE",
+    membership_status: data.membership_status || "PENDING",
+    membership_amount: data.membership_amount ?? 0,
+    lead_source: data.lead_source,
   });
 
   return agent;
+};
+
+/**
+ * One agent with their territory and derived land counts. The counts are
+ * computed here rather than stored, so they cannot drift from the land tables.
+ */
+export const getAgentById = async (agentId) => {
+  const agent = await Agent.findByPk(agentId, {
+    include: [{ model: AgentVillage, as: "territory" }],
+  });
+
+  if (!agent) throw new Error("Agent not found");
+
+  const [[counts]] = await sequelize.query(
+    `
+    SELECT
+      (SELECT COUNT(*) FROM land WHERE agent_id = :agentId)            AS linked_lands,
+      (SELECT COUNT(*) FROM land_observation WHERE agent_id = :agentId) AS observation_lands
+    `,
+    { replacements: { agentId } }
+  );
+
+  return {
+    ...agent.toJSON(),
+    linked_lands: Number(counts?.linked_lands) || 0,
+    observation_lands: Number(counts?.observation_lands) || 0,
+  };
 };
 
 export const getAllAgents = async (filters = {}) => {
@@ -191,6 +231,26 @@ export const getAgentMapNodes = async (filters = {}) => {
       JOIN agent ag ON ag.id = av.agent_id
       WHERE av.village IS NOT NULL AND av.village <> ''
     ),
+    -- an agent whose home village is ALSO an explicitly assigned node arrives
+    -- from both arms of the UNION above (is_home differs, so the UNION cannot
+    -- collapse them). Fold them to one row per agent per node, keeping the
+    -- home flag if either arm set it, so the map draws one bubble per agent.
+    territory_distinct AS (
+      SELECT
+        village_key,
+        mandal_key,
+        agent_id,
+        MAX(name)          AS name,
+        MAX(phone)         AS phone,
+        MAX(photo)         AS photo,
+        BOOL_OR(is_home)   AS is_home,
+        MAX(village_name)  AS village_name,
+        MAX(mandal_name)   AS mandal_name,
+        MAX(district_name) AS district_name,
+        MAX(state_name)    AS state_name
+      FROM territory
+      GROUP BY village_key, mandal_key, agent_id
+    ),
     agent_agg AS (
       SELECT
         village_key,
@@ -199,7 +259,7 @@ export const getAgentMapNodes = async (filters = {}) => {
         MAX(mandal_name)   AS mandal_name,
         MAX(district_name) AS district_name,
         MAX(state_name)    AS state_name,
-        COUNT(DISTINCT agent_id) AS agent_count,
+        COUNT(*) AS agent_count,
         JSON_AGG(
           JSON_BUILD_OBJECT(
             'id', agent_id,
@@ -209,7 +269,7 @@ export const getAgentMapNodes = async (filters = {}) => {
             'home', is_home
           ) ORDER BY name
         ) AS agents
-      FROM territory
+      FROM territory_distinct
       GROUP BY village_key, mandal_key
     ),
     node_keys AS (
@@ -330,6 +390,21 @@ export const getAgentLandNodes = async (filters = {}) => {
       ld.total_value,
       COALESCE(ob.observation_count, 0) AS observation_count,
       COALESCE(ob.observers, '[]'::json) AS observers,
+      COALESCE(bd.boundary, '[]'::json)  AS boundary,
+      CASE WHEN :agentId IS NULL THEN NULL
+           ELSE myob.status
+      END AS observation_status,
+      CASE WHEN :agentId IS NULL THEN NULL
+           ELSE myob.next_due_date
+      END AS observation_next_due_date,
+      CASE WHEN :agentId IS NULL THEN NULL
+           ELSE myob.frequency
+      END AS observation_frequency,
+      CASE WHEN :agentId IS NULL THEN false
+           ELSE (myob.next_due_date IS NOT NULL
+                 AND myob.next_due_date <= CURRENT_DATE
+                 AND myob.status NOT IN ('CLOSED', 'UPDATE_SUBMITTED'))
+      END AS observation_due,
       CASE WHEN :agentId IS NULL THEN false
            ELSE EXISTS (
              SELECT 1 FROM territory t
@@ -357,6 +432,22 @@ export const getAgentLandNodes = async (filters = {}) => {
       JOIN agent a2 ON a2.id = lo.agent_id
       WHERE lo.land_id = l.id
     ) ob ON true
+    LEFT JOIN LATERAL (
+      -- boundary points in insertion order, so the polygon closes the way it
+      -- was walked on the ground
+      SELECT JSON_AGG(
+               JSON_BUILD_ARRAY(
+                 g.latitude::double precision,
+                 g.longitude::double precision
+               ) ORDER BY g.id
+             ) AS boundary
+      FROM land_gps g
+      WHERE g.land_id = l.id
+        AND NULLIF(g.latitude, '')  IS NOT NULL
+        AND NULLIF(g.longitude, '') IS NOT NULL
+    ) bd ON true
+    LEFT JOIN land_observation myob
+      ON myob.land_id = l.id AND myob.agent_id = :agentId
     WHERE l.trainee = false
       AND (:state    IS NULL OR l.state    = :state)
       AND (:district IS NULL OR l.district = :district)
@@ -393,6 +484,17 @@ export const getAgentLandNodes = async (filters = {}) => {
       total_value: toNumber(row.total_value) || 0,
       observation_count: Number(row.observation_count) || 0,
       observers: Array.isArray(row.observers) ? row.observers : [],
+      // [[lat, lng], ...] ready to hand straight to a Leaflet polygon; fewer
+      // than three points cannot enclose an area, so they are dropped
+      boundary: Array.isArray(row.boundary) && row.boundary.length >= 3
+        ? row.boundary
+            .map((point) => [toNumber(point?.[0]), toNumber(point?.[1])])
+            .filter(([lat, lng]) => lat !== null && lng !== null)
+        : [],
+      observation_status: row.observation_status ?? null,
+      observation_frequency: row.observation_frequency ?? null,
+      observation_next_due_date: row.observation_next_due_date ?? null,
+      observation_due: !!row.observation_due,
       in_territory: !!row.in_territory,
       linked_to_agent: !!row.linked_to_agent,
       observed_by_agent: !!row.observed_by_agent,

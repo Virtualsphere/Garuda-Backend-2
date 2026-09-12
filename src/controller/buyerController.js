@@ -1460,3 +1460,23 @@ export const assignExecutive = async (req, res) => {
     });
   }
 };
+/**
+ * Create a buyer from the admin desk (no self-signup involved).
+ * 409 when the phone or email already belongs to somebody.
+ */
+export const createBuyerFromDesk = async (req, res) => {
+  try {
+    const buyer = await buyerService.createBuyerFromDesk(req.body);
+    return res.status(201).json({
+      success: true,
+      message: "Buyer created successfully",
+      data: buyer,
+    });
+  } catch (error) {
+    const conflict = /already exists/i.test(error.message);
+    return res.status(conflict ? 409 : 400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};

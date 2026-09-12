@@ -19,6 +19,9 @@ import settingsRoutes from './src/routes/settingsRoutes.js'
 import callSignalRoutes from './src/routes/callSignalRoutes.js'
 import departmentLeaderRoutes from './src/routes/departmentLeaderRoutes.js'
 import callingRoutes from './src/routes/callingRoutes.js'
+import recruitmentRoutes from './src/routes/recruitmentRoutes.js'
+import agentDeskRoutes from './src/routes/agentDeskRoutes.js'
+import agentLeadRoutes from './src/routes/agentLeadRoutes.js'
 import { ensureSeeded as ensurePermissionsSeeded } from './src/service/permissionService.js'
 
 const __filename = fileURLToPath(import.meta.url);
@@ -63,6 +66,9 @@ app.use('/api', settingsRoutes);
 app.use('/api', callSignalRoutes);
 app.use('/api', departmentLeaderRoutes);
 app.use('/api', callingRoutes);
+app.use('/api', recruitmentRoutes);
+app.use('/api', agentDeskRoutes);
+app.use('/api', agentLeadRoutes);
 // app.use('/api', paymentRoutes)
 
 const PORT = process.env.PORT || 5000;

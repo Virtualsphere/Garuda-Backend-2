@@ -1,0 +1,55 @@
+[
+  {
+    "name": "Telangana",
+    "districts": [
+      {
+        "name": "Nagarkurnool",
+        "towns": ["Nagarkurnool", "Kollapur"],
+        "mandals": [
+          {
+            "name": "Kollapur",
+            "villages": [
+              "Panjugula",
+              "Amarapuram",
+              "Singotam",
+              "Jataprolu",
+              "Chinnambavi"
+            ]
+          },
+          {
+            "name": "Pentlavelli",
+            "villages": ["Pentlavelli", "Rangapur", "Uyyalawada"]
+          },
+          {
+            "name": "Achampet",
+            "villages": ["Achampet", "Mannanur", "Appapur"]
+          }
+        ]
+      },
+      {
+        "name": "Wanaparthy",
+        "towns": ["Wanaparthy"],
+        "mandals": [
+          {
+            "name": "Pangal",
+            "villages": ["Kothapet", "Pangal", "Gopalpet"]
+          },
+          {
+            "name": "Atmakur",
+            "villages": ["Atmakur", "Veepanagandla"]
+          }
+        ]
+      },
+      {
+        "name": "Mahabubnagar",
+        "towns": ["Mahabubnagar"],
+        "mandals": [
+          {
+            "name": "Jadcherla",
+            "villages": ["Jadcherla", "Polepally", "Badepally"]
+          }
+        ]
+      }
+    ]
+  }
+]

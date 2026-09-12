@@ -523,6 +523,23 @@ export const getAllAgents = async (req, res) => {
   }
 };
 
+export const getAgentById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const result = await agentService.getAgentById(id);
+
+    return res.status(200).json({
+      message: "Agent fetched successfully",
+      result,
+    });
+  } catch (error) {
+    return res.status(404).json({
+      message: error.message,
+    });
+  }
+};
+
 export const getAgentsByLocation = async (req, res) => {
   try {
     const { state, district } = req.query;

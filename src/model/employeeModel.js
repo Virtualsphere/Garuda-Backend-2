@@ -20,6 +20,22 @@ const Employee= sequelize.define("Employee", {
     secondary_role: {
         type: DataTypes.JSONB
     },
+
+    // Seniority band, distinct from `role` (what they do) — this is what the
+    // department management view groups and filters personnel by. Free-form
+    // rather than an enum because the ladder is an org decision, not a
+    // schema one.
+    cadre: {
+        type: DataTypes.STRING
+    },
+
+    // Whether they are on duty right now. Distinct from `status`, which is
+    // employment standing rather than presence.
+    duty_status: {
+        type: DataTypes.STRING,
+        defaultValue: "offline",
+        validate: { isIn: [["online", "offline"]] }
+    },
     email: {
         type: DataTypes.STRING
     },

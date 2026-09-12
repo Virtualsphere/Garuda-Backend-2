@@ -1075,6 +1075,27 @@ router.get("/fieldwork/agent/land-nodes", verifyToken, fieldWorkController.getAg
 
 /**
  * @swagger
+ * /api/fieldwork/agent/{id}:
+ *   get:
+ *     summary: Get one agent with territory and derived land counts
+ *     tags: [FieldWork]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: integer }
+ *     responses:
+ *       200:
+ *         description: Agent fetched successfully
+ *       404:
+ *         description: Agent not found
+ */
+// NOTE: must stay below /fieldwork/agent/list, /map-nodes and /land-nodes —
+// all three are three-segment paths this :id route would otherwise capture.
+router.get("/fieldwork/agent/:id", verifyToken, fieldWorkController.getAgentById);
+
+/**
+ * @swagger
  * /api/fieldwork/agent/{id}/territory:
  *   get:
  *     summary: Get the village nodes an agent is deployed to

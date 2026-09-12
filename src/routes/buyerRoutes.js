@@ -1445,4 +1445,34 @@ router.get("/admin/buyer", verifyToken, buyerController.getAllBuyersAdmin);
  */
 router.put("/admin/buyer/:id/executive", verifyToken, buyerController.assignExecutive);
 
+
+/**
+ * @swagger
+ * /api/buyer:
+ *   post:
+ *     summary: Create a buyer from the admin desk (JWT required)
+ *     tags: [Buyers]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [name, phone]
+ *             properties:
+ *               name: { type: string }
+ *               phone: { type: string }
+ *               email: { type: string }
+ *               budget_range: { type: string }
+ *               required_extent: { type: string }
+ *               preferred_location: { type: string }
+ *               notes: { type: string }
+ *     responses:
+ *       201:
+ *         description: Buyer created
+ *       409:
+ *         description: That phone or email already belongs to a buyer
+ */
+router.post("/buyer", verifyToken, buyerController.createBuyerFromDesk);
+
 export default router;

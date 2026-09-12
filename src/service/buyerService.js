@@ -890,3 +890,48 @@ export const assignExecutive = async (buyerId, executiveId) => {
   await buyer.update({ executive_id: executiveId });
   return buyer;
 };
+
+/**
+ * Create a buyer from the admin side, where there is no self-signup.
+ *
+ * A buyer row cannot exist without a password, so one is generated rather than
+ * left blank or set to something guessable. The buyer never learns it — they
+ * claim the account through the existing forgot-password flow — so this creates
+ * a record to work against, not a usable login handed out by staff.
+ *
+ * Email is optional here (a walk-in enquiry often has only a phone), so the
+ * uniqueness check only runs when one is supplied.
+ */
+export const createBuyerFromDesk = async (data = {}) => {
+  const { name, email, phone, photo, budget_range, required_extent, preferred_location, notes } =
+    data;
+
+  if (!name) throw new Error("A buyer name is required");
+  if (!phone) throw new Error("A phone number is required");
+
+  if (email) {
+    const existing = await Buyer.findOne({ where: { email } });
+    if (existing) throw new Error("A buyer with that email already exists");
+  }
+
+  const existingPhone = await Buyer.findOne({ where: { phone } });
+  if (existingPhone) throw new Error("A buyer with that phone number already exists");
+
+  const generated = `${Math.random().toString(36).slice(2)}${Date.now().toString(36)}`;
+  const hashedPassword = await bcrypt.hash(generated, 10);
+
+  const buyer = await Buyer.create({
+    name,
+    email: email || null,
+    phone,
+    photo: photo || null,
+    password: hashedPassword,
+    budget_range: budget_range || null,
+    required_extent: required_extent || null,
+    preferred_location: preferred_location || null,
+    notes: notes || null,
+  });
+
+  const { password: _ignored, ...safe } = buyer.toJSON();
+  return safe;
+};

@@ -43,6 +43,15 @@ const Buyer= sequelize.define("Buyer", {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
     },
+
+    // What the desk captures when a buyer enquires, before any shortlist
+    // exists. Free text on purpose: a buyer says "50L to 1Cr" or "2 to 5
+    // acres", and forcing that into numbers loses the range they actually
+    // gave.
+    budget_range: { type: DataTypes.STRING },
+    required_extent: { type: DataTypes.STRING },
+    preferred_location: { type: DataTypes.STRING },
+    notes: { type: DataTypes.TEXT },
 },{
   tableName: "buyers",
   timestamps: true,

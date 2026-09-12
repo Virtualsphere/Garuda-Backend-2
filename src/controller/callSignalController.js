@@ -11,8 +11,16 @@ export const createCallSignal = async (req, res) => {
 
 export const getAllCallSignals = async (req, res) => {
   try {
-    const { department_type, employee_id, direction, status, land_id } = req.query;
-    const signals = await callSignalService.getAllCallSignals({ department_type, employee_id, direction, status, land_id });
+    const { department_type, employee_id, direction, status, land_id, caller_phone } =
+      req.query;
+    const signals = await callSignalService.getAllCallSignals({
+      department_type,
+      employee_id,
+      direction,
+      status,
+      land_id,
+      caller_phone,
+    });
     return res.status(200).json({ message: "Call signals fetched successfully", data: signals });
   } catch (error) {
     return res.status(500).json({ message: "Internal server error", error: error.message });
