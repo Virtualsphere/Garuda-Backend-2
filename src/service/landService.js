@@ -51,7 +51,7 @@ const PUBLIC_LAND_INCLUDE = [
   { model: Employee,           as: "verifier"     },
   { model: LandDetails,        as: "landDetails"  },
   { model: LandGPS,            as: "gps"          },
-  { model: LandMedia,          as: "media",        separate: true },
+  { model: LandMedia,          as: "media",        separate: true, where: { public: true } },
   { model: LandDocuments,      as: "documents",    separate: true },
   { model: LandTree,           as: "tree",         separate: true },
   { model: LandShedDimensions, as: "shed",         separate: true },

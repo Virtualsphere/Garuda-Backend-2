@@ -291,6 +291,9 @@ const router = express.Router();
  *                     url:
  *                       type: string
  *                       example: "http://72.61.169.226:5000/public/temp/1777114406616-370160143-images (3).jpeg"
+ *                     public:
+ *                       type: boolean
+ *                       example: false
  *
  *               documents:
  *                 type: array
@@ -715,6 +718,9 @@ router.get("/land/:id", landController.getLandById);
  *                     url:
  *                       type: string
  *                       example: "http://72.61.169.226:5000/public/temp/1777114406616-370160143-images (3).jpeg"
+ *                     public:
+ *                       type: boolean
+ *                       example: false
  *
  *               documents:
  *                 type: array
@@ -1031,6 +1037,9 @@ router.put("/land/:id", verifyToken, landController.updateLand);
  *                     url:
  *                       type: string
  *                       example: "http://72.61.169.226:5000/public/temp/1777114406616-370160143-images (3).jpeg"
+ *                     public:
+ *                       type: boolean
+ *                       example: false
  *
  *               documents:
  *                 type: array
@@ -1350,6 +1359,9 @@ router.put("/land/verify/:id", verifyToken, landController.updateLandForVerify);
  *                     url:
  *                       type: string
  *                       example: "http://72.61.169.226:5000/public/temp/1777114406616-370160143-images (3).jpeg"
+ *                     public:
+ *                       type: boolean
+ *                       example: false
  *
  *               documents:
  *                 type: array

@@ -510,6 +510,7 @@ router.get("/buyer/land", buyerController.getAllLandsForUser);
  * /api/buyer/land/{id}:
  *   get:
  *     summary: Get land by ID
+ *     description: Returns land details. Only media marked public (public = true) is included.
  *     tags: [Buyer]
  *     parameters:
  *       - in: path

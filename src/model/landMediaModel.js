@@ -35,6 +35,12 @@ const LandMedia = sequelize.define("LandMedia", {
   url: {
     type: DataTypes.TEXT,
     allowNull: false
+  },
+
+  public: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: false
   }
 
 }, {
