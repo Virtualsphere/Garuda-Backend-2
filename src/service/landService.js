@@ -51,8 +51,15 @@ const PUBLIC_LAND_INCLUDE = [
   { model: Employee,           as: "verifier"     },
   { model: LandDetails,        as: "landDetails"  },
   { model: LandGPS,            as: "gps"          },
-  { model: LandMedia,          as: "media",        separate: true, where: { public: true } },
-  { model: LandDocuments,      as: "documents",    separate: true },
+  { 
+    model: LandMedia,          
+    as: "media",        
+    separate: true, 
+    where: { 
+      public: true,
+      category: { [Op.notIn]: ['farmer_photo', 'card', 'farmer_aggrement'] }
+    } 
+  },
   { model: LandTree,           as: "tree",         separate: true },
   { model: LandShedDimensions, as: "shed",         separate: true },
 ];
@@ -302,8 +309,14 @@ export const getAllLandsForUser = async (filters = {}) => {
     include: [
       landDetailsInclude,
       { model: LandGPS,            as: "gps",       required: false },
-      { model: LandMedia,          as: "media",     separate: true },
-      { model: LandDocuments,      as: "documents", separate: true },
+      { 
+        model: LandMedia,          
+        as: "media",     
+        separate: true,
+        where: {
+          category: { [Op.notIn]: ['farmer_photo', 'card', 'farmer_aggrement'] }
+        }
+      },
       { model: LandTree,           as: "tree",      separate: true },
       { model: LandShedDimensions, as: "shed",      separate: true },
     ],
@@ -348,7 +361,14 @@ export const filterLands = async (filters) => {
     where,
     include: [
       { model: LandDetails,        as: "landDetails" },
-      { model: LandMedia,          as: "media"       },
+      { 
+        model: LandMedia,          
+        as: "media",
+        where: {
+          category: { [Op.notIn]: ['farmer_photo', 'card', 'farmer_aggrement'] }
+        },
+        required: false
+      },
       { model: LandTree,           as: "tree"        },
       { model: LandShedDimensions, as: "shed"        },
     ],
