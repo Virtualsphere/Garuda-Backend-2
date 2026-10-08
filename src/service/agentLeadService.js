@@ -1094,3 +1094,263 @@ export const getLeadSourceBreakdown = async () => {
     count: Number(row.count) || 0,
   }));
 };
+
+/* ── Working report (Reports tab) ─────────────────────────────── */
+
+// The desk works in India; "today" and every bucket boundary is an IST date.
+const REPORT_TZ = "Asia/Kolkata";
+const IST_OFFSET = "+05:30";
+
+/** YYYY-MM-DD of an instant, in IST. */
+const istDate = (value) =>
+  new Date(value).toLocaleDateString("en-CA", { timeZone: REPORT_TZ });
+
+/** Calendar arithmetic on a YYYY-MM-DD string, free of server-timezone drift. */
+const shiftDay = (ymd, days) => {
+  const [y, m, d] = ymd.split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d + days)).toISOString().slice(0, 10);
+};
+
+/** The Monday on or before an IST date. */
+const mondayOf = (ymd) => {
+  const [y, m, d] = ymd.split("-").map(Number);
+  const dow = new Date(Date.UTC(y, m - 1, d)).getUTCDay(); // 0 = Sunday
+  return shiftDay(ymd, -((dow + 6) % 7));
+};
+
+const shortDay = (ymd) =>
+  new Date(`${ymd}T00:00:00Z`).toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    timeZone: "UTC",
+  });
+
+const monthLabel = (ym) =>
+  new Date(`${ym}-01T00:00:00Z`).toLocaleDateString("en-GB", {
+    month: "short",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+
+/** Start of an IST day, as an instant the database can compare against. */
+const istStart = (ymd) => new Date(`${ymd}T00:00:00${IST_OFFSET}`);
+
+const YMD = /^\d{4}-\d{2}-\d{2}$/;
+
+/**
+ * The optional dateFrom / dateTo (IST dates, both inclusive) as SQL bounds on
+ * one timestamp column. Workload snapshots (assigned leads) ignore it.
+ */
+const rangeSql = (column, { dateFrom, dateTo } = {}) => {
+  let sql = "";
+  if (dateFrom) sql += ` AND ${column} >= :rangeFrom`;
+  if (dateTo) sql += ` AND ${column} < :rangeTo`;
+  return sql;
+};
+
+/**
+ * Who gets the credit for an onboarded agent: whoever closed them — the latest
+ * Proceed call, else the team leader who converted them, else the telecaller
+ * who owned the lead. Deliberately not the person at the office who clicked
+ * through the wizard; the report measures the recruitment desk.
+ */
+const ONBOARDED_CREDIT_SQL = `
+  SELECT
+    COALESCE(
+      (SELECT a.employee_id FROM agent_call_attempt a
+        WHERE a.candidate_id = c.id AND a.result = 'Proceed' AND a.employee_id IS NOT NULL
+        ORDER BY a.called_at DESC LIMIT 1),
+      (SELECT e.team_leader_id FROM agent_lead_escalation e
+        WHERE e.candidate_id = c.id AND e.tl_result = 'Proceed' AND e.team_leader_id IS NOT NULL
+        ORDER BY e.completed_at DESC NULLS LAST LIMIT 1),
+      c.assigned_employee_id
+    ) AS employee_id,
+    ag.onboarding_completed_at AS at
+  FROM agent_candidate c
+  JOIN agent ag ON ag.id = c.converted_agent_id
+`;
+
+/**
+ * Everything the Reports tab shows, aggregated in SQL so the page receives one
+ * row per person and three small series rather than every call:
+ *
+ *   members  per employee: connected (answered dials only), talk_seconds,
+ *            interested (distinct candidates they closed with Proceed — as a
+ *            caller or as the converting team leader), assigned_leads,
+ *            team_leads, escalations_raised / _handled, visits (non-cancelled
+ *            office visits they booked), onboarded (agents they closed)
+ *   cadence  desk-wide daily (7 days), weekly (4 weeks, Monday-start) and
+ *            monthly (6 months) series, bucketed by IST date
+ *
+ * dateFrom / dateTo (YYYY-MM-DD, IST, inclusive) narrow the member activity
+ * figures; the cadence windows are always relative to today.
+ */
+export const getRecruitmentReport = async (filters = {}) => {
+  const range = {};
+  for (const key of ["dateFrom", "dateTo"]) {
+    if (filters[key] === undefined || filters[key] === "") continue;
+    if (!YMD.test(String(filters[key]))) throw httpError(`${key} must be YYYY-MM-DD`);
+    range[key] = String(filters[key]);
+  }
+
+  const replacements = {
+    rangeFrom: range.dateFrom ? istStart(range.dateFrom) : null,
+    rangeTo: range.dateTo ? istStart(shiftDay(range.dateTo, 1)) : null,
+  };
+  const q = (sql) => sequelize.query(sql, { replacements }).then(([rows]) => rows);
+
+  const [calls, interested, assigned, teamLeads, raised, handled, visits, onboarded] =
+    await Promise.all([
+      q(`
+        SELECT employee_id,
+               COUNT(*) FILTER (WHERE answer_status = 'Answered') AS connected,
+               COALESCE(SUM(duration_seconds) FILTER (WHERE answer_status = 'Answered'), 0) AS talk_seconds
+          FROM agent_call_attempt
+         WHERE employee_id IS NOT NULL ${rangeSql("called_at", range)}
+         GROUP BY employee_id`),
+      q(`
+        SELECT employee_id, COUNT(DISTINCT candidate_id) AS n FROM (
+          SELECT employee_id, candidate_id FROM agent_call_attempt
+           WHERE result = 'Proceed' AND employee_id IS NOT NULL ${rangeSql("called_at", range)}
+          UNION
+          SELECT team_leader_id, candidate_id FROM agent_lead_escalation
+           WHERE tl_result = 'Proceed' AND team_leader_id IS NOT NULL ${rangeSql("completed_at", range)}
+        ) closed
+        GROUP BY employee_id`),
+      q(`SELECT assigned_employee_id AS employee_id, COUNT(*) AS n FROM agent_candidate
+          WHERE assigned_employee_id IS NOT NULL GROUP BY assigned_employee_id`),
+      q(`SELECT team_leader_id AS employee_id, COUNT(*) AS n FROM agent_candidate
+          WHERE team_leader_id IS NOT NULL GROUP BY team_leader_id`),
+      q(`SELECT telecaller_id AS employee_id, COUNT(*) AS n FROM agent_lead_escalation
+          WHERE telecaller_id IS NOT NULL ${rangeSql("forwarded_at", range)} GROUP BY telecaller_id`),
+      q(`SELECT team_leader_id AS employee_id, COUNT(*) AS n FROM agent_lead_escalation
+          WHERE team_leader_id IS NOT NULL AND status <> 'Pending' ${rangeSql("completed_at", range)}
+          GROUP BY team_leader_id`),
+      q(`SELECT assigned_employee_id AS employee_id, COUNT(*) AS n FROM agent_office_visit
+          WHERE assigned_employee_id IS NOT NULL AND status <> 'Cancelled' ${rangeSql("created_at", range)}
+          GROUP BY assigned_employee_id`),
+      q(`SELECT employee_id, COUNT(*) AS n FROM (${ONBOARDED_CREDIT_SQL}
+            WHERE TRUE ${rangeSql("ag.onboarding_completed_at", range)}) credited
+          WHERE employee_id IS NOT NULL GROUP BY employee_id`),
+    ]);
+
+  /* ── Fold the eight result sets into one row per person ── */
+
+  const members = new Map();
+  const row = (id) => {
+    const key = Number(id);
+    if (!members.has(key)) {
+      members.set(key, {
+        employee_id: key,
+        employee_name: null,
+        connected: 0,
+        talk_seconds: 0,
+        interested: 0,
+        assigned_leads: 0,
+        team_leads: 0,
+        escalations_raised: 0,
+        escalations_handled: 0,
+        visits: 0,
+        onboarded: 0,
+      });
+    }
+    return members.get(key);
+  };
+
+  calls.forEach((r) => {
+    const m = row(r.employee_id);
+    m.connected = Number(r.connected) || 0;
+    m.talk_seconds = Number(r.talk_seconds) || 0;
+  });
+  const fold = (rows, field) => rows.forEach((r) => (row(r.employee_id)[field] = Number(r.n) || 0));
+  fold(interested, "interested");
+  fold(assigned, "assigned_leads");
+  fold(teamLeads, "team_leads");
+  fold(raised, "escalations_raised");
+  fold(handled, "escalations_handled");
+  fold(visits, "visits");
+  fold(onboarded, "onboarded");
+
+  if (members.size) {
+    const people = await Employee.findAll({
+      where: { id: { [Op.in]: [...members.keys()] } },
+      attributes: ["id", "name"],
+      raw: true,
+    });
+    people.forEach((p) => (members.get(Number(p.id)).employee_name = p.name));
+  }
+
+  return {
+    members: [...members.values()],
+    cadence: await getReportCadence(),
+    range: { dateFrom: range.dateFrom || null, dateTo: range.dateTo || null },
+    generatedAt: new Date(),
+  };
+};
+
+/** Desk-wide daily / weekly / monthly series for the cadence chart. */
+const getReportCadence = async () => {
+  const today = istDate(new Date());
+
+  const dailyKeys = Array.from({ length: 7 }, (_, i) => shiftDay(today, i - 6));
+  const thisMonday = mondayOf(today);
+  const weeklyKeys = Array.from({ length: 4 }, (_, i) => shiftDay(thisMonday, (i - 3) * 7));
+  const [ty, tm] = today.split("-").map(Number);
+  const monthlyKeys = Array.from({ length: 6 }, (_, i) =>
+    new Date(Date.UTC(ty, tm - 1 - (5 - i), 1)).toISOString().slice(0, 7)
+  );
+
+  // The monthly window is the widest; one fetch of each event type covers all three.
+  const since = istStart(`${monthlyKeys[0]}-01`);
+  const q = (sql) => sequelize.query(sql, { replacements: { since } }).then(([rows]) => rows);
+
+  const [answered, closes, booked, joined] = await Promise.all([
+    q(`SELECT called_at AS at FROM agent_call_attempt
+        WHERE answer_status = 'Answered' AND called_at >= :since`),
+    q(`SELECT candidate_id, called_at AS at FROM agent_call_attempt
+        WHERE result = 'Proceed' AND called_at >= :since
+       UNION ALL
+       SELECT candidate_id, completed_at AS at FROM agent_lead_escalation
+        WHERE tl_result = 'Proceed' AND completed_at >= :since`),
+    q(`SELECT created_at AS at FROM agent_office_visit
+        WHERE status <> 'Cancelled' AND created_at >= :since`),
+    q(`SELECT onboarding_completed_at AS at FROM agent
+        WHERE source_candidate_id IS NOT NULL AND onboarding_completed_at >= :since`),
+  ]);
+
+  const build = (keys, keyOf, labelOf) => {
+    const buckets = new Map(
+      keys.map((k) => [
+        k,
+        { key: k, label: labelOf(k), connected: 0, interested: new Set(), visits: 0, onboarded: 0 },
+      ])
+    );
+    const bucketOf = (value) => buckets.get(keyOf(istDate(value)));
+
+    answered.forEach((r) => {
+      const b = bucketOf(r.at);
+      if (b) b.connected += 1;
+    });
+    // A candidate confirmed twice in one bucket is one interested candidate.
+    closes.forEach((r) => {
+      const b = bucketOf(r.at);
+      if (b) b.interested.add(r.candidate_id);
+    });
+    booked.forEach((r) => {
+      const b = bucketOf(r.at);
+      if (b) b.visits += 1;
+    });
+    joined.forEach((r) => {
+      const b = bucketOf(r.at);
+      if (b) b.onboarded += 1;
+    });
+
+    return [...buckets.values()].map((b) => ({ ...b, interested: b.interested.size }));
+  };
+
+  return {
+    daily: build(dailyKeys, (d) => d, shortDay),
+    weekly: build(weeklyKeys, mondayOf, (k) => `Wk of ${shortDay(k)}`),
+    monthly: build(monthlyKeys, (d) => d.slice(0, 7), monthLabel),
+  };
+};
