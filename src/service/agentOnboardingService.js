@@ -9,6 +9,7 @@ import {
   VillagePosition,
 } from "../model/associationModel.js";
 import { getAgentLedger } from "./agentFinanceService.js";
+import { TERMINAL_CANDIDATE_STATUSES } from "../model/agentCandidateModel.js";
 
 /* =====================================================
    HELPERS
@@ -23,6 +24,19 @@ const httpError = (message, statusCode = 400) => {
 };
 
 const money = (value) => Math.round((Number(value) || 0) * 100) / 100;
+
+/** Seat states that can still take an agent. */
+const OPEN_SEAT_STATUSES = [
+  "VACANT",
+  "NATIVE_SEARCH",
+  "WAITING_CANDIDATES_AVAILABLE",
+  "OPEN_TO_WAITING_CANDIDATES",
+  "CANDIDATE_SELECTED",
+  "JOINING",
+];
+
+/** Candidate states the desk has closed; onboarding them would revive a dead lead. */
+const CLOSED_FOR_ONBOARDING = TERMINAL_CANDIDATE_STATUSES;
 const norm = (value) => String(value || "").trim().toLowerCase();
 
 /**
@@ -48,6 +62,15 @@ export const onboardCandidate = async (employeeId, payload = {}) => {
   if (candidate.converted_agent_id) {
     const existing = await Agent.findByPk(candidate.converted_agent_id);
     if (existing) return { agent: existing, alreadyOnboarded: true };
+  }
+
+  // A lead the desk has closed (not interested, diverted, dumped…) is not
+  // someone to appoint; it must be reopened through the pipeline first.
+  if (CLOSED_FOR_ONBOARDING.includes(candidate.status)) {
+    throw httpError(
+      `This candidate is ${candidate.status} and cannot be onboarded. Move them back into the pipeline first.`,
+      409
+    );
   }
 
   const village = payload.village ?? candidate.selected_village ?? candidate.village;
@@ -108,6 +131,18 @@ export const onboardCandidate = async (employeeId, payload = {}) => {
   }
 
   return sequelize.transaction(async (tx) => {
+    // Re-read under a row lock and re-check: two submits racing past the check
+    // above (a double click, or two desks) must not appoint the candidate twice
+    // — that would mean two agents, two seats and two deposits on the ledger.
+    const locked = await AgentCandidate.findByPk(candidate.id, {
+      transaction: tx,
+      lock: tx.LOCK.UPDATE,
+    });
+    if (locked.converted_agent_id) {
+      const existing = await Agent.findByPk(locked.converted_agent_id, { transaction: tx });
+      if (existing) return { agent: existing, seat: null, alreadyOnboarded: true };
+    }
+
     const agent = await Agent.create(
       {
         name: candidate.name,
@@ -196,13 +231,35 @@ export const onboardCandidate = async (employeeId, payload = {}) => {
     // Fill the seat they were selected for, or the lowest open seat in the
     // village. A village with no synced seats simply gets no seat filled —
     // the agent still exists, which is what the desk cares about.
-    const seat = payload.positionId
-      ? await VillagePosition.findByPk(payload.positionId, { transaction: tx })
-      : await VillagePosition.findOne({
-          where: { village, status: ["VACANT", "NATIVE_SEARCH", "WAITING_CANDIDATES_AVAILABLE", "OPEN_TO_WAITING_CANDIDATES", "CANDIDATE_SELECTED", "JOINING"] },
-          order: [["position_number", "ASC"]],
-          transaction: tx,
-        });
+    //
+    // Seats are unique per (village, mandal), and village names repeat across
+    // mandals, so the lookup is scoped by mandal (and district when known) —
+    // matching on the name alone could fill a seat in somebody else's village.
+    const seatPlace = { village };
+    if (mandal) seatPlace.mandal = mandal;
+    if (district) seatPlace.district = district;
+
+    let seat;
+    if (payload.positionId) {
+      seat = await VillagePosition.findByPk(payload.positionId, { transaction: tx });
+      if (!seat) throw httpError("That village seat does not exist", 404);
+      const elsewhere = Object.entries(seatPlace).some(
+        ([key, value]) => seat[key] && norm(seat[key]) !== norm(value)
+      );
+      if (elsewhere) {
+        throw httpError(
+          `Seat #${seat.position_number} belongs to ${seat.village}, ${seat.mandal}, not ${village}, ${mandal}`,
+          409
+        );
+      }
+    } else {
+      seat = await VillagePosition.findOne({
+        where: { ...seatPlace, status: OPEN_SEAT_STATUSES },
+        order: [["position_number", "ASC"]],
+        transaction: tx,
+        lock: tx.LOCK.UPDATE,
+      });
+    }
 
     if (seat && seat.status !== "FILLED") {
       await seat.update(
@@ -255,7 +312,7 @@ export const onboardCandidate = async (employeeId, payload = {}) => {
       );
     }
 
-    await candidate.update(
+    await locked.update(
       {
         status: "JOINED",
         converted_agent_id: agent.id,

@@ -45,6 +45,10 @@ const AgentLeadEscalation = sequelize.define(
     tl_recording_url: { type: DataTypes.STRING },
     tl_result: { type: DataTypes.STRING },
     completed_at: { type: DataTypes.DATE },
+    // Who actually closed the case. Kept apart from team_leader_id so a
+    // supervisor resolving on a leader's behalf does not move the case — and
+    // the leader's performance numbers — onto themselves.
+    resolved_by: { type: DataTypes.INTEGER },
   },
   {
     tableName: "agent_lead_escalation",

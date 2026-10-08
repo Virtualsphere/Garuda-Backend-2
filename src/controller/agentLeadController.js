@@ -37,6 +37,17 @@ export const getQueueCounts = async (req, res) => {
   }
 };
 
+export const listInterested = async (req, res) => {
+  try {
+    const result = await agentLeadService.listInterested();
+    return res
+      .status(200)
+      .json({ message: "Interested candidates fetched", count: result.length, result });
+  } catch (error) {
+    return fail(res, error, 500);
+  }
+};
+
 /* ── Allotment ────────────────────────────────────────────────── */
 
 export const allotLeads = async (req, res) => {
@@ -81,6 +92,50 @@ export const listCallAttempts = async (req, res) => {
       .json({ message: "Call attempts fetched", count: result.length, result });
   } catch (error) {
     return fail(res, error, 500);
+  }
+};
+
+/* ── WhatsApp trail ───────────────────────────────────────────── */
+
+export const logWhatsapp = async (req, res) => {
+  try {
+    const employeeId = req.user?.id;
+    const result = await agentLeadService.logWhatsapp(employeeId, req.params.id, req.body);
+    return res.status(201).json({ message: "WhatsApp message logged", result });
+  } catch (error) {
+    return fail(res, error);
+  }
+};
+
+/* ── Recovery hub ─────────────────────────────────────────────── */
+
+export const updateLeadPhone = async (req, res) => {
+  try {
+    const employeeId = req.user?.id;
+    const result = await agentLeadService.updateLeadPhone(employeeId, req.params.id, req.body);
+    return res.status(200).json({ message: "Phone number updated", result });
+  } catch (error) {
+    return fail(res, error);
+  }
+};
+
+export const dumpLead = async (req, res) => {
+  try {
+    const employeeId = req.user?.id;
+    const result = await agentLeadService.dumpLead(employeeId, req.params.id, req.body);
+    return res.status(200).json({ message: "Lead moved to the dumped archive", result });
+  } catch (error) {
+    return fail(res, error);
+  }
+};
+
+export const restoreLead = async (req, res) => {
+  try {
+    const employeeId = req.user?.id;
+    const result = await agentLeadService.restoreLead(employeeId, req.params.id);
+    return res.status(200).json({ message: "Lead restored", result });
+  } catch (error) {
+    return fail(res, error);
   }
 };
 

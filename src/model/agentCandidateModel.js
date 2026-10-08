@@ -152,6 +152,15 @@ const AgentCandidate = sequelize.define(
     diverted_at: { type: DataTypes.DATE },
     diverted_by: { type: DataTypes.INTEGER },
 
+    // ── Recovery hub (Not Lifted & Invalid) ────────────────────────
+    // A lead given up on after repeated failed contact is "dumped": its status
+    // becomes NOT_RESPONDING and these record who did it and why. The status it
+    // had before is kept so a restore puts it back exactly where it was.
+    dumped_at: { type: DataTypes.DATE },
+    dumped_by: { type: DataTypes.INTEGER },
+    dump_reason: { type: DataTypes.TEXT },
+    status_before_dump: { type: DataTypes.STRING },
+
     // ── Allotment ──────────────────────────────────────────────────
     // A lead is "unallotted" until it has a telecaller; that queue is what the
     // Allot Leads tab works through.

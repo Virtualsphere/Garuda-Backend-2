@@ -21,11 +21,12 @@ const AgentCallAttempt = sequelize.define(
       allowNull: false,
     },
     // Which queue the dial came from, so "first call" vs "follow-up" vs
-    // "not lifted retry" stays answerable after the fact.
+    // "not lifted retry" stays answerable after the fact. "recovery" is the
+    // Not Lifted & Invalid hub, whose workstation ledger reads only those.
     queue: {
       type: DataTypes.STRING,
       defaultValue: "first-call",
-      validate: { isIn: [["first-call", "follow-up", "not-lifted", "tl"]] },
+      validate: { isIn: [["first-call", "follow-up", "not-lifted", "tl", "recovery"]] },
     },
 
     answer_status: {

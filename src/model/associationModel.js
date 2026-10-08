@@ -33,6 +33,7 @@ import AgentEnquiry from "./agentEnquiryModel.js";
 import AgentTransaction from "./agentTransactionModel.js";
 import AgentCallAttempt from "./agentCallAttemptModel.js";
 import AgentLeadEscalation from "./agentLeadEscalationModel.js";
+import AgentLeadWhatsapp from "./agentLeadWhatsappModel.js";
 import AgentOfficeVisit from "./agentOfficeVisitModel.js";
 import Attendance from "./attendanceModel.js";
 import Calendar from "./calendarModel.js";
@@ -262,6 +263,26 @@ AgentLeadEscalation.belongsTo(Employee, {
 AgentLeadEscalation.belongsTo(Employee, {
   foreignKey: "team_leader_id",
   as: "teamLeader"
+});
+
+AgentLeadEscalation.belongsTo(Employee, {
+  foreignKey: "resolved_by",
+  as: "resolver"
+});
+
+AgentCandidate.hasMany(AgentLeadWhatsapp, {
+  foreignKey: "candidate_id",
+  as: "whatsappTrail"
+});
+
+AgentLeadWhatsapp.belongsTo(AgentCandidate, {
+  foreignKey: "candidate_id",
+  as: "candidate"
+});
+
+AgentLeadWhatsapp.belongsTo(Employee, {
+  foreignKey: "sent_by",
+  as: "sender"
 });
 
 AgentCandidate.hasMany(AgentOfficeVisit, {
@@ -736,5 +757,6 @@ export {
   AgentTransaction,
   AgentCallAttempt,
   AgentLeadEscalation,
+  AgentLeadWhatsapp,
   AgentOfficeVisit
 };
