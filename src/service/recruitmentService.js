@@ -148,7 +148,11 @@ export const createCandidate = async (employeeId, data) => {
         candidate_type: data.candidate_type || "NATIVE",
         status: data.status || "NEW_LEAD",
         call_status: data.call_status,
-        assigned_employee_id: data.assigned_employee_id || employeeId,
+        // An explicit null means "unowned" — the recruitment desk's bulk Add
+        // Leads relies on it so new leads wait in the pool instead of landing
+        // on whoever typed them in. Only an omitted field defaults to the creator.
+        assigned_employee_id:
+          data.assigned_employee_id !== undefined ? data.assigned_employee_id : employeeId,
         team_leader_id: data.team_leader_id,
         notes: data.notes,
         created_by: employeeId,

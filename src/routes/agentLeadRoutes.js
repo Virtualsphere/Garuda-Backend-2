@@ -42,6 +42,19 @@ const router = express.Router();
  *       - in: query
  *         name: activeOnly
  *         schema: { type: boolean, default: true }
+ *       - in: query
+ *         name: pool
+ *         schema:
+ *           type: string
+ *           enum: [recovery, dumped]
+ *         description: >
+ *           recovery = Not Lifted / No Answer / Invalid Number leads still open
+ *           (including NOT_ELIGIBLE invalid numbers); dumped = the NOT_RESPONDING
+ *           archive. Replaces the activeOnly default.
+ *       - in: query
+ *         name: includeWhatsapp
+ *         schema: { type: boolean, default: false }
+ *         description: Attach each lead's whatsappTrail
  *     responses:
  *       200:
  *         description: Leads fetched successfully
@@ -59,6 +72,23 @@ router.get("/agent-lead", verifyToken, agentLeadController.listLeads);
  *         description: Queue counts fetched
  */
 router.get("/agent-lead/queue-counts", verifyToken, agentLeadController.getQueueCounts);
+
+/**
+ * @swagger
+ * /api/agent-lead/interested:
+ *   get:
+ *     summary: The Interested tab — candidates who said yes, not yet agents
+ *     tags: [Agent Leads]
+ *     description: >
+ *       Leads in INTERESTED, VILLAGE_INTEREST, SELECTED or OFFICE_VISIT, each
+ *       with proceedAttempt (latest call marked Proceed, with its caller),
+ *       escalation (latest team-leader escalation, with telecaller and team
+ *       leader) and scheduledVisit (the currently booked office visit), or null.
+ *     responses:
+ *       200:
+ *         description: Interested candidates fetched
+ */
+router.get("/agent-lead/interested", verifyToken, agentLeadController.listInterested);
 
 /**
  * @swagger
@@ -205,6 +235,138 @@ router.get("/agent-lead/call", verifyToken, agentLeadController.listCallAttempts
 router.post("/agent-lead/call", verifyToken, agentLeadController.logCallAttempt);
 
 /* =====================================================
+   WHATSAPP TRAIL
+===================================================== */
+
+/**
+ * @swagger
+ * /api/agent-lead/{id}/whatsapp:
+ *   post:
+ *     summary: Log a WhatsApp message sent to a lead
+ *     tags: [Agent Leads]
+ *     description: >
+ *       The desk sends through a wa.me link in the browser; this records that
+ *       it was sent, by whom and with what text. It appears in the lead's
+ *       whatsappTrail on GET /api/agent-lead/{id}.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: integer }
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [messageText]
+ *             properties:
+ *               templateName: { type: string }
+ *               messageText: { type: string }
+ *               callerEmployeeId:
+ *                 type: integer
+ *                 description: Credit a colleague at a shared desk instead of the logged-in user
+ *     responses:
+ *       201:
+ *         description: WhatsApp message logged
+ *       404:
+ *         description: Lead not found
+ */
+router.post("/agent-lead/:id/whatsapp", verifyToken, agentLeadController.logWhatsapp);
+
+/* =====================================================
+   RECOVERY HUB (NOT LIFTED & INVALID)
+   The open list is GET /api/agent-lead?pool=recovery&includeWhatsapp=true
+   and the archive GET /api/agent-lead?pool=dumped.
+===================================================== */
+
+/**
+ * @swagger
+ * /api/agent-lead/{id}/phone:
+ *   put:
+ *     summary: Correct a lead's phone number
+ *     tags: [Agent Leads]
+ *     description: >
+ *       The lead stays in the recovery pool until a call on the new number
+ *       connects. The change is written to the candidate's status history.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: integer }
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [phone]
+ *             properties:
+ *               phone: { type: string, description: 10-digit mobile; +91 / 0 prefix accepted }
+ *               note: { type: string }
+ *               callerEmployeeId: { type: integer }
+ *     responses:
+ *       200:
+ *         description: Phone number updated
+ *       400:
+ *         description: Not a valid mobile number, or unchanged
+ *       404:
+ *         description: Lead not found
+ */
+router.put("/agent-lead/:id/phone", verifyToken, agentLeadController.updateLeadPhone);
+
+/**
+ * @swagger
+ * /api/agent-lead/{id}/dump:
+ *   post:
+ *     summary: Retire an unreachable lead to the dumped archive
+ *     tags: [Agent Leads]
+ *     description: >
+ *       Sets the lead to NOT_RESPONDING, recording who dumped it and why. The
+ *       previous status is remembered so a restore is exact.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: integer }
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               reason: { type: string }
+ *               callerEmployeeId:
+ *                 type: integer
+ *                 description: Credit a colleague at a shared desk instead of the logged-in user
+ *     responses:
+ *       200:
+ *         description: Lead dumped
+ *       409:
+ *         description: Already dumped, or already closed
+ */
+router.post("/agent-lead/:id/dump", verifyToken, agentLeadController.dumpLead);
+
+/**
+ * @swagger
+ * /api/agent-lead/{id}/restore:
+ *   post:
+ *     summary: Restore a dumped lead to the status it had before
+ *     tags: [Agent Leads]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: integer }
+ *     responses:
+ *       200:
+ *         description: Lead restored
+ *       409:
+ *         description: The lead is not dumped
+ */
+router.post("/agent-lead/:id/restore", verifyToken, agentLeadController.restoreLead);
+
+/* =====================================================
    TEAM LEADER ESCALATION
 ===================================================== */
 
@@ -270,6 +432,8 @@ router.post("/agent-lead/escalation", verifyToken, agentLeadController.escalateL
  *     responses:
  *       200:
  *         description: Escalation resolved
+ *       409:
+ *         description: The escalation is no longer Pending
  */
 router.put(
   "/agent-lead/escalation/:id/resolve",
