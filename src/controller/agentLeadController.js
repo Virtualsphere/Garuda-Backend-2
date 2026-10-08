@@ -260,6 +260,15 @@ export const getTelecallerPerformance = async (req, res) => {
   }
 };
 
+export const getRecruitmentReport = async (req, res) => {
+  try {
+    const result = await agentLeadService.getRecruitmentReport(req.query);
+    return res.status(200).json({ message: "Recruitment report fetched", result });
+  } catch (error) {
+    return fail(res, error, 500);
+  }
+};
+
 export const getLeadSourceBreakdown = async (req, res) => {
   try {
     const result = await agentLeadService.getLeadSourceBreakdown();

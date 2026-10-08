@@ -92,6 +92,37 @@ router.get("/agent-lead/interested", verifyToken, agentLeadController.listIntere
 
 /**
  * @swagger
+ * /api/agent-lead/report:
+ *   get:
+ *     summary: The Reports tab — per-employee working numbers and cadence
+ *     tags: [Agent Leads]
+ *     description: >
+ *       members has one row per employee with connected (answered dials only),
+ *       talk_seconds, interested (distinct candidates closed with Proceed, as
+ *       caller or converting team leader), assigned_leads, team_leads,
+ *       escalations_raised, escalations_handled, visits (non-cancelled visits
+ *       booked) and onboarded (agents they closed). cadence has desk-wide
+ *       daily (7 days), weekly (4 weeks) and monthly (6 months) series of
+ *       { key, label, connected, interested, visits, onboarded }, by IST date.
+ *     parameters:
+ *       - in: query
+ *         name: dateFrom
+ *         schema: { type: string, format: date }
+ *         description: IST date, inclusive; narrows member activity figures
+ *       - in: query
+ *         name: dateTo
+ *         schema: { type: string, format: date }
+ *         description: IST date, inclusive
+ *     responses:
+ *       200:
+ *         description: Recruitment report fetched
+ *       400:
+ *         description: A date is not YYYY-MM-DD
+ */
+router.get("/agent-lead/report", verifyToken, agentLeadController.getRecruitmentReport);
+
+/**
+ * @swagger
  * /api/agent-lead/source-breakdown:
  *   get:
  *     summary: Lead volume grouped by source
