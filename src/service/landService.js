@@ -30,6 +30,9 @@ const getLandWithFarmerDetails = async (landIds = []) => {
   });
 };
 
+// Media categories forced to public = false when a land is created
+const PRIVATE_ON_CREATE_MEDIA = ["farmer_photo", "farmer_aggrement"];
+
 // ---------------------------------------------------------------------------
 // Standard includes
 // ---------------------------------------------------------------------------
@@ -189,7 +192,12 @@ export const createLand = async (data, employeeId) => {
 
     // -- Media --
     if (media.length) {
-      const mediaData = media.map((m) => ({ ...m, land_id: land.id }));
+      // Farmer photo / agreement are always private on create; an admin can publish them later via update.
+      const mediaData = media.map((m) => ({
+        ...m,
+        land_id: land.id,
+        ...(PRIVATE_ON_CREATE_MEDIA.includes(m.category) && { public: false }),
+      }));
       await LandMedia.bulkCreate(mediaData, { transaction: t });
     }
 
