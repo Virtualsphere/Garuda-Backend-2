@@ -23,6 +23,7 @@ import recruitmentRoutes from './src/routes/recruitmentRoutes.js'
 import agentDeskRoutes from './src/routes/agentDeskRoutes.js'
 import agentLeadRoutes from './src/routes/agentLeadRoutes.js'
 import { ensureSeeded as ensurePermissionsSeeded } from './src/service/permissionService.js'
+import runMigrations from './src/db/runMigrations.js'
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -79,6 +80,7 @@ const startServer = async () => {
     await sequelize.sync({ alter: true });
     // await ensureStaticQrPaymentSchema();
     await ensurePermissionsSeeded();
+    await runMigrations();
     console.log("All tables synced with database");
   } catch (err) {
     console.error("Sync failed (continuing without DB):", err);
