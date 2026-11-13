@@ -8,6 +8,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import buyerRoutes from './src/routes/buyerRoutes.js';
 import locationRoutes from './src/routes/locationRoutes.js';
+import locationImportRoutes from './src/routes/locationImportRoutes.js';
 import landRoutes from './src/routes/landRoutes.js';
 import employeeRoutes from './src/routes/employeeRoutes.js';
 import documentRoutes from './src/routes/documentRoutes.js';
@@ -22,6 +23,7 @@ import callingRoutes from './src/routes/callingRoutes.js'
 import recruitmentRoutes from './src/routes/recruitmentRoutes.js'
 import agentDeskRoutes from './src/routes/agentDeskRoutes.js'
 import agentLeadRoutes from './src/routes/agentLeadRoutes.js'
+import propertyListingRoutes from './src/routes/propertyListingRoutes.js'
 import { ensureSeeded as ensurePermissionsSeeded } from './src/service/permissionService.js'
 import runMigrations from './src/db/runMigrations.js'
 
@@ -56,6 +58,7 @@ app.get("/status", (req, res) => {
 
 app.use('/api', employeeRoutes);
 app.use('/api', landRoutes);
+app.use('/api', locationImportRoutes);
 app.use('/api', locationRoutes);
 app.use('/api', buyerRoutes);
 app.use('/api', documentRoutes);
@@ -70,6 +73,7 @@ app.use('/api', callingRoutes);
 app.use('/api', recruitmentRoutes);
 app.use('/api', agentDeskRoutes);
 app.use('/api', agentLeadRoutes);
+app.use('/api', propertyListingRoutes);
 // app.use('/api', paymentRoutes)
 
 const PORT = process.env.PORT || 5000;
