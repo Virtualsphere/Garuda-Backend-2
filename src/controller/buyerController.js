@@ -407,6 +407,20 @@ export const getAllLandsForUser = async (req, res) => {
   }
 };
 
+export const getRecentLandsForUser = async (req, res) => {
+  try {
+    // ?limit= is optional: defaults to 10, capped at 50.
+    const requested = parseInt(req.query.limit, 10);
+    const limit = Number.isFinite(requested) && requested > 0 ? Math.min(requested, 50) : 10;
+
+    const lands = await landService.getRecentLandsForUser(limit);
+
+    res.status(200).json({ success: true, count: lands.length, data: lands });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 export const getLandByIdForUser = async (req, res) => {
   try {
     const { id } = req.params;

@@ -507,6 +507,49 @@ router.get("/buyer/land", buyerController.getAllLandsForUser);
 
 /**
  * @swagger
+ * /api/buyer/land/recent:
+ *   get:
+ *     summary: Recently added lands (users app)
+ *     description: >
+ *       Returns the most recently added lands, newest first. Excludes trainee,
+ *       draft and sold lands. Only public media is included; farmer details,
+ *       agent number and staff fields are never returned. No login required.
+ *     tags: [Buyer]
+ *     parameters:
+ *       - in: query
+ *         name: limit
+ *         required: false
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *           maximum: 50
+ *         description: Number of lands to return (default 10, max 50)
+ *     responses:
+ *       200:
+ *         description: Recently added lands
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 count:
+ *                   type: integer
+ *                   example: 10
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *       500:
+ *         description: Server error
+ */
+// Must stay above /buyer/land/:id, or "recent" is matched as an id.
+router.get("/buyer/land/recent", buyerController.getRecentLandsForUser);
+
+/**
+ * @swagger
  * /api/buyer/land/{id}:
  *   get:
  *     summary: Get land by ID

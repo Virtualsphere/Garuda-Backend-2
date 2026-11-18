@@ -332,6 +332,41 @@ export const getAllLandsForUser = async (filters = {}) => {
   });
 };
 
+// Internal land columns the users app must never receive.
+const USER_HIDDEN_LAND_FIELDS = [
+  "agent_number", "agent_id", "created_by", "verified_by", "call_verification_by",
+];
+
+/**
+ * The most recently added lands for the users app (newest first).
+ * Same visibility rules as the user detail endpoint: no trainee or draft
+ * lands, no sold lands, only public media, no farmer details or staff info.
+ */
+export const getRecentLandsForUser = async (limit = 10) => {
+  return await Land.findAll({
+    // Op.not true → "trainee IS NOT true", so older rows with trainee NULL are kept.
+    where: { trainee: { [Op.not]: true }, form_status: "complete", availablity: "available" },
+    attributes: { exclude: USER_HIDDEN_LAND_FIELDS },
+    include: [
+      { model: LandDetails,        as: "landDetails", required: false },
+      { model: LandGPS,            as: "gps",         required: false },
+      {
+        model: LandMedia,
+        as: "media",
+        separate: true,
+        where: {
+          public: true,
+          category: { [Op.notIn]: ["farmer_photo", "card", "farmer_aggrement"] },
+        },
+      },
+      { model: LandTree,           as: "tree",        separate: true },
+      { model: LandShedDimensions, as: "shed",        separate: true },
+    ],
+    order: [["created_at", "DESC"], ["id", "DESC"]],
+    limit,
+  });
+};
+
 export const getLandById = async (id) => {
   const land = await Land.findByPk(id, { include: FULL_LAND_INCLUDE });
   if (!land) throw new Error("Land not found");
