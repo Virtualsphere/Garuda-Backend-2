@@ -71,6 +71,12 @@ const Land = sequelize.define("Land", {
     type: DataTypes.INTEGER,
     allowNull: true
   },
+  // Free-text agent contact number typed on the Add / Edit Land form.
+  // Unrelated to agent_id (the linked agent record).
+  agent_number: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
   call_verification_status: {
     type: DataTypes.ENUM('complete', 'pending', 'rejected'),
     defaultValue: 'pending'
