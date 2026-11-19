@@ -54,8 +54,12 @@ jobs:
           host: ${{ secrets.VM_HOST }}
           username: ${{ secrets.VM_USER }}
           key: ${{ secrets.VM_SSH_KEY }}
+          port: 22
           envs: REGION,PROJECT_ID,REPOSITORY,IMAGE_NAME
           script: |
+            whoami
+            hostname
+
             cd ~/garuda
 
             export REGION PROJECT_ID REPOSITORY IMAGE_NAME
