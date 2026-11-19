@@ -6,9 +6,11 @@
  * never rename one that has shipped, or it will run again.
  */
 import * as privateFarmerMedia from "./20261022-private-farmer-media.js";
+import * as publicLandMedia from "./20261119-public-land-media.js";
 
 const MIGRATIONS = [
   privateFarmerMedia,
+  publicLandMedia,
 ];
 
 export default MIGRATIONS;

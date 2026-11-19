@@ -30,8 +30,30 @@ const getLandWithFarmerDetails = async (landIds = []) => {
   });
 };
 
-// Media categories forced to public = false when a land is created
+// Media categories that are private by default (forced private on create).
+// Every other category is public unless the payload explicitly says otherwise.
 const PRIVATE_ON_CREATE_MEDIA = ["farmer_photo", "farmer_aggrement"];
+
+/**
+ * Resolve a media row's `public` flag.
+ * - On create, farmer photo / agreement are always private; an admin can publish them later via update.
+ * - Otherwise an explicit `public` in the payload wins, and a missing one defaults by category.
+ */
+const withMediaVisibility = (m, { forcePrivate = false } = {}) => {
+  const isPrivateCategory = PRIVATE_ON_CREATE_MEDIA.includes(m.category);
+  if (forcePrivate && isPrivateCategory) return { ...m, public: false };
+  if (typeof m.public === "boolean") return m;
+  return { ...m, public: !isPrivateCategory };
+};
+
+// Media shown in buyer-facing lists (all lands, recent lands): public images only, no videos.
+// "card" is included — it is the cover image on the buyer app's land card.
+// The single-land detail endpoint still returns videos.
+const BUYER_LIST_MEDIA_WHERE = {
+  public: true,
+  category: { [Op.notIn]: ["farmer_photo", "farmer_aggrement"] },
+  [Op.or]: [{ type: { [Op.ne]: "video" } }, { type: null }],
+};
 
 // ---------------------------------------------------------------------------
 // Standard includes
@@ -192,11 +214,9 @@ export const createLand = async (data, employeeId) => {
 
     // -- Media --
     if (media.length) {
-      // Farmer photo / agreement are always private on create; an admin can publish them later via update.
       const mediaData = media.map((m) => ({
-        ...m,
+        ...withMediaVisibility(m, { forcePrivate: true }),
         land_id: land.id,
-        ...(PRIVATE_ON_CREATE_MEDIA.includes(m.category) && { public: false }),
       }));
       await LandMedia.bulkCreate(mediaData, { transaction: t });
     }
@@ -317,14 +337,7 @@ export const getAllLandsForUser = async (filters = {}) => {
     include: [
       landDetailsInclude,
       { model: LandGPS,            as: "gps",       required: false },
-      { 
-        model: LandMedia,          
-        as: "media",     
-        separate: true,
-        where: {
-          category: { [Op.notIn]: ['farmer_photo', 'card', 'farmer_aggrement'] }
-        }
-      },
+      { model: LandMedia,          as: "media",     separate: true, where: BUYER_LIST_MEDIA_WHERE },
       { model: LandTree,           as: "tree",      separate: true },
       { model: LandShedDimensions, as: "shed",      separate: true },
     ],
@@ -350,15 +363,7 @@ export const getRecentLandsForUser = async (limit = 10) => {
     include: [
       { model: LandDetails,        as: "landDetails", required: false },
       { model: LandGPS,            as: "gps",         required: false },
-      {
-        model: LandMedia,
-        as: "media",
-        separate: true,
-        where: {
-          public: true,
-          category: { [Op.notIn]: ["farmer_photo", "card", "farmer_aggrement"] },
-        },
-      },
+      { model: LandMedia,          as: "media",       separate: true, where: BUYER_LIST_MEDIA_WHERE },
       { model: LandTree,           as: "tree",        separate: true },
       { model: LandShedDimensions, as: "shed",        separate: true },
     ],
@@ -471,7 +476,8 @@ const _updateLandCore = async (id, data, extraLandFields = {}, t) => {
   // -- Media --
   if (media) {
     await LandMedia.destroy({ where: { land_id: id }, transaction: t });
-    const mediaData = media.map((m) => ({ ...m, land_id: id }));
+    // Rows that already exist carry their `public` flag; newly uploaded ones default by category.
+    const mediaData = media.map((m) => ({ ...withMediaVisibility(m), land_id: id }));
     await LandMedia.bulkCreate(mediaData, { transaction: t });
   }
 
